@@ -99,21 +99,21 @@ const ReportsSimulator = () => {
                     cierres: { label: "Cierres" }
                   }}
                 >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={teamPerformanceData}
-                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <ChartTooltip content={(props) => <ChartTooltipContent {...props} />} />
-                      <Legend />
-                      <Bar name="Clientes" dataKey="clientes" fill="#8884d8" />
-                      <Bar name="Visitas" dataKey="visitas" fill="#82ca9d" />
-                      <Bar name="Cierres" dataKey="cierres" fill="#ffc658" />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <BarChart
+                    data={teamPerformanceData}
+                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <ChartTooltip>
+                      {(props) => <ChartTooltipContent {...props} />}
+                    </ChartTooltip>
+                    <Legend />
+                    <Bar name="Clientes" dataKey="clientes" fill="#8884d8" />
+                    <Bar name="Visitas" dataKey="visitas" fill="#82ca9d" />
+                    <Bar name="Cierres" dataKey="cierres" fill="#ffc658" />
+                  </BarChart>
                 </ChartContainer>
               </div>
             </CardContent>
@@ -166,25 +166,23 @@ const ReportsSimulator = () => {
                       valor: { label: "Valor" }
                     }}
                   >
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={channelData}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="valor"
-                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        >
-                          {channelData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Legend layout="vertical" verticalAlign="middle" align="right" />
-                      </PieChart>
-                    </ResponsiveContainer>
+                    <PieChart>
+                      <Pie
+                        data={channelData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="valor"
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {channelData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Legend layout="vertical" verticalAlign="middle" align="right" />
+                    </PieChart>
                   </ChartContainer>
                 </div>
                 <div className="space-y-6">
@@ -232,21 +230,21 @@ const ReportsSimulator = () => {
                     cierres: { label: "Cierres" }
                   }}
                 >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart
-                      data={timeData}
-                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="mes" />
-                      <YAxis />
-                      <ChartTooltip content={(props) => <ChartTooltipContent {...props} />} />
-                      <Legend />
-                      <Line type="monotone" dataKey="clientes" stroke="#8884d8" activeDot={{ r: 8 }} />
-                      <Line type="monotone" dataKey="visitas" stroke="#82ca9d" />
-                      <Line type="monotone" dataKey="cierres" stroke="#ffc658" />
-                    </LineChart>
-                  </ResponsiveContainer>
+                  <LineChart
+                    data={timeData}
+                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="mes" />
+                    <YAxis />
+                    <ChartTooltip>
+                      {(props) => <ChartTooltipContent {...props} />}
+                    </ChartTooltip>
+                    <Legend />
+                    <Line type="monotone" dataKey="clientes" stroke="#8884d8" activeDot={{ r: 8 }} />
+                    <Line type="monotone" dataKey="visitas" stroke="#82ca9d" />
+                    <Line type="monotone" dataKey="cierres" stroke="#ffc658" />
+                  </LineChart>
                 </ChartContainer>
               </div>
 

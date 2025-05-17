@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -119,7 +120,9 @@ const DashboardSimulator = () => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
-                <ChartTooltip content={(props) => <ChartTooltipContent {...props} />} />
+                <ChartTooltip>
+                  {(props) => <ChartTooltipContent {...props} />}
+                </ChartTooltip>
                 <Bar dataKey="value" fill="#8884d8">
                   {intentionData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
