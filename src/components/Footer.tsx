@@ -6,7 +6,7 @@ const Footer = () => {
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-6 md:mb-0">
             <h2 className="text-2xl font-bold">Proptor</h2>
-            <p className="text-slate-300 mt-2">Tu CRM inmobiliario inteligente</p>
+            <p className="text-slate-300 mt-2">Tu CRM inmobiliario inteligente para Perú</p>
           </div>
           <div className="flex space-x-8">
             <div>
@@ -14,13 +14,14 @@ const Footer = () => {
               <ul className="space-y-2">
                 <li><a href="#features" className="text-slate-300 hover:text-white transition">Funcionalidades</a></li>
                 <li><a href="#pricing" className="text-slate-300 hover:text-white transition">Precios</a></li>
-                <li><a href="#faq" className="text-slate-300 hover:text-white transition">FAQ</a></li>
+                <li><a href="#faq" className="text-slate-300 hover:text-white transition">Preguntas frecuentes</a></li>
               </ul>
             </div>
             <div>
               <h3 className="font-semibold mb-2">Contacto</h3>
               <ul className="space-y-2">
-                <li><a href="mailto:info@proptor.com" className="text-slate-300 hover:text-white transition">info@proptor.com</a></li>
+                <li><a href="tel:+51123456789" className="text-slate-300 hover:text-white transition">+51 123 456 789</a></li>
+                <li><a href="mailto:info@proptor.com.pe" className="text-slate-300 hover:text-white transition">info@proptor.com.pe</a></li>
               </ul>
             </div>
           </div>

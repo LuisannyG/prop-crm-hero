@@ -30,7 +30,7 @@ const PricingCard = ({ name, price, features, buttonText, highlighted, onCtaClic
         </div>
         
         <div className="my-6">
-          <span className="text-4xl font-bold">{price}</span>
+          <span className="text-4xl font-bold">S/ {price}</span>
           <span className="text-slate-500">/mes</span>
         </div>
         

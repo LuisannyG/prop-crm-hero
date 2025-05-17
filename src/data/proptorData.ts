@@ -89,45 +89,31 @@ export const benefits: Benefit[] = [
 export const plans: Plan[] = [
   {
     name: "Plan Gratuito",
-    price: "0€",
-    features: ["Ficha de cliente", "Panel básico", "Agenda básica"],
+    price: "0",
+    features: ["Ficha de cliente", "Panel básico", "Agenda básica", "Reportes limitados"],
     buttonText: "Empieza ahora",
     highlighted: false
   },
   {
     name: "Plan Premium",
-    price: "29€",
-    features: ["Todo lo del plan gratuito", "Reportes automáticos", "Motor de aprendizaje", "Detección de riesgo"],
+    price: "60",
+    features: [
+      "Todo lo del plan gratuito", 
+      "Reportes automáticos avanzados", 
+      "Motor de aprendizaje", 
+      "Detección de riesgo de no compra", 
+      "Priorización automática de leads",
+      "Recordatorios inteligentes"
+    ],
     buttonText: "Ver precios",
     highlighted: true
-  }
-];
-
-export const testimonials: Testimonial[] = [
-  {
-    name: "María Rodríguez",
-    position: "Agente Independiente",
-    content: "Desde que uso Proptor he aumentado mis ventas en un 30%. La agenda inteligente me permite dar seguimiento a más clientes sin olvidar ninguno.",
-    avatar: "/placeholder.svg"
-  },
-  {
-    name: "Carlos Méndez",
-    position: "Director de Inmobiliaria",
-    content: "Proptor ha transformado cómo gestionamos nuestros leads. El panel de control nos da visibilidad total sobre nuestro pipeline.",
-    avatar: "/placeholder.svg"
-  },
-  {
-    name: "Laura Sánchez",
-    position: "Agente Senior",
-    content: "Los reportes automáticos me permiten identificar qué canales me traen los mejores clientes. Una herramienta imprescindible.",
-    avatar: "/placeholder.svg"
   }
 ];
 
 export const faqs: FAQ[] = [
   {
     question: "¿Qué es Proptor?",
-    answer: "Proptor es un CRM diseñado específicamente para agentes inmobiliarios y pequeñas inmobiliarias que facilita la gestión de clientes, seguimiento y cierre de ventas."
+    answer: "Proptor es un CRM diseñado específicamente para agentes inmobiliarios y pequeñas inmobiliarias peruanas que facilita la gestión de clientes, seguimiento y cierre de ventas."
   },
   {
     question: "¿Necesito conocimientos técnicos para usar Proptor?",

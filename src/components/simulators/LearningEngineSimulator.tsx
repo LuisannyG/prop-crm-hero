@@ -1,8 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, Tooltip } from "recharts";
 import { Brain, TrendingUp, AlertCircle, BookOpen } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -73,6 +72,11 @@ const LearningEngineSimulator = () => {
 
   return (
     <div className="space-y-6">
+      <div className="text-center mb-6 bg-gradient-to-r from-purple-500 to-blue-500 text-white p-4 rounded-lg">
+        <h3 className="text-xl font-bold">Vista Previa - Disponible en Plan Premium</h3>
+        <p>Esta es una representación de cómo se verá el Motor de Aprendizaje cuando esté completamente implementado.</p>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="shadow-md">
           <CardHeader className="bg-blue-50">
@@ -89,7 +93,7 @@ const LearningEngineSimulator = () => {
                   ¿Cómo funciona?
                 </h3>
                 <p className="text-sm text-purple-700">
-                  Nuestro motor de IA analiza continuamente los datos de tus interacciones con clientes, 
+                  Nuestro motor de IA analizará continuamente los datos de tus interacciones con clientes, 
                   identificando patrones de comportamiento y aprendiendo con cada nuevo registro para ofrecerte 
                   predicciones más precisas sobre las probabilidades de compra y recomendaciones personalizadas.
                 </p>
@@ -102,9 +106,7 @@ const LearningEngineSimulator = () => {
                     <XAxis dataKey="mes" />
                     <YAxis yAxisId="left" />
                     <YAxis yAxisId="right" orientation="right" />
-                    <ChartTooltip
-                      content={<ChartTooltipContent />}
-                    />
+                    <Tooltip />
                     <Legend />
                     <Line 
                       yAxisId="left"
@@ -233,6 +235,7 @@ const LearningEngineSimulator = () => {
               <p className="text-sm text-gray-500">
                 A medida que registres más interacciones con clientes, el sistema generará 
                 más recomendaciones personalizadas basadas en patrones de comportamiento.
+                <span className="block mt-2 font-medium text-blue-500">Disponible exclusivamente para usuarios Premium.</span>
               </p>
             </div>
           </div>

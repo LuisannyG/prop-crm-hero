@@ -15,10 +15,10 @@ const Hero = ({ onCtaClick }: HeroProps) => {
           Proptor
         </h1>
         <p className="text-2xl md:text-3xl text-white mb-6">
-          Tu CRM inmobiliario inteligente
+          Tu CRM inmobiliario inteligente para Perú
         </p>
         <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto">
-          Organiza, da seguimiento y convierte más con menos esfuerzo.
+          Organiza, da seguimiento y convierte más clientes con menos esfuerzo.
           <span className="block text-blue-200 mt-4 font-semibold">Ahorra hasta 5 horas semanales en seguimiento de clientes.</span>
         </p>
         
@@ -43,8 +43,8 @@ const Hero = ({ onCtaClick }: HeroProps) => {
         <div className="mt-20 bg-white/10 backdrop-blur-sm rounded-lg p-6 max-w-xl mx-auto">
           <h3 className="text-white text-xl font-bold mb-4">¿Qué hace diferente a Proptor?</h3>
           <p className="text-blue-100">
-            Proptor es el único CRM que analiza el comportamiento de tus leads para avisarte 
-            cuándo y cómo debes darles seguimiento, ayudándote a aumentar tus cierres.
+            Proptor es el único CRM que analiza el comportamiento de tus clientes potenciales para avisarte 
+            cuándo y cómo debes darles seguimiento, ayudándote a aumentar tus cierres. Ideal para el mercado peruano.
           </p>
         </div>
       </div>

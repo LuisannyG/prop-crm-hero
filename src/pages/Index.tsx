@@ -4,11 +4,10 @@ import Hero from "@/components/Hero";
 import FeaturesTabSection from "@/components/FeaturesTabSection";
 import BenefitsSection from "@/components/BenefitsSection";
 import PricingSection from "@/components/PricingSection";
-import TestimonialsSection from "@/components/TestimonialsSection";
 import FAQsSection from "@/components/FAQsSection";
 import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
-import { benefits, plans, testimonials, faqs } from "@/data/proptorData";
+import { benefits, plans, faqs } from "@/data/proptorData";
 
 const Index = () => {
   const [showBetaMessage, setShowBetaMessage] = useState(false);
@@ -36,9 +35,6 @@ const Index = () => {
 
       {/* Pricing Section */}
       <PricingSection plans={plans} onCtaClick={handleCtaClick} />
-
-      {/* Testimonials Section */}
-      <TestimonialsSection testimonials={testimonials} />
 
       {/* FAQ Section */}
       <FAQsSection faqs={faqs} />
