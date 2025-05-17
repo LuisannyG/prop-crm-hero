@@ -4,6 +4,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LucideIcon, Calendar, ChartBar, FileText, FileUser, Brain, BadgeInfo, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
+// Importamos los componentes de simulación de funcionalidades
+import AgendaSimulator from "@/components/simulators/AgendaSimulator";
+import DashboardSimulator from "@/components/simulators/DashboardSimulator";
+import RecordSimulator from "@/components/simulators/RecordSimulator";
+import ReportsSimulator from "@/components/simulators/ReportsSimulator";
+import ClientFileSimulator from "@/components/simulators/ClientFileSimulator";
+import LearningEngineSimulator from "@/components/simulators/LearningEngineSimulator";
+import RiskDetectionSimulator from "@/components/simulators/RiskDetectionSimulator";
+
 interface Feature {
   id: string;
   title: string;
@@ -106,35 +115,27 @@ const FeaturesTabSection = () => {
           ))}
         </TabsList>
         
-        {features.map((feature) => (
-          <TabsContent key={feature.id} value={feature.id} className="mt-6">
-            <Card className="border-blue-200 shadow-lg">
-              <CardContent className="p-6 md:p-10">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                  <div className="flex-1">
-                    <h3 className="text-2xl md:text-3xl font-bold text-blue-800 mb-4">
-                      {feature.emoji} {feature.title}
-                    </h3>
-                    <ul className="space-y-4">
-                      {feature.description.map((desc, index) => (
-                        <li key={index} className="flex items-start gap-3">
-                          <div className="bg-blue-100 p-1 rounded-full mt-1">
-                            <feature.icon className="h-5 w-5 text-blue-600" />
-                          </div>
-                          <span className="text-slate-700 text-lg">{desc}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="w-full md:w-1/2 bg-slate-100 rounded-lg p-6 flex items-center justify-center h-64">
-                    <feature.icon className="w-24 h-24 text-blue-300" />
-                    <span className="text-5xl ml-4">{feature.emoji}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        ))}
+        <TabsContent value="agenda">
+          <AgendaSimulator />
+        </TabsContent>
+        <TabsContent value="panel">
+          <DashboardSimulator />
+        </TabsContent>
+        <TabsContent value="registro">
+          <RecordSimulator />
+        </TabsContent>
+        <TabsContent value="reportes">
+          <ReportsSimulator />
+        </TabsContent>
+        <TabsContent value="ficha">
+          <ClientFileSimulator />
+        </TabsContent>
+        <TabsContent value="motor">
+          <LearningEngineSimulator />
+        </TabsContent>
+        <TabsContent value="deteccion">
+          <RiskDetectionSimulator />
+        </TabsContent>
       </Tabs>
     </div>
   );
