@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, Legend, PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { ChartContainer } from "@/components/ui/chart";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, Legend, PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar as CalendarIcon, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -106,9 +106,7 @@ const ReportsSimulator = () => {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
-                    <ChartTooltip>
-                      {(props) => <ChartTooltipContent {...props} />}
-                    </ChartTooltip>
+                    <Tooltip />
                     <Legend />
                     <Bar name="Clientes" dataKey="clientes" fill="#8884d8" />
                     <Bar name="Visitas" dataKey="visitas" fill="#82ca9d" />
@@ -182,6 +180,7 @@ const ReportsSimulator = () => {
                         ))}
                       </Pie>
                       <Legend layout="vertical" verticalAlign="middle" align="right" />
+                      <Tooltip />
                     </PieChart>
                   </ChartContainer>
                 </div>
@@ -237,9 +236,7 @@ const ReportsSimulator = () => {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="mes" />
                     <YAxis />
-                    <ChartTooltip>
-                      {(props) => <ChartTooltipContent {...props} />}
-                    </ChartTooltip>
+                    <Tooltip />
                     <Legend />
                     <Line type="monotone" dataKey="clientes" stroke="#8884d8" activeDot={{ r: 8 }} />
                     <Line type="monotone" dataKey="visitas" stroke="#82ca9d" />

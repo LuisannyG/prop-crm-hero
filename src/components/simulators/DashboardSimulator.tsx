@@ -2,8 +2,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { ChartContainer } from "@/components/ui/chart";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
 import { Users, Home, Building, User } from "lucide-react";
 
 const DashboardSimulator = () => {
@@ -120,9 +120,7 @@ const DashboardSimulator = () => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
-                <ChartTooltip>
-                  {(props) => <ChartTooltipContent {...props} />}
-                </ChartTooltip>
+                <Tooltip />
                 <Bar dataKey="value" fill="#8884d8">
                   {intentionData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
