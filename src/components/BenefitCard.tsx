@@ -8,9 +8,9 @@ interface BenefitCardProps {
 
 const BenefitCard = ({ title, description }: BenefitCardProps) => {
   return (
-    <Card className="hover:shadow-lg transition-shadow text-center overflow-hidden">
+    <Card className="hover:shadow-lg transition-shadow text-center overflow-hidden border-t-4 border-blue-500">
       <CardContent className="p-6">
-        <div className="bg-blue-500 h-2 w-12 rounded-full mx-auto mb-6"></div>
+        <div className="bg-blue-500 h-2 w-20 rounded-full mx-auto mb-6"></div>
         <h3 className="font-bold text-xl text-slate-900 mb-4">{title}</h3>
         <p className="text-slate-600">{description}</p>
       </CardContent>

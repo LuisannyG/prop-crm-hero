@@ -1,10 +1,8 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, ChartBar, FileText, FileUser, Brain, BadgeDollarSign, BadgeInfo, Users } from "lucide-react";
 import Hero from "@/components/Hero";
-import FeatureCard from "@/components/FeatureCard";
+import FeaturesTabSection from "@/components/FeaturesTabSection";
 import BenefitCard from "@/components/BenefitCard";
 import PricingCard from "@/components/PricingCard";
 import TestimonialCard from "@/components/TestimonialCard";
@@ -141,22 +139,9 @@ const Index = () => {
       {/* Hero Section */}
       <Hero onCtaClick={handleCtaClick} />
 
-      {/* Feature Section */}
+      {/* Feature Section with Tabs */}
       <section id="features" className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Funcionalidades de Proptor</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <FeatureCard 
-                key={index}
-                title={feature.title}
-                description={feature.description}
-                icon={feature.icon}
-                index={index}
-              />
-            ))}
-          </div>
-        </div>
+        <FeaturesTabSection />
       </section>
 
       {/* Benefits Section */}

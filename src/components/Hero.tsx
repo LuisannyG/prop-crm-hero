@@ -11,9 +11,12 @@ const Hero = ({ onCtaClick }: HeroProps) => {
       <div className="absolute inset-0 bg-[url('/placeholder.svg')] bg-center bg-cover opacity-10"></div>
       
       <div className="container mx-auto px-4 relative z-10 text-center">
-        <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
-          Tu CRM inmobiliario inteligente
+        <h1 className="text-6xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-blue-100 mb-4 leading-tight">
+          Proptor
         </h1>
+        <p className="text-2xl md:text-3xl text-white mb-6">
+          Tu CRM inmobiliario inteligente
+        </p>
         <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto">
           Organiza, da seguimiento y convierte más con menos esfuerzo.
           <span className="block text-blue-200 mt-4 font-semibold">Ahorra hasta 5 horas semanales en seguimiento de clientes.</span>
