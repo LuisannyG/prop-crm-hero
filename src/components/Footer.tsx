@@ -20,7 +20,6 @@ const Footer = () => {
             <div>
               <h3 className="font-semibold mb-2">Contacto</h3>
               <ul className="space-y-2">
-                <li><a href="tel:+51123456789" className="text-slate-300 hover:text-white transition">+51 123 456 789</a></li>
                 <li><a href="mailto:info@proptor.com.pe" className="text-slate-300 hover:text-white transition">info@proptor.com.pe</a></li>
               </ul>
             </div>

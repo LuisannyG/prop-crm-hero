@@ -25,9 +25,11 @@ const Index = () => {
       {/* Hero Section */}
       <Hero onCtaClick={handleCtaClick} />
 
-      {/* Feature Section with Tabs */}
+      {/* Feature Section with Tabs - Añadido padding adicional */}
       <section id="features" className="py-20 bg-gray-50">
-        <FeaturesTabSection />
+        <div className="container mx-auto px-4">
+          <FeaturesTabSection />
+        </div>
       </section>
 
       {/* Benefits Section */}
