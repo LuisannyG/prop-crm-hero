@@ -98,7 +98,7 @@ const FeaturesTabSection = () => {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-10">
+    <div className="w-full py-6">
       <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Funcionalidades de Proptor</h2>
       
       <Tabs defaultValue="agenda" className="w-full" onValueChange={setActiveTab}>
@@ -115,27 +115,29 @@ const FeaturesTabSection = () => {
           ))}
         </TabsList>
         
-        <TabsContent value="agenda">
-          <AgendaSimulator />
-        </TabsContent>
-        <TabsContent value="panel">
-          <DashboardSimulator />
-        </TabsContent>
-        <TabsContent value="registro">
-          <RecordSimulator />
-        </TabsContent>
-        <TabsContent value="reportes">
-          <ReportsSimulator />
-        </TabsContent>
-        <TabsContent value="ficha">
-          <ClientFileSimulator />
-        </TabsContent>
-        <TabsContent value="motor">
-          <LearningEngineSimulator />
-        </TabsContent>
-        <TabsContent value="deteccion">
-          <RiskDetectionSimulator />
-        </TabsContent>
+        <div className="mt-6">
+          <TabsContent value="agenda">
+            <AgendaSimulator />
+          </TabsContent>
+          <TabsContent value="panel">
+            <DashboardSimulator />
+          </TabsContent>
+          <TabsContent value="registro">
+            <RecordSimulator />
+          </TabsContent>
+          <TabsContent value="reportes">
+            <ReportsSimulator />
+          </TabsContent>
+          <TabsContent value="ficha">
+            <ClientFileSimulator />
+          </TabsContent>
+          <TabsContent value="motor">
+            <LearningEngineSimulator />
+          </TabsContent>
+          <TabsContent value="deteccion">
+            <RiskDetectionSimulator />
+          </TabsContent>
+        </div>
       </Tabs>
     </div>
   );

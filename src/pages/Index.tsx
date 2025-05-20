@@ -26,8 +26,8 @@ const Index = () => {
       <Hero onCtaClick={handleCtaClick} />
 
       {/* Feature Section with Tabs - Añadido padding adicional */}
-      <section id="features" className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4">
+      <section id="features" className="py-24 bg-gray-50">
+        <div className="container mx-auto px-6">
           <FeaturesTabSection />
         </div>
       </section>
