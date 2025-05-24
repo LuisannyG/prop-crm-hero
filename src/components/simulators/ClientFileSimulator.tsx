@@ -18,7 +18,7 @@ const ClientFileSimulator = () => {
   const clientData = {
     name: "Ana Martínez",
     email: "ana.martinez@gmail.com",
-    phone: "+34 612 345 678",
+    phone: "+51 612 345 678",
     createdAt: "15/04/2023",
     status: "En seguimiento",
     source: "Facebook Ads",
