@@ -25,9 +25,9 @@ const Index = () => {
       {/* Hero Section */}
       <Hero onCtaClick={handleCtaClick} />
 
-      {/* Feature Section with Tabs - Añadido padding adicional */}
-      <section id="features" className="py-24 bg-gray-50">
-        <div className="container mx-auto px-6">
+      {/* Feature Section with Tabs - Mayor espaciado vertical para prevenir sobreposición */}
+      <section id="features" className="py-32 bg-gray-50">
+        <div className="container mx-auto px-4 md:px-8">
           <FeaturesTabSection />
         </div>
       </section>

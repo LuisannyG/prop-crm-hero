@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LucideIcon, Calendar, ChartBar, FileText, FileUser, Brain, BadgeInfo, Users } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 
 // Importamos los componentes de simulación de funcionalidades
 import AgendaSimulator from "@/components/simulators/AgendaSimulator";
@@ -98,24 +97,26 @@ const FeaturesTabSection = () => {
   ];
 
   return (
-    <div className="w-full py-6">
+    <div className="w-full">
       <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Funcionalidades de Proptor</h2>
       
       <Tabs defaultValue="agenda" className="w-full" onValueChange={setActiveTab}>
-        <TabsList className="mb-8 flex flex-wrap justify-center gap-2">
-          {features.map((feature) => (
-            <TabsTrigger 
-              key={feature.id} 
-              value={feature.id}
-              className={`px-4 py-2 ${activeTab === feature.id ? "bg-blue-500 text-white" : ""}`}
-            >
-              <span className="mr-2">{feature.emoji}</span>
-              {feature.title}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <div className="mb-12">
+          <TabsList className="flex flex-wrap justify-center gap-3 mb-4">
+            {features.map((feature) => (
+              <TabsTrigger 
+                key={feature.id} 
+                value={feature.id}
+                className={`px-4 py-3 ${activeTab === feature.id ? "bg-blue-500 text-white" : ""}`}
+              >
+                <span className="mr-2">{feature.emoji}</span>
+                {feature.title}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
         
-        <div className="mt-6">
+        <div className="mt-8 pt-4">
           <TabsContent value="agenda">
             <AgendaSimulator />
           </TabsContent>
