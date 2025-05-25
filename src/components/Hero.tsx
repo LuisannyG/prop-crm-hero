@@ -12,9 +12,9 @@ const Hero = ({ onCtaClick }: HeroProps) => {
       <div className="container mx-auto px-4 relative z-10 text-center">
         <div className="mb-8">
           <img 
-            src="/lovable-uploads/7f87d344-7b39-4657-9a96-b2610e07180d.png" 
+            src="/lovable-uploads/89ca4243-aabf-498d-a1e7-935df065beb9.png" 
             alt="Proptor Logo" 
-            className="w-80 md:w-96 mx-auto"
+            className="w-96 md:w-[600px] lg:w-[700px] mx-auto"
           />
         </div>
         <p className="text-2xl md:text-3xl text-white mb-6">
