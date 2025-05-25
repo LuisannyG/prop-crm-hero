@@ -52,12 +52,18 @@ const DashboardSimulator = () => {
           <CardContent className="pt-4">
             <div className="space-y-4">
               {funnelData.map((stage) => (
-                <div key={stage.name} className="space-y-1">
+                <div key={stage.name} className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="truncate pr-2">{stage.name}</span>
                     <span className="font-medium">{stage.value}</span>
                   </div>
-                  <Progress value={stage.value/1.2} className="h-3" indicatorClassName={`bg-[${stage.fill}]`} />
+                  <Progress 
+                    value={(stage.value / 120) * 100} 
+                    className="h-3" 
+                    style={{
+                      '--progress-background': stage.fill
+                    } as React.CSSProperties}
+                  />
                 </div>
               ))}
             </div>
@@ -77,7 +83,7 @@ const DashboardSimulator = () => {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    outerRadius={70}
+                    outerRadius={60}
                     fill="#8884d8"
                     dataKey="value"
                     label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}

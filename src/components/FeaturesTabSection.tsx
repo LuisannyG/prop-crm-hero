@@ -96,23 +96,44 @@ const FeaturesTabSection = () => {
     }
   ];
 
+  // Dividir las pestañas en dos filas
+  const firstRowFeatures = features.slice(0, 4);
+  const secondRowFeatures = features.slice(4);
+
   return (
     <div className="w-full max-w-7xl mx-auto px-4">
       <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Funcionalidades de Proptor</h2>
       
       <Tabs defaultValue="agenda" className="w-full" onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-7 mb-8">
-          {features.map((feature) => (
-            <TabsTrigger 
-              key={feature.id} 
-              value={feature.id}
-              className="flex flex-col items-center gap-1 p-3 text-xs"
-            >
-              <span className="text-lg">{feature.emoji}</span>
-              <span className="text-center leading-tight">{feature.title}</span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <div className="mb-8 space-y-2">
+          {/* Primera fila de pestañas */}
+          <div className="grid grid-cols-4 gap-2">
+            {firstRowFeatures.map((feature) => (
+              <TabsTrigger 
+                key={feature.id} 
+                value={feature.id}
+                className="flex flex-col items-center gap-1 p-3 text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              >
+                <span className="text-lg">{feature.emoji}</span>
+                <span className="text-center leading-tight">{feature.title}</span>
+              </TabsTrigger>
+            ))}
+          </div>
+          
+          {/* Segunda fila de pestañas */}
+          <div className="grid grid-cols-3 gap-2 max-w-3xl mx-auto">
+            {secondRowFeatures.map((feature) => (
+              <TabsTrigger 
+                key={feature.id} 
+                value={feature.id}
+                className="flex flex-col items-center gap-1 p-3 text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              >
+                <span className="text-lg">{feature.emoji}</span>
+                <span className="text-center leading-tight">{feature.title}</span>
+              </TabsTrigger>
+            ))}
+          </div>
+        </div>
         
         <div className="mt-8">
           {features.map((feature) => (
