@@ -11,6 +11,7 @@ const ContactForm = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     agentType: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,6 +31,7 @@ const ContactForm = () => {
         .insert({
           name: formData.name,
           email: formData.email,
+          phone: formData.phone,
           agent_type: formData.agentType,
         });
 
@@ -45,7 +47,7 @@ const ContactForm = () => {
           title: "¡Gracias por tu interés!",
           description: "Te hemos añadido a nuestra lista de espera. Te contactaremos pronto.",
         });
-        setFormData({ name: "", email: "", agentType: "" });
+        setFormData({ name: "", email: "", phone: "", agentType: "" });
       }
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -83,6 +85,19 @@ const ContactForm = () => {
               type="email"
               placeholder="tucorreo@ejemplo.com"
               value={formData.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="phone">Número de teléfono</Label>
+            <Input 
+              id="phone" 
+              name="phone"
+              type="tel"
+              placeholder="+52 123 456 7890"
+              value={formData.phone}
               onChange={handleChange}
               required
             />
