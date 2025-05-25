@@ -97,49 +97,49 @@ const FeaturesTabSection = () => {
   ];
 
   return (
-    <div className="w-full px-4">
-      <h2 className="text-3xl md:text-4xl font-bold text-center mb-8">Funcionalidades de Proptor</h2>
+    <div className="w-full max-w-7xl mx-auto px-4">
+      <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Funcionalidades de Proptor</h2>
       
       <Tabs defaultValue="agenda" className="w-full" onValueChange={setActiveTab}>
-        <div className="mb-8">
-          <div className="overflow-x-auto pb-4">
-            <TabsList className="grid w-full grid-cols-7 lg:grid-cols-7">
-              {features.map((feature) => (
-                <TabsTrigger 
-                  key={feature.id} 
-                  value={feature.id}
-                  className="text-xs sm:text-sm px-2 py-2"
-                >
-                  <span className="mr-1">{feature.emoji}</span>
-                  <span className="hidden sm:inline">{feature.title}</span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </div>
-        </div>
+        <TabsList className="grid w-full grid-cols-7 mb-8">
+          {features.map((feature) => (
+            <TabsTrigger 
+              key={feature.id} 
+              value={feature.id}
+              className="flex flex-col items-center gap-1 p-3 text-xs"
+            >
+              <span className="text-lg">{feature.emoji}</span>
+              <span className="text-center leading-tight">{feature.title}</span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
         
         <div className="mt-8">
-          <TabsContent value="agenda" className="mt-6">
-            <AgendaSimulator />
-          </TabsContent>
-          <TabsContent value="panel" className="mt-6">
-            <DashboardSimulator />
-          </TabsContent>
-          <TabsContent value="registro" className="mt-6">
-            <RecordSimulator />
-          </TabsContent>
-          <TabsContent value="reportes" className="mt-6">
-            <ReportsSimulator />
-          </TabsContent>
-          <TabsContent value="ficha" className="mt-6">
-            <ClientFileSimulator />
-          </TabsContent>
-          <TabsContent value="motor" className="mt-6">
-            <LearningEngineSimulator />
-          </TabsContent>
-          <TabsContent value="deteccion" className="mt-6">
-            <RiskDetectionSimulator />
-          </TabsContent>
+          {features.map((feature) => (
+            <TabsContent key={feature.id} value={feature.id} className="mt-6">
+              <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="text-2xl">{feature.emoji}</div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-800">{feature.title}</h3>
+                    <div className="text-sm text-gray-600 mt-1">
+                      {feature.description.map((desc, index) => (
+                        <p key={index} className="mb-1">• {desc}</p>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {feature.id === "agenda" && <AgendaSimulator />}
+              {feature.id === "panel" && <DashboardSimulator />}
+              {feature.id === "registro" && <RecordSimulator />}
+              {feature.id === "reportes" && <ReportsSimulator />}
+              {feature.id === "ficha" && <ClientFileSimulator />}
+              {feature.id === "motor" && <LearningEngineSimulator />}
+              {feature.id === "deteccion" && <RiskDetectionSimulator />}
+            </TabsContent>
+          ))}
         </div>
       </Tabs>
     </div>
