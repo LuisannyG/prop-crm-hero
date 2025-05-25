@@ -20,7 +20,8 @@ const Footer = () => {
             <div>
               <h3 className="font-semibold mb-2">Contacto</h3>
               <ul className="space-y-2">
-                <li><a href="mailto:info@proptor.com.pe" className="text-slate-300 hover:text-white transition">info@proptor.com.pe</a></li>
+                <li><a href="mailto:luisanny.perdomo@utec.edu.pe" className="text-slate-300 hover:text-white transition">luisanny.perdomo@utec.edu.pe</a></li>
+                <li><a href="mailto:alexandra.prieto@utec.edu.pe" className="text-slate-300 hover:text-white transition">alexandra.prieto@utec.edu.pe</a></li>
               </ul>
             </div>
           </div>
