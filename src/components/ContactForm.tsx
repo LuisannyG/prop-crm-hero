@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,13 +11,22 @@ const ContactForm = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    phone: "",
+    phone: "+51 ",
     agentType: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    
+    // Ensure phone always starts with +51
+    if (name === "phone") {
+      if (!value.startsWith("+51")) {
+        setFormData(prev => ({ ...prev, [name]: "+51 " + value.replace("+51", "").trim() }));
+        return;
+      }
+    }
+    
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
@@ -95,7 +105,7 @@ const ContactForm = () => {
               id="phone" 
               name="phone"
               type="tel"
-              placeholder="+52 123 456 7890"
+              placeholder="+51 987 654 321"
               value={formData.phone}
               onChange={handleChange}
               required
