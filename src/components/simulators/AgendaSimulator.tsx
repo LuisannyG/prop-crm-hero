@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -68,13 +69,15 @@ const AgendaSimulator = () => {
             Calendario
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-0 flex justify-center">
-          <Calendar
-            mode="single"
-            selected={date}
-            onSelect={setDate}
-            className="rounded-none border-0 w-full"
-          />
+        <CardContent className="p-0 flex justify-center items-center">
+          <div className="w-fit">
+            <Calendar
+              mode="single"
+              selected={date}
+              onSelect={setDate}
+              className="rounded-none border-0"
+            />
+          </div>
         </CardContent>
       </Card>
 
