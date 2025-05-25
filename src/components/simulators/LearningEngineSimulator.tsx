@@ -36,14 +36,22 @@ const LearningEngineSimulator = () => {
   return (
     <div className="space-y-6">
       {/* Mensaje de Vista Previa */}
-      <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-6">
-        <div className="flex items-center gap-3 mb-3">
-          <Eye className="h-6 w-6 text-purple-600" />
-          <h3 className="text-lg font-semibold text-purple-800">Vista Previa - Disponible en Plan Premium</h3>
+      <div className="bg-gradient-to-r from-purple-900 via-blue-900 to-purple-900 border-2 border-purple-400 rounded-lg p-6 shadow-2xl relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-blue-600/20 animate-pulse"></div>
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="bg-gradient-to-r from-purple-400 to-blue-400 rounded-full p-2">
+              <Eye className="h-6 w-6 text-white" />
+            </div>
+            <h3 className="text-xl font-bold text-white">Vista Previa - Disponible en Plan Premium</h3>
+            <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-black px-3 py-1 rounded-full text-xs font-bold animate-bounce">
+              🚀 PREMIUM
+            </div>
+          </div>
+          <p className="text-purple-100 text-sm mb-4 font-medium">
+            Esta es una representación de cómo se verá el Motor de Aprendizaje cuando esté completamente implementado.
+          </p>
         </div>
-        <p className="text-purple-700 text-sm mb-4">
-          Esta es una representación de cómo se verá el Motor de Aprendizaje cuando esté completamente implementado.
-        </p>
       </div>
 
       {/* Métricas de precisión del aprendizaje */}
@@ -101,7 +109,6 @@ const LearningEngineSimulator = () => {
         </CardContent>
       </Card>
 
-      {/* Estado del aprendizaje */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-blue-50 border-blue-200">
           <CardContent className="pt-6 text-center">

@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,14 +38,22 @@ const RiskDetectionSimulator = () => {
   return (
     <div className="space-y-6">
       {/* Mensaje de Vista Previa */}
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6">
-        <div className="flex items-center gap-3 mb-3">
-          <Eye className="h-6 w-6 text-blue-600" />
-          <h3 className="text-lg font-semibold text-blue-800">Vista Previa - Disponible en Plan Premium</h3>
+      <div className="bg-black border-2 border-red-500 rounded-lg p-6 shadow-2xl relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-red-600/10 to-orange-600/10 animate-pulse"></div>
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="bg-gradient-to-r from-red-500 to-orange-500 rounded-full p-2">
+              <Eye className="h-6 w-6 text-white" />
+            </div>
+            <h3 className="text-xl font-bold text-white">Vista Previa - Disponible en Plan Premium</h3>
+            <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold animate-bounce">
+              ⚠️ PREMIUM
+            </div>
+          </div>
+          <p className="text-gray-200 text-sm mb-4 font-medium">
+            Esta es una representación de cómo se verá la Detección de Riesgo de No Compra cuando esté completamente implementado.
+          </p>
         </div>
-        <p className="text-blue-700 text-sm mb-4">
-          Esta es una representación de cómo se verá la Detección de Riesgo de No Compra cuando esté completamente implementado.
-        </p>
       </div>
 
       {/* Panel de alertas */}
