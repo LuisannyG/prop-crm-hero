@@ -8,12 +8,15 @@ interface HeroProps {
 const Hero = ({ onCtaClick }: HeroProps) => {
   return (
     <section className="relative min-h-[90vh] bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 flex items-center justify-center overflow-hidden">
-      <div className="absolute inset-0 bg-[url('/placeholder.svg')] bg-center bg-cover opacity-10"></div>
       
       <div className="container mx-auto px-4 relative z-10 text-center">
-        <h1 className="text-6xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-blue-100 mb-4 leading-tight">
-          Proptor
-        </h1>
+        <div className="mb-8">
+          <img 
+            src="/lovable-uploads/7f87d344-7b39-4657-9a96-b2610e07180d.png" 
+            alt="Proptor Logo" 
+            className="w-80 md:w-96 mx-auto"
+          />
+        </div>
         <p className="text-2xl md:text-3xl text-white mb-6">
           Tu CRM inmobiliario inteligente para Perú
         </p>
