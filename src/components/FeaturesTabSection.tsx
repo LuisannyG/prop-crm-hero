@@ -79,6 +79,7 @@ const FeaturesTabSection = () => {
       id: "motor",
       title: "Motor de Aprendizaje",
       description: [
+        "Vista Previa - Disponible en Plan Premium",
         "La app analiza datos históricos para detectar patrones de comportamiento.",
         "Aprende con cada registro y mejora la precisión de sus predicciones."
       ],
@@ -89,6 +90,7 @@ const FeaturesTabSection = () => {
       id: "deteccion",
       title: "Detección de Riesgo de No Compra",
       description: [
+        "Vista Previa - Disponible en Plan Premium",
         "Considera interacción previa, tiempo sin respuesta y etapa actual en el proceso de venta."
       ],
       icon: BadgeInfo,
@@ -105,34 +107,34 @@ const FeaturesTabSection = () => {
       <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Funcionalidades de Proptor</h2>
       
       <Tabs defaultValue="agenda" className="w-full" onValueChange={setActiveTab}>
-        <div className="mb-8 space-y-2">
+        <div className="mb-8 space-y-4">
           {/* Primera fila de pestañas */}
-          <div className="grid grid-cols-4 gap-2">
+          <TabsList className="grid grid-cols-4 gap-2 h-auto bg-transparent p-0">
             {firstRowFeatures.map((feature) => (
               <TabsTrigger 
                 key={feature.id} 
                 value={feature.id}
-                className="flex flex-col items-center gap-1 p-3 text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                className="flex flex-col items-center gap-1 p-3 text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground h-auto"
               >
                 <span className="text-lg">{feature.emoji}</span>
                 <span className="text-center leading-tight">{feature.title}</span>
               </TabsTrigger>
             ))}
-          </div>
+          </TabsList>
           
           {/* Segunda fila de pestañas */}
-          <div className="grid grid-cols-3 gap-2 max-w-3xl mx-auto">
+          <TabsList className="grid grid-cols-3 gap-2 max-w-3xl mx-auto h-auto bg-transparent p-0">
             {secondRowFeatures.map((feature) => (
               <TabsTrigger 
                 key={feature.id} 
                 value={feature.id}
-                className="flex flex-col items-center gap-1 p-3 text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                className="flex flex-col items-center gap-1 p-3 text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground h-auto"
               >
                 <span className="text-lg">{feature.emoji}</span>
                 <span className="text-center leading-tight">{feature.title}</span>
               </TabsTrigger>
             ))}
-          </div>
+          </TabsList>
         </div>
         
         <div className="mt-8">
