@@ -1,9 +1,9 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -13,6 +13,7 @@ const ContactForm = () => {
     email: "",
     phone: "+51 ",
     agentType: "",
+    willingToPay: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -30,6 +31,10 @@ const ContactForm = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleRadioChange = (value: string) => {
+    setFormData(prev => ({ ...prev, willingToPay: value }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -42,6 +47,7 @@ const ContactForm = () => {
           email: formData.email,
           phone: formData.phone,
           agent_type: formData.agentType,
+          willing_to_pay: formData.willingToPay === "yes",
         });
 
       if (error) {
@@ -56,7 +62,7 @@ const ContactForm = () => {
           title: "¡Gracias por tu interés!",
           description: "Te hemos añadido a nuestra lista de espera. Te contactaremos pronto.",
         });
-        setFormData({ name: "", email: "", phone: "", agentType: "" });
+        setFormData({ name: "", email: "", phone: "+51 ", agentType: "", willingToPay: "" });
       }
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -126,6 +132,20 @@ const ContactForm = () => {
               <option value="independiente">Agentes Inmobiliarios Independientes</option>
               <option value="pequena_empresa">Pequeñas Empresas Inmobiliarias</option>
             </select>
+          </div>
+          
+          <div className="space-y-3">
+            <Label>¿Estarías dispuesto a pagar por funcionalidades avanzadas?</Label>
+            <RadioGroup value={formData.willingToPay} onValueChange={handleRadioChange}>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="yes" id="yes" />
+                <Label htmlFor="yes">Sí</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="no" id="no" />
+                <Label htmlFor="no">No</Label>
+              </div>
+            </RadioGroup>
           </div>
           
           <Button 
