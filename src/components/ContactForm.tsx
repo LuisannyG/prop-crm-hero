@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -114,9 +113,8 @@ const ContactForm = () => {
               required
             >
               <option value="">Seleccionar...</option>
-              <option value="independiente">Agente Independiente</option>
-              <option value="inmobiliaria">Pequeña Inmobiliaria</option>
-              <option value="otro">Otro</option>
+              <option value="independiente">Agentes Inmobiliarios Independientes</option>
+              <option value="pequena_empresa">Pequeñas Empresas Inmobiliarias</option>
             </select>
           </div>
           
