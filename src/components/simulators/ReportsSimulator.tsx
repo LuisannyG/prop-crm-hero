@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, Legend, PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
@@ -91,17 +90,11 @@ const ReportsSimulator = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
-              <div className="h-72">
-                <ChartContainer
-                  config={{
-                    clientes: { label: "Clientes" },
-                    visitas: { label: "Visitas" },
-                    cierres: { label: "Cierres" }
-                  }}
-                >
+              <div className="h-80 w-full">
+                <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={teamPerformanceData}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
@@ -112,7 +105,7 @@ const ReportsSimulator = () => {
                     <Bar name="Visitas" dataKey="visitas" fill="#82ca9d" />
                     <Bar name="Cierres" dataKey="cierres" fill="#ffc658" />
                   </BarChart>
-                </ChartContainer>
+                </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
@@ -159,11 +152,7 @@ const ReportsSimulator = () => {
             <CardContent className="pt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="h-72">
-                  <ChartContainer
-                    config={{
-                      valor: { label: "Valor" }
-                    }}
-                  >
+                  <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
                         data={channelData}
@@ -182,7 +171,7 @@ const ReportsSimulator = () => {
                       <Legend layout="vertical" verticalAlign="middle" align="right" />
                       <Tooltip />
                     </PieChart>
-                  </ChartContainer>
+                  </ResponsiveContainer>
                 </div>
                 <div className="space-y-6">
                   <div>
@@ -222,13 +211,7 @@ const ReportsSimulator = () => {
             </CardHeader>
             <CardContent className="pt-6">
               <div className="h-72">
-                <ChartContainer
-                  config={{
-                    clientes: { label: "Clientes" },
-                    visitas: { label: "Visitas" },
-                    cierres: { label: "Cierres" }
-                  }}
-                >
+                <ResponsiveContainer width="100%" height="100%">
                   <LineChart
                     data={timeData}
                     margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
@@ -242,7 +225,7 @@ const ReportsSimulator = () => {
                     <Line type="monotone" dataKey="visitas" stroke="#82ca9d" />
                     <Line type="monotone" dataKey="cierres" stroke="#ffc658" />
                   </LineChart>
-                </ChartContainer>
+                </ResponsiveContainer>
               </div>
 
               <div className="mt-6 grid grid-cols-3 gap-4 text-center">

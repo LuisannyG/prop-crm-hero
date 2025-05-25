@@ -79,9 +79,9 @@ const FeaturesTabSection = () => {
       id: "motor",
       title: "Motor de Aprendizaje",
       description: [
-        "Vista Previa - Disponible en Plan Premium",
         "La app analiza datos históricos para detectar patrones de comportamiento.",
-        "Aprende con cada registro y mejora la precisión de sus predicciones."
+        "Aprende con cada registro y mejora la precisión de sus predicciones.",
+        "Esta es una representación de cómo se verá el Motor de Aprendizaje cuando esté completamente implementado."
       ],
       icon: Brain,
       emoji: "🧠"
@@ -90,7 +90,6 @@ const FeaturesTabSection = () => {
       id: "deteccion",
       title: "Detección de Riesgo de No Compra",
       description: [
-        "Vista Previa - Disponible en Plan Premium",
         "Considera interacción previa, tiempo sin respuesta y etapa actual en el proceso de venta."
       ],
       icon: BadgeInfo,
@@ -147,7 +146,14 @@ const FeaturesTabSection = () => {
                     <h3 className="text-xl font-semibold text-gray-800">{feature.title}</h3>
                     <div className="text-sm text-gray-600 mt-1">
                       {feature.description.map((desc, index) => (
-                        <p key={index} className="mb-1">• {desc}</p>
+                        <p key={index} className="mb-1">
+                          {(feature.id === "motor" || feature.id === "deteccion") && index === 0 ? (
+                            <span className="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-1 rounded-full text-xs font-bold mr-2 animate-pulse">
+                              Vista Previa - Disponible en Plan Premium
+                            </span>
+                          ) : null}
+                          • {desc}
+                        </p>
                       ))}
                     </div>
                   </div>

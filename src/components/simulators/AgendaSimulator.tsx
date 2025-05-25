@@ -62,7 +62,7 @@ const AgendaSimulator = () => {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 max-w-7xl mx-auto">
-      <Card className="lg:col-span-2 shadow-md">
+      <Card className="lg:col-span-3 shadow-md">
         <CardHeader className="bg-blue-50">
           <CardTitle className="flex items-center text-blue-800">
             <CalendarIcon className="mr-2 h-5 w-5" />
@@ -70,18 +70,18 @@ const AgendaSimulator = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-4">
-          <div className="w-full">
+          <div className="w-full flex justify-center">
             <Calendar
               mode="single"
               selected={date}
               onSelect={setDate}
-              className="rounded-md border w-full"
+              className="rounded-md border w-full max-w-md scale-125"
             />
           </div>
         </CardContent>
       </Card>
 
-      <Card className="lg:col-span-3 shadow-md">
+      <Card className="lg:col-span-2 shadow-md">
         <CardHeader className="bg-blue-50">
           <CardTitle className="flex items-center text-blue-800">
             <Bell className="mr-2 h-5 w-5" />
