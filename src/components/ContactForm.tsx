@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({
@@ -19,19 +20,43 @@ const ContactForm = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate form submission
-    setTimeout(() => {
+    try {
+      const { error } = await supabase
+        .from('contact_submissions')
+        .insert({
+          name: formData.name,
+          email: formData.email,
+          agent_type: formData.agentType,
+        });
+
+      if (error) {
+        console.error('Error saving contact submission:', error);
+        toast({
+          title: "Error",
+          description: "Hubo un problema al enviar tu solicitud. Por favor, inténtalo de nuevo.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "¡Gracias por tu interés!",
+          description: "Te hemos añadido a nuestra lista de espera. Te contactaremos pronto.",
+        });
+        setFormData({ name: "", email: "", agentType: "" });
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error);
       toast({
-        title: "¡Gracias por tu interés!",
-        description: "Te hemos añadido a nuestra lista de espera. Te contactaremos pronto.",
+        title: "Error",
+        description: "Hubo un problema al enviar tu solicitud. Por favor, inténtalo de nuevo.",
+        variant: "destructive",
       });
-      setFormData({ name: "", email: "", agentType: "" });
+    } finally {
       setIsSubmitting(false);
-    }, 1500);
+    }
   };
 
   return (
