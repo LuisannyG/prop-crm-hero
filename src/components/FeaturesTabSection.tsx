@@ -103,20 +103,15 @@ const FeaturesTabSection = () => {
       <Tabs defaultValue="agenda" className="w-full" onValueChange={setActiveTab}>
         <div className="mb-8">
           <div className="overflow-x-auto pb-4">
-            <TabsList className="inline-flex h-auto p-1 bg-gray-100 rounded-lg min-w-max">
+            <TabsList className="grid w-full grid-cols-7 lg:grid-cols-7">
               {features.map((feature) => (
                 <TabsTrigger 
                   key={feature.id} 
                   value={feature.id}
-                  className={`px-3 py-2 mx-1 rounded-md text-sm whitespace-nowrap transition-all ${
-                    activeTab === feature.id 
-                      ? "bg-blue-500 text-white shadow-md" 
-                      : "bg-transparent text-gray-700 hover:bg-gray-200"
-                  }`}
+                  className="text-xs sm:text-sm px-2 py-2"
                 >
-                  <span className="mr-2">{feature.emoji}</span>
+                  <span className="mr-1">{feature.emoji}</span>
                   <span className="hidden sm:inline">{feature.title}</span>
-                  <span className="sm:hidden">{feature.emoji}</span>
                 </TabsTrigger>
               ))}
             </TabsList>

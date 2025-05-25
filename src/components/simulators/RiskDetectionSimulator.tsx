@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { AlertTriangle, Filter, ArrowUpDown, Clock, Calendar, MessageSquare } from "lucide-react";
+import { AlertTriangle, Filter, ArrowUpDown, Clock, Calendar, MessageSquare, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,12 +12,12 @@ const RiskDetectionSimulator = () => {
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortOrder, setSortOrder] = useState("risk-desc");
 
-  // Datos simulados de clientes en riesgo
+  // Datos simulados de clientes en riesgo con ubicaciones peruanas
   const riskClients = [
     {
       id: 1,
       name: "Carlos López",
-      property: "Ático en Chamberí",
+      property: "Departamento en San Isidro",
       riskScore: 85,
       lastContact: 12,
       stage: "Visita realizada",
@@ -27,7 +27,7 @@ const RiskDetectionSimulator = () => {
     {
       id: 2,
       name: "María Rodríguez",
-      property: "Piso en Salamanca",
+      property: "Casa en La Molina",
       riskScore: 72,
       lastContact: 8,
       stage: "Negociación",
@@ -37,7 +37,7 @@ const RiskDetectionSimulator = () => {
     {
       id: 3,
       name: "Juan Pérez",
-      property: "Chalet en La Moraleja",
+      property: "Casa en Surco",
       riskScore: 65,
       lastContact: 5,
       stage: "Visita programada",
@@ -47,7 +47,7 @@ const RiskDetectionSimulator = () => {
     {
       id: 4,
       name: "Laura González",
-      property: "Dúplex en Retiro",
+      property: "Dúplex en Miraflores",
       riskScore: 45,
       lastContact: 3,
       stage: "Interesado",
@@ -57,7 +57,7 @@ const RiskDetectionSimulator = () => {
     {
       id: 5,
       name: "Miguel Torres",
-      property: "Local en Gran Vía",
+      property: "Local en Centro de Lima",
       riskScore: 92,
       lastContact: 15,
       stage: "Documentación enviada",
@@ -94,6 +94,10 @@ const RiskDetectionSimulator = () => {
           <CardTitle className="text-blue-800 flex items-center gap-2">
             <AlertTriangle className="h-5 w-5" />
             Detección de Riesgo de No Compra
+            <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
+              <Crown className="h-3 w-3 mr-1" />
+              Premium
+            </Badge>
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-6">
@@ -158,7 +162,7 @@ const RiskDetectionSimulator = () => {
                 }`}>
                   <CardContent className="p-4">
                     <div className="flex flex-col md:flex-row justify-between gap-4">
-                      <div className="space-y-2">
+                      <div className="space-y-2 flex-1">
                         <div className="flex items-center gap-2">
                           <h3 className="text-lg font-medium">{client.name}</h3>
                           {client.status === "recovered" && (
@@ -186,8 +190,8 @@ const RiskDetectionSimulator = () => {
                           ))}
                         </div>
                       </div>
-                      <div className="flex flex-col items-center justify-center min-w-[130px]">
-                        <div className="text-center mb-2">
+                      <div className="flex flex-col items-center justify-center min-w-[150px] max-w-[150px]">
+                        <div className="text-center mb-2 w-full">
                           <div className="text-sm text-gray-500">Riesgo de pérdida</div>
                           <div className={`text-2xl font-bold ${
                             client.riskScore >= 80 ? "text-red-600" : 
@@ -199,19 +203,17 @@ const RiskDetectionSimulator = () => {
                         </div>
                         <Progress 
                           value={client.riskScore} 
-                          className="h-2 w-full" 
+                          className="h-2 w-full mb-3" 
                           indicatorClassName={`${
                             client.riskScore >= 80 ? "bg-red-500" : 
                             client.riskScore >= 60 ? "bg-orange-500" : 
                             "bg-yellow-500"
                           }`}
                         />
-                        <div className="mt-3 flex">
-                          <Button size="sm" className="w-full">
-                            <MessageSquare className="h-4 w-4 mr-1" />
-                            Contactar
-                          </Button>
-                        </div>
+                        <Button size="sm" className="w-full">
+                          <MessageSquare className="h-4 w-4 mr-1" />
+                          Contactar
+                        </Button>
                       </div>
                     </div>
                   </CardContent>
