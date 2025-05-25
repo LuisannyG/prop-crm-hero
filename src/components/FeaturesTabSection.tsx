@@ -97,45 +97,52 @@ const FeaturesTabSection = () => {
   ];
 
   return (
-    <div className="w-full">
-      <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Funcionalidades de Proptor</h2>
+    <div className="w-full px-4">
+      <h2 className="text-3xl md:text-4xl font-bold text-center mb-8">Funcionalidades de Proptor</h2>
       
       <Tabs defaultValue="agenda" className="w-full" onValueChange={setActiveTab}>
-        <div className="mb-12">
-          <TabsList className="flex flex-wrap justify-center gap-3 mb-4">
-            {features.map((feature) => (
-              <TabsTrigger 
-                key={feature.id} 
-                value={feature.id}
-                className={`px-4 py-3 ${activeTab === feature.id ? "bg-blue-500 text-white" : ""}`}
-              >
-                <span className="mr-2">{feature.emoji}</span>
-                {feature.title}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+        <div className="mb-8">
+          <div className="overflow-x-auto pb-4">
+            <TabsList className="inline-flex h-auto p-1 bg-gray-100 rounded-lg min-w-max">
+              {features.map((feature) => (
+                <TabsTrigger 
+                  key={feature.id} 
+                  value={feature.id}
+                  className={`px-3 py-2 mx-1 rounded-md text-sm whitespace-nowrap transition-all ${
+                    activeTab === feature.id 
+                      ? "bg-blue-500 text-white shadow-md" 
+                      : "bg-transparent text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  <span className="mr-2">{feature.emoji}</span>
+                  <span className="hidden sm:inline">{feature.title}</span>
+                  <span className="sm:hidden">{feature.emoji}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
         </div>
         
-        <div className="mt-8 pt-4">
-          <TabsContent value="agenda">
+        <div className="mt-8">
+          <TabsContent value="agenda" className="mt-6">
             <AgendaSimulator />
           </TabsContent>
-          <TabsContent value="panel">
+          <TabsContent value="panel" className="mt-6">
             <DashboardSimulator />
           </TabsContent>
-          <TabsContent value="registro">
+          <TabsContent value="registro" className="mt-6">
             <RecordSimulator />
           </TabsContent>
-          <TabsContent value="reportes">
+          <TabsContent value="reportes" className="mt-6">
             <ReportsSimulator />
           </TabsContent>
-          <TabsContent value="ficha">
+          <TabsContent value="ficha" className="mt-6">
             <ClientFileSimulator />
           </TabsContent>
-          <TabsContent value="motor">
+          <TabsContent value="motor" className="mt-6">
             <LearningEngineSimulator />
           </TabsContent>
-          <TabsContent value="deteccion">
+          <TabsContent value="deteccion" className="mt-6">
             <RiskDetectionSimulator />
           </TabsContent>
         </div>

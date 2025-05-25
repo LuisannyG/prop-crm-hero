@@ -61,25 +61,27 @@ const AgendaSimulator = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <Card className="md:col-span-1 shadow-md">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-7xl mx-auto">
+      <Card className="lg:col-span-4 shadow-md">
         <CardHeader className="bg-blue-50">
           <CardTitle className="flex items-center text-blue-800">
             <CalendarIcon className="mr-2 h-5 w-5" />
             Calendario
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-4">
-          <Calendar
-            mode="single"
-            selected={date}
-            onSelect={setDate}
-            className="rounded-md border"
-          />
+        <CardContent className="pt-4 overflow-hidden">
+          <div className="w-full flex justify-center">
+            <Calendar
+              mode="single"
+              selected={date}
+              onSelect={setDate}
+              className="rounded-md border w-full max-w-none scale-90 lg:scale-100"
+            />
+          </div>
         </CardContent>
       </Card>
 
-      <Card className="md:col-span-2 shadow-md">
+      <Card className="lg:col-span-8 shadow-md">
         <CardHeader className="bg-blue-50">
           <CardTitle className="flex items-center text-blue-800">
             <Bell className="mr-2 h-5 w-5" />
@@ -87,11 +89,11 @@ const AgendaSimulator = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-4">
-          <div className="space-y-4">
+          <div className="space-y-4 max-h-96 overflow-y-auto">
             {tasks.map(task => (
               <div 
                 key={task.id}
-                className={`flex items-center justify-between p-4 rounded-lg border ${
+                className={`flex flex-col lg:flex-row lg:items-center justify-between p-4 rounded-lg border gap-3 ${
                   completedTasks.includes(task.id) 
                     ? 'bg-gray-100 border-gray-200' 
                     : task.priority === 'alta' 
@@ -101,7 +103,7 @@ const AgendaSimulator = () => {
                         : 'bg-green-50 border-green-200'
                 }`}
               >
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-3 flex-1">
                   <div className={`mt-1 ${
                     completedTasks.includes(task.id) 
                       ? 'text-gray-400' 
@@ -117,27 +119,28 @@ const AgendaSimulator = () => {
                       <Clock className="h-5 w-5" />
                     )}
                   </div>
-                  <div className={completedTasks.includes(task.id) ? 'line-through text-gray-400' : ''}>
-                    <div className="font-medium">{task.title}</div>
+                  <div className={`flex-1 ${completedTasks.includes(task.id) ? 'line-through text-gray-400' : ''}`}>
+                    <div className="font-medium text-sm lg:text-base">{task.title}</div>
                     <div className="text-sm text-gray-600">{task.time} - {task.stage}</div>
                     <div className="text-xs text-gray-500">
                       {task.days > 0 ? `${task.days} días sin contacto` : 'Hoy'}
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-shrink-0">
                   <Badge variant={
                     task.priority === 'alta' ? 'destructive' : 
                     task.priority === 'media' ? 'default' : 'outline'
-                  }>
+                  } className="text-xs">
                     {task.priority}
                   </Badge>
                   <Button 
                     size="sm"
                     variant={completedTasks.includes(task.id) ? "outline" : "default"}
                     onClick={() => handleCompleteTask(task.id)}
+                    className="text-xs px-2 py-1"
                   >
-                    <CheckCircle className="h-4 w-4 mr-1" />
+                    <CheckCircle className="h-3 w-3 mr-1" />
                     {completedTasks.includes(task.id) ? 'Deshacer' : 'Completar'}
                   </Button>
                 </div>
