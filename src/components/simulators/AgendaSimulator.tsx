@@ -69,13 +69,13 @@ const AgendaSimulator = () => {
             Calendario
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-4">
+        <CardContent className="p-4">
           <div className="w-full flex justify-center">
             <Calendar
               mode="single"
               selected={date}
               onSelect={setDate}
-              className="rounded-md border w-full max-w-md scale-125"
+              className="rounded-md border w-full max-w-full scale-110"
             />
           </div>
         </CardContent>
