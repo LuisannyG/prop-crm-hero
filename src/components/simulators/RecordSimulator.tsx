@@ -32,11 +32,11 @@ const RecordSimulator = () => {
   };
 
   const clients = [
-    "Ana Martínez - Ático en Chamberí",
-    "Carlos López - Piso en Salamanca",
-    "Laura Sánchez - Chalet en La Moraleja",
-    "Roberto García - Oficina en Azca",
-    "María Rodríguez - Dúplex en Retiro"
+    "Ana Martínez - Ático en San Isidro",
+    "Carlos López - Departamento en Miraflores", 
+    "Laura Sánchez - Casa en La Molina",
+    "Roberto García - Oficina en San Borja",
+    "María Rodríguez - Dúplex en Surco"
   ];
 
   return (
