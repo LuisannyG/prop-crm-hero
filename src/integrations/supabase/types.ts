@@ -17,6 +17,7 @@ export type Database = {
           id: string
           name: string
           phone: string | null
+          willing_to_pay: boolean | null
         }
         Insert: {
           agent_type: string
@@ -25,6 +26,7 @@ export type Database = {
           id?: string
           name: string
           phone?: string | null
+          willing_to_pay?: boolean | null
         }
         Update: {
           agent_type?: string
@@ -33,6 +35,7 @@ export type Database = {
           id?: string
           name?: string
           phone?: string | null
+          willing_to_pay?: boolean | null
         }
         Relationships: []
       }
