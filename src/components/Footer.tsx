@@ -28,6 +28,7 @@ const Footer = () => {
         </div>
         <div className="border-t border-slate-800 mt-8 pt-8 text-center">
           <p className="text-slate-400">© {new Date().getFullYear()} Proptor. Todos los derechos reservados.</p>
+          <p className="text-yellow-400 mt-2 font-medium">⚠️ Esta aplicación está actualmente en desarrollo</p>
         </div>
       </div>
     </footer>
