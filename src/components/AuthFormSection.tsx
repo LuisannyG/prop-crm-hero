@@ -166,7 +166,7 @@ const AuthFormSection = () => {
                   className="w-full bg-blue-500 hover:bg-blue-600 text-white"
                   disabled={loading}
                 >
-                  {loading ? 'Cargando...' : (isLogin ? 'Conoce la Nueva Experiencia' : 'Conoce la Experiencia')}
+                  {loading ? 'Cargando...' : (isLogin ? 'Iniciar sesión' : 'Conoce la Experiencia')}
                 </Button>
               </form>
 
