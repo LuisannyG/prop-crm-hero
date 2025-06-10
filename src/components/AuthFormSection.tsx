@@ -88,10 +88,10 @@ const AuthFormSection = () => {
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-white mb-4">
-              {isLogin ? 'Iniciar Sesión' : 'Conoce la Experiencia'}
+              {isLogin ? 'Conoce la Nueva Experiencia' : 'Conoce la Experiencia'}
             </h2>
             <p className="text-blue-200">
-              {isLogin ? 'Accede a tu cuenta' : 'Únete a miles de agentes inmobiliarios'}
+              {isLogin ? 'Descubre una nueva forma de gestionar tus clientes' : 'Únete a miles de agentes inmobiliarios'}
             </p>
           </div>
 
@@ -166,7 +166,7 @@ const AuthFormSection = () => {
                   className="w-full bg-blue-500 hover:bg-blue-600 text-white"
                   disabled={loading}
                 >
-                  {loading ? 'Cargando...' : (isLogin ? 'Iniciar Sesión' : 'Conoce la Experiencia')}
+                  {loading ? 'Cargando...' : (isLogin ? 'Conoce la Nueva Experiencia' : 'Conoce la Experiencia')}
                 </Button>
               </form>
 
