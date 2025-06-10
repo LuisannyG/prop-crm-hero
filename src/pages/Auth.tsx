@@ -9,6 +9,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
+import Hero from '@/components/Hero';
+import BenefitsSection from '@/components/BenefitsSection';
+import PricingSection from '@/components/PricingSection';
+import FAQsSection from '@/components/FAQsSection';
+import Footer from '@/components/Footer';
+import { benefits, plans, faqs } from '@/data/proptorData';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -82,114 +88,134 @@ const Auth = () => {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <img 
-            src="/lovable-uploads/c4d29766-05b3-4827-aa8f-04a07ab56aa9.png" 
-            alt="Proptor Logo" 
-            className="w-64 mx-auto mb-6"
-          />
-          <h1 className="text-2xl font-bold text-white">
-            {isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}
-          </h1>
-          <p className="text-blue-200 mt-2">
-            Tu CRM inmobiliario inteligente para Perú
-          </p>
-        </div>
+  const handleCtaClick = () => {
+    setIsLogin(false);
+    // Scroll to auth form
+    const authSection = document.getElementById('auth-form');
+    if (authSection) {
+      authSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
-        <Card className="bg-white/10 backdrop-blur-sm border-white/20">
-          <CardHeader>
-            <CardTitle className="text-white text-center">
-              {isLogin ? 'Accede a tu cuenta' : 'Regístrate gratis'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {!isLogin && (
-                <>
+  return (
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <Hero onCtaClick={handleCtaClick} />
+      
+      {/* Auth Form Section */}
+      <section id="auth-form" className="py-20 bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900">
+        <div className="container mx-auto px-4 flex justify-center">
+          <div className="w-full max-w-md">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-white mb-4">
+                {isLogin ? 'Iniciar Sesión' : 'Crear Cuenta Gratuita'}
+              </h2>
+              <p className="text-blue-200">
+                {isLogin ? 'Accede a tu cuenta' : 'Únete a miles de agentes inmobiliarios'}
+              </p>
+            </div>
+
+            <Card className="bg-white/10 backdrop-blur-sm border-white/20">
+              <CardHeader>
+                <CardTitle className="text-white text-center">
+                  {isLogin ? 'Bienvenido de vuelta' : 'Comienza gratis hoy'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  {!isLogin && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="fullName" className="text-white">Nombre completo</Label>
+                        <Input
+                          id="fullName"
+                          type="text"
+                          value={fullName}
+                          onChange={(e) => setFullName(e.target.value)}
+                          required={!isLogin}
+                          className="bg-white/20 border-white/30 text-white placeholder:text-gray-300"
+                          placeholder="Tu nombre completo"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="agentType" className="text-white">Tipo de agente</Label>
+                        <Select value={agentType} onValueChange={setAgentType} required={!isLogin}>
+                          <SelectTrigger className="bg-white/20 border-white/30 text-white">
+                            <SelectValue placeholder="Selecciona tu tipo" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="independiente">Agente Independiente</SelectItem>
+                            <SelectItem value="inmobiliaria">Inmobiliaria</SelectItem>
+                            <SelectItem value="corredor">Corredor</SelectItem>
+                            <SelectItem value="desarrollador">Desarrollador</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </>
+                  )}
+
                   <div className="space-y-2">
-                    <Label htmlFor="fullName" className="text-white">Nombre completo</Label>
+                    <Label htmlFor="email" className="text-white">Email</Label>
                     <Input
-                      id="fullName"
-                      type="text"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      required={!isLogin}
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
                       className="bg-white/20 border-white/30 text-white placeholder:text-gray-300"
-                      placeholder="Tu nombre completo"
+                      placeholder="tu@email.com"
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
-                    <Label htmlFor="agentType" className="text-white">Tipo de agente</Label>
-                    <Select value={agentType} onValueChange={setAgentType} required={!isLogin}>
-                      <SelectTrigger className="bg-white/20 border-white/30 text-white">
-                        <SelectValue placeholder="Selecciona tu tipo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="independiente">Agente Independiente</SelectItem>
-                        <SelectItem value="inmobiliaria">Inmobiliaria</SelectItem>
-                        <SelectItem value="corredor">Corredor</SelectItem>
-                        <SelectItem value="desarrollador">Desarrollador</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="password" className="text-white">Contraseña</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      className="bg-white/20 border-white/30 text-white placeholder:text-gray-300"
+                      placeholder="••••••••"
+                    />
                   </div>
-                </>
-              )}
 
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-white">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="bg-white/20 border-white/30 text-white placeholder:text-gray-300"
-                  placeholder="tu@email.com"
-                />
-              </div>
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+                    disabled={loading}
+                  >
+                    {loading ? 'Cargando...' : (isLogin ? 'Iniciar Sesión' : 'Crear Cuenta Gratuita')}
+                  </Button>
+                </form>
 
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-white">Contraseña</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="bg-white/20 border-white/30 text-white placeholder:text-gray-300"
-                  placeholder="••••••••"
-                />
-              </div>
-
-              <Button 
-                type="submit" 
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white"
-                disabled={loading}
-              >
-                {loading ? 'Cargando...' : (isLogin ? 'Iniciar Sesión' : 'Crear Cuenta')}
-              </Button>
-            </form>
-
-            <div className="mt-6 text-center">
-              <button
-                type="button"
-                onClick={() => setIsLogin(!isLogin)}
-                className="text-blue-200 hover:text-white transition-colors"
-              >
-                {isLogin ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia sesión'}
-              </button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="text-center">
-          <p className="text-yellow-400 font-medium">⚠️ Esta aplicación está actualmente en desarrollo</p>
+                <div className="mt-6 text-center">
+                  <button
+                    type="button"
+                    onClick={() => setIsLogin(!isLogin)}
+                    className="text-blue-200 hover:text-white transition-colors"
+                  >
+                    {isLogin ? '¿No tienes cuenta? Regístrate gratis' : '¿Ya tienes cuenta? Inicia sesión'}
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* Benefits Section */}
+      <BenefitsSection benefits={benefits} />
+      
+      {/* Pricing Section */}
+      <PricingSection plans={plans} onCtaClick={handleCtaClick} />
+      
+      {/* FAQ Section */}
+      <FAQsSection faqs={faqs} />
+      
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };
