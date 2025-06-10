@@ -98,7 +98,7 @@ const AuthFormSection = () => {
           <Card className="bg-white/10 backdrop-blur-sm border-white/20">
             <CardHeader>
               <CardTitle className="text-white text-center">
-                {isLogin ? 'Bienvenido de vuelta' : 'Comienza hoy'}
+                {isLogin ? 'Inicia sesión' : 'Comienza hoy'}
               </CardTitle>
             </CardHeader>
             <CardContent>
