@@ -2,7 +2,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Lock, Star, TrendingUp, Zap, BarChart, Brain, Target } from 'lucide-react';
-import LearningEngineSimulator from '@/components/simulators/LearningEngineSimulator';
+import AdvancedLearningEngineSimulator from '@/components/simulators/AdvancedLearningEngineSimulator';
 
 interface PaidFeatureAlertProps {
   title: string;
@@ -81,17 +81,17 @@ const PaidFeatureAlert = ({ title, description, features, icon }: PaidFeatureAle
         </CardContent>
       </Card>
 
-      {/* Preview Section */}
+      {/* Preview Section - Simulador Avanzado */}
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-2">
             <BarChart className="w-6 h-6 text-blue-600" />
-            Vista Previa del Motor de Aprendizaje
+            Vista Previa del Motor de Aprendizaje IA
           </h2>
-          <p className="text-gray-600">Así es como se vería tu análisis predictivo y reportes automáticos</p>
+          <p className="text-gray-600">Experimenta el poder del análisis predictivo y reportes automáticos inteligentes</p>
         </div>
         
-        <LearningEngineSimulator />
+        <AdvancedLearningEngineSimulator />
       </div>
     </div>
   );
