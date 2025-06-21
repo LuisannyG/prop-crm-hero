@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, fullName: string) => Promise<{ error: any; data?: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   loading: boolean;
@@ -27,11 +27,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
-        
-        // Create profile if user signs up
-        if (event === 'SIGNED_IN' && session?.user) {
-          console.log('User signed in, checking profile...');
-        }
       }
     );
 
@@ -54,7 +49,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           data: {
             full_name: fullName,
           },
-          emailRedirectTo: `${window.location.origin}/dashboard`
+          emailRedirectTo: undefined // Sin confirmación por email
         }
       });
 
@@ -64,7 +59,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       console.log('Sign up successful:', data);
-      return { error: null };
+      return { error: null, data };
     } catch (error) {
       console.error('Sign up exception:', error);
       return { error };

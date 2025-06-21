@@ -32,22 +32,46 @@ const AuthForm = () => {
       let result;
       if (isLogin) {
         result = await signIn(formData.email, formData.password);
+        if (!result.error) {
+          toast({
+            title: '¡Bienvenido!',
+            description: 'Has iniciado sesión correctamente',
+          });
+          navigate('/dashboard');
+        }
       } else {
         result = await signUp(formData.email, formData.password, formData.fullName);
+        if (!result.error) {
+          toast({
+            title: '¡Cuenta creada exitosamente!',
+            description: 'Ya puedes acceder a tu dashboard',
+          });
+          // El usuario se registra y automáticamente se loguea
+          navigate('/dashboard');
+        }
       }
 
       if (result.error) {
+        let errorMessage = 'Ha ocurrido un error';
+        
+        // Manejar errores específicos
+        if (result.error.message?.includes('User already registered')) {
+          errorMessage = 'Este email ya está registrado. Intenta iniciar sesión.';
+        } else if (result.error.message?.includes('Invalid login credentials')) {
+          errorMessage = 'Email o contraseña incorrectos';
+        } else if (result.error.message?.includes('Password should be at least')) {
+          errorMessage = 'La contraseña debe tener al menos 6 caracteres';
+        } else if (result.error.message?.includes('Unable to validate email address')) {
+          errorMessage = 'Email inválido';
+        } else if (result.error.message) {
+          errorMessage = result.error.message;
+        }
+        
         toast({
           title: 'Error',
-          description: result.error.message || 'Ha ocurrido un error',
+          description: errorMessage,
           variant: 'destructive',
         });
-      } else {
-        toast({
-          title: isLogin ? '¡Bienvenido!' : '¡Cuenta creada!',
-          description: isLogin ? 'Has iniciado sesión correctamente' : 'Tu cuenta ha sido creada exitosamente',
-        });
-        navigate('/dashboard');
       }
     } catch (error) {
       toast({
@@ -108,10 +132,11 @@ const AuthForm = () => {
                 id="password"
                 name="password"
                 type="password"
-                placeholder="Tu contraseña"
+                placeholder={isLogin ? "Tu contraseña" : "Mínimo 6 caracteres"}
                 value={formData.password}
                 onChange={handleChange}
                 required
+                minLength={6}
               />
             </div>
             
