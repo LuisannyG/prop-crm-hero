@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -33,6 +32,7 @@ const Contacts = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const [salesFunnelData, setSalesFunnelData] = useState<{[key: string]: string}>({});
   const [loading, setLoading] = useState(true);
   const [isAddingContact, setIsAddingContact] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
@@ -45,12 +45,26 @@ const Contacts = () => {
     notes: '',
     status: 'prospect',
     client_type: '',
-    acquisition_source: ''
+    acquisition_source: '',
+    sales_stage: 'contacto_inicial_recibido'
   });
+
+  const salesStages = [
+    { key: 'contacto_inicial_recibido', name: 'Contacto inicial recibido' },
+    { key: 'primer_contacto_activo', name: 'Primer contacto activo' },
+    { key: 'llenado_ficha', name: 'Llenado de ficha' },
+    { key: 'seguimiento_inicial', name: 'Seguimiento inicial' },
+    { key: 'agendamiento_visitas', name: 'Agendamiento de visitas o reuniones' },
+    { key: 'presentacion_personalizada', name: 'Presentación personalizada' },
+    { key: 'negociacion', name: 'Negociación' },
+    { key: 'cierre_firma_contrato', name: 'Cierre / Firma de contrato' },
+    { key: 'postventa_fidelizacion', name: 'Postventa y fidelización' }
+  ];
 
   useEffect(() => {
     if (user) {
       fetchContacts();
+      fetchSalesFunnelData();
     }
   }, [user]);
 
@@ -75,6 +89,26 @@ const Contacts = () => {
     }
   };
 
+  const fetchSalesFunnelData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('sales_funnel')
+        .select('contact_id, stage')
+        .order('stage_date', { ascending: false });
+
+      if (error) throw error;
+      
+      const funnelMap = (data || []).reduce((acc, item) => {
+        acc[item.contact_id] = item.stage;
+        return acc;
+      }, {} as {[key: string]: string});
+      
+      setSalesFunnelData(funnelMap);
+    } catch (error) {
+      console.error('Error fetching sales funnel data:', error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -91,9 +125,19 @@ const Contacts = () => {
 
     try {
       const contactData = {
-        ...formData,
+        full_name: formData.full_name,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        district: formData.district,
+        notes: formData.notes,
+        status: formData.status,
+        client_type: formData.client_type,
+        acquisition_source: formData.acquisition_source,
         user_id: user.id
       };
+
+      let contactId = editingContact?.id;
 
       if (editingContact) {
         const { error } = await supabase
@@ -104,16 +148,37 @@ const Contacts = () => {
         if (error) throw error;
         toast({ title: 'Contacto actualizado exitosamente' });
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('contacts')
-          .insert([contactData]);
+          .insert([contactData])
+          .select()
+          .single();
 
         if (error) throw error;
+        contactId = data.id;
         toast({ title: 'Contacto agregado exitosamente' });
+      }
+
+      // Update or insert sales funnel stage
+      if (contactId) {
+        const { error: funnelError } = await supabase
+          .from('sales_funnel')
+          .upsert({
+            contact_id: contactId,
+            user_id: user.id,
+            stage: formData.sales_stage,
+            stage_date: new Date().toISOString(),
+            notes: `Etapa actualizada: ${salesStages.find(s => s.key === formData.sales_stage)?.name}`
+          });
+
+        if (funnelError) {
+          console.error('Error updating sales funnel:', funnelError);
+        }
       }
 
       resetForm();
       fetchContacts();
+      fetchSalesFunnelData();
     } catch (error) {
       console.error('Error saving contact:', error);
       toast({
@@ -154,7 +219,8 @@ const Contacts = () => {
       notes: '',
       status: 'prospect',
       client_type: '',
-      acquisition_source: ''
+      acquisition_source: '',
+      sales_stage: 'contacto_inicial_recibido'
     });
     setIsAddingContact(false);
     setEditingContact(null);
@@ -170,7 +236,8 @@ const Contacts = () => {
       notes: contact.notes || '',
       status: contact.status,
       client_type: contact.client_type || '',
-      acquisition_source: contact.acquisition_source || ''
+      acquisition_source: contact.acquisition_source || '',
+      sales_stage: salesFunnelData[contact.id] || 'contacto_inicial_recibido'
     });
     setEditingContact(contact);
     setIsAddingContact(true);
@@ -333,6 +400,21 @@ const Contacts = () => {
                   </Select>
                 </div>
                 <div>
+                  <Label htmlFor="sales_stage">Etapa de Venta *</Label>
+                  <Select value={formData.sales_stage} onValueChange={(value) => setFormData({...formData, sales_stage: value})} required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar etapa" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white z-50">
+                      {salesStages.map((stage) => (
+                        <SelectItem key={stage.key} value={stage.key}>
+                          {stage.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
                   <Label htmlFor="notes">Notas</Label>
                   <Textarea
                     id="notes"
@@ -371,6 +453,7 @@ const Contacts = () => {
                     <TableHead>Contacto</TableHead>
                     <TableHead>Tipo</TableHead>
                     <TableHead>Estado</TableHead>
+                    <TableHead>Etapa de Venta</TableHead>
                     <TableHead>Fuente</TableHead>
                     <TableHead>Fecha</TableHead>
                     <TableHead>Acciones</TableHead>
@@ -419,6 +502,13 @@ const Contacts = () => {
                         <Badge className={getStatusColor(contact.status)}>
                           {contact.status === 'prospect' ? 'Prospecto' : 'Cliente'}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {salesFunnelData[contact.id] && (
+                          <Badge variant="outline">
+                            {salesStages.find(s => s.key === salesFunnelData[contact.id])?.name || salesFunnelData[contact.id]}
+                          </Badge>
+                        )}
                       </TableCell>
                       <TableCell>
                         {contact.acquisition_source && (

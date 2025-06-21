@@ -67,7 +67,7 @@ interface UserProfile {
 }
 
 // Move COLORS array to the top before it's used
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#FF6B6B', '#4ECDC4', '#95E1D3'];
 
 const EnhancedDashboardSimulator = () => {
   const { user } = useAuth();
@@ -197,35 +197,25 @@ const EnhancedDashboardSimulator = () => {
   const totalReminders = reminders.length;
   const highPriorityReminders = reminders.filter(r => r.priority === 'alta' && r.status === 'pendiente').length;
 
-  // Updated sales funnel stages
+  // Updated sales funnel stages with specific colors
   const funnelStages = [
-    'contacto_inicial_recibido',
-    'primer_contacto_activo', 
-    'llenado_ficha',
-    'seguimiento_inicial',
-    'agendamiento_visitas',
-    'presentacion_personalizada',
-    'negociacion',
-    'cierre_firma_contrato',
-    'postventa_fidelizacion'
+    { key: 'contacto_inicial_recibido', name: 'Contacto inicial recibido', color: '#FF6B6B' },
+    { key: 'primer_contacto_activo', name: 'Primer contacto activo', color: '#4ECDC4' },
+    { key: 'llenado_ficha', name: 'Llenado de ficha', color: '#95E1D3' },
+    { key: 'seguimiento_inicial', name: 'Seguimiento inicial', color: '#FECA57' },
+    { key: 'agendamiento_visitas', name: 'Agendamiento de visitas o reuniones', color: '#FF9FF3' },
+    { key: 'presentacion_personalizada', name: 'Presentación personalizada', color: '#54A0FF' },
+    { key: 'negociacion', name: 'Negociación', color: '#5F27CD' },
+    { key: 'cierre_firma_contrato', name: 'Cierre / Firma de contrato', color: '#10B981' },
+    { key: 'postventa_fidelizacion', name: 'Postventa y fidelización', color: '#00D2D3' }
   ];
 
   const funnelData = funnelStages.map(stage => {
-    const count = salesFunnel.filter(item => item.stage === stage).length;
-    const displayName = stage === 'contacto_inicial_recibido' ? 'Contacto Inicial' :
-                       stage === 'primer_contacto_activo' ? 'Primer Contacto' :
-                       stage === 'llenado_ficha' ? 'Llenado Ficha' :
-                       stage === 'seguimiento_inicial' ? 'Seguimiento' :
-                       stage === 'agendamiento_visitas' ? 'Agendamiento' :
-                       stage === 'presentacion_personalizada' ? 'Presentación' :
-                       stage === 'negociacion' ? 'Negociación' :
-                       stage === 'cierre_firma_contrato' ? 'Cierre/Firma' :
-                       stage === 'postventa_fidelizacion' ? 'Postventa' : stage;
-    
+    const count = salesFunnel.filter(item => item.stage === stage.key).length;
     return { 
-      name: displayName, 
+      name: stage.name, 
       value: count, 
-      fill: stage === 'cierre_firma_contrato' ? '#10B981' : '#3B82F6' 
+      fill: stage.color 
     };
   });
 
@@ -237,9 +227,11 @@ const EnhancedDashboardSimulator = () => {
   }, {} as Record<string, number>);
 
   const clientTypeChartData = Object.entries(clientTypeData).map(([name, value], index) => ({
-    name: name === 'buyer' ? 'Comprador' : 
-          name === 'seller' ? 'Vendedor' : 
-          name === 'investor' ? 'Inversionista' : name,
+    name: name === 'familiar' ? 'Familiar' : 
+          name === 'individual' ? 'Individual' : 
+          name === 'negocio' ? 'Negocio' : 
+          name === 'empresa' ? 'Empresa' :
+          name === 'inversionista' ? 'Inversionista' : name,
     value,
     fill: COLORS[index % COLORS.length]
   }));
@@ -263,18 +255,31 @@ const EnhancedDashboardSimulator = () => {
     fill: ['#F59E0B', '#EF4444', '#8B5CF6', '#10B981', '#06B6D4', '#F97316', '#84CC16'][index % 7]
   }));
 
-  // Performance metrics by channel (for independent agents) or team member (for companies)
-  const performanceData = performanceMetrics.reduce((acc, metric) => {
-    const key = userProfile?.user_type === 'independent_agent' ? metric.channel || 'Sin canal' : metric.team_member_id || 'Sin asignar';
-    if (!acc[key]) acc[key] = 0;
-    acc[key] += metric.metric_value;
+  // Performance metrics by specific channels
+  const channelMapping = {
+    'tiktok': 'TikTok',
+    'instagram': 'Instagram', 
+    'facebook': 'Facebook',
+    'google': 'Google',
+    'whatsapp': 'WhatsApp',
+    'referido': 'Referido',
+    'feria-inmobiliaria': 'Feria Inmobiliaria',
+    'llamada-fria': 'Llamada en frío',
+    'sitio-web': 'Sitio Web',
+    'otro': 'Otro'
+  };
+
+  const performanceData = contacts.reduce((acc, contact) => {
+    const channel = contact.acquisition_source || 'Sin canal';
+    const displayName = channelMapping[channel as keyof typeof channelMapping] || channel;
+    acc[displayName] = (acc[displayName] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
   const performanceChartData = Object.entries(performanceData).map(([name, value], index) => ({
     name,
     value,
-    fill: ['#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#06B6D4', '#F97316'][index % 6]
+    fill: ['#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#06B6D4', '#F97316', '#84CC16', '#FF6B6B', '#4ECDC4'][index % 9]
   }));
 
   // Sort reminders by priority (alta first) and overdue status
@@ -421,10 +426,10 @@ const EnhancedDashboardSimulator = () => {
                   <BarChart data={funnelData} layout="horizontal">
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis type="number" />
-                    <YAxis dataKey="name" type="category" width={80} />
+                    <YAxis dataKey="name" type="category" width={120} />
                     <Tooltip />
                     <Legend />
-                    <Bar dataKey="value" fill="#3B82F6" />
+                    <Bar dataKey="value" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -505,7 +510,7 @@ const EnhancedDashboardSimulator = () => {
           </CardContent>
         </Card>
 
-        {/* Métricas de Rendimiento */}
+        {/* Rendimiento por Canal */}
         <Card className="shadow-md">
           <CardHeader className="bg-purple-50">
             <CardTitle className="text-purple-800 flex items-center">
@@ -517,7 +522,7 @@ const EnhancedDashboardSimulator = () => {
             {performanceChartData.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <TrendingUp className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p>No hay métricas de rendimiento</p>
+                <p>No hay datos de rendimiento por canal</p>
               </div>
             ) : (
               <div className="h-64">
@@ -528,7 +533,7 @@ const EnhancedDashboardSimulator = () => {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Bar dataKey="value" fill="#8B5CF6" />
+                    <Bar dataKey="value" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
