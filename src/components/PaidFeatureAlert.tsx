@@ -8,14 +8,31 @@ interface PaidFeatureAlertProps {
   description: string;
   features: string[];
   icon?: React.ReactNode;
+  previewImage?: string;
 }
 
-const PaidFeatureAlert = ({ title, description, features, icon }: PaidFeatureAlertProps) => {
+const PaidFeatureAlert = ({ title, description, features, icon, previewImage }: PaidFeatureAlertProps) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6 flex items-center justify-center">
-      <Card className="max-w-2xl w-full border-2 border-gradient-to-r from-blue-500 to-purple-600 shadow-2xl">
-        <CardContent className="p-8 text-center">
-          <div className="mb-6">
+      <Card className="max-w-4xl w-full border-2 border-gradient-to-r from-blue-500 to-purple-600 shadow-2xl">
+        <CardContent className="p-8">
+          {/* Preview Image Section */}
+          {previewImage && (
+            <div className="mb-8">
+              <img 
+                src={previewImage} 
+                alt={`Vista previa de ${title}`}
+                className="w-full h-64 object-cover rounded-lg shadow-lg"
+              />
+              <div className="text-center mt-4">
+                <span className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium">
+                  ✨ Vista previa de la funcionalidad
+                </span>
+              </div>
+            </div>
+          )}
+
+          <div className="text-center mb-6">
             <div className="mx-auto w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-4">
               {icon || <Lock className="w-10 h-10 text-white" />}
             </div>
@@ -61,7 +78,7 @@ const PaidFeatureAlert = ({ title, description, features, icon }: PaidFeatureAle
               size="lg" 
               className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-4 px-8 text-lg shadow-lg transform hover:scale-105 transition-all duration-200"
             >
-              🔥 Actualizar a Premium - Solo S/99/mes
+              🔥 Actualizar a Premium - Solo S/60/mes
             </Button>
             
             <div className="text-center">

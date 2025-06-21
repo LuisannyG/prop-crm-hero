@@ -1,5 +1,4 @@
 
-
 import PaidFeatureAlert from '@/components/PaidFeatureAlert';
 import { Button } from '@/components/ui/button';
 import { Shield, ArrowLeft } from 'lucide-react';
@@ -26,6 +25,7 @@ const RiskDetection = () => {
           title="Detección de Riesgo de No Compra"
           description="Identifica y previene la pérdida de clientes antes de que sea tarde"
           icon={<Shield className="w-10 h-10 text-white" />}
+          previewImage="https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?auto=format&fit=crop&w=800&q=80"
           features={[
             'Algoritmo predictivo que identifica clientes en riesgo de cancelar',
             'Alertas automáticas cuando un cliente muestra señales de desinterés',
@@ -43,4 +43,3 @@ const RiskDetection = () => {
 };
 
 export default RiskDetection;
-

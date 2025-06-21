@@ -1,4 +1,3 @@
-
 import { Calendar, ChartBar, FileText, FileUser, Brain, BadgeInfo } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -90,22 +89,29 @@ export const plans: Plan[] = [
   {
     name: "Plan Gratuito",
     price: "0",
-    features: ["Ficha de cliente", "Panel básico", "Agenda básica", "Reportes limitados"],
-    buttonText: "Empieza ahora",
+    features: [
+      "Gestión básica de contactos",
+      "Registro de propiedades",
+      "Recordatorios simples",
+      "Soporte por email"
+    ],
+    buttonText: "Comenzar Gratis",
     highlighted: false
   },
   {
     name: "Plan Premium",
     price: "60",
     features: [
-      "Todo lo del plan gratuito", 
-      "Reportes automáticos avanzados", 
-      "Motor de aprendizaje", 
-      "Detección de riesgo de no compra", 
-      "Priorización automática de leads",
-      "Recordatorios inteligentes"
+      "Todo lo del plan gratuito",
+      "Motor de Aprendizaje IA",
+      "Detección de Riesgo de No Compra",
+      "Análisis predictivo avanzado",
+      "Reportes inteligentes",
+      "Soporte prioritario 24/7",
+      "Integración con bases de datos",
+      "Alertas automáticas"
     ],
-    buttonText: "Ver precios",
+    buttonText: "Actualizar a Premium",
     highlighted: true
   }
 ];

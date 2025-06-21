@@ -1,5 +1,4 @@
 
-
 import PaidFeatureAlert from '@/components/PaidFeatureAlert';
 import { Button } from '@/components/ui/button';
 import { Brain, ArrowLeft } from 'lucide-react';
@@ -26,6 +25,7 @@ const LearningEngine = () => {
           title="Motor de Aprendizaje IA"
           description="Potencia tu estrategia inmobiliaria con inteligencia artificial avanzada"
           icon={<Brain className="w-10 h-10 text-white" />}
+          previewImage="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=800&q=80"
           features={[
             'Análisis predictivo de mercado inmobiliario en tiempo real',
             'Recomendaciones personalizadas de precios basadas en IA',
@@ -43,4 +43,3 @@ const LearningEngine = () => {
 };
 
 export default LearningEngine;
-
