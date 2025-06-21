@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -110,7 +111,14 @@ const Reminders = () => {
           return;
         }
 
-        setReminders(data || []);
+        // Cast the data to match our Reminder interface
+        const typedReminders: Reminder[] = (data || []).map(reminder => ({
+          ...reminder,
+          priority: reminder.priority as 'alta' | 'media' | 'baja',
+          status: reminder.status as 'pendiente' | 'completado'
+        }));
+
+        setReminders(typedReminders);
       } catch (error) {
         console.error("Unexpected error fetching reminders:", error);
         toast({
@@ -191,7 +199,13 @@ const Reminders = () => {
             return;
           }
   
-          setReminders(data || []);
+          const typedReminders: Reminder[] = (data || []).map(reminder => ({
+            ...reminder,
+            priority: reminder.priority as 'alta' | 'media' | 'baja',
+            status: reminder.status as 'pendiente' | 'completado'
+          }));
+
+          setReminders(typedReminders);
         } catch (error) {
           console.error("Unexpected error fetching reminders:", error);
           toast({
@@ -254,7 +268,13 @@ const Reminders = () => {
             return;
           }
   
-          setReminders(data || []);
+          const typedReminders: Reminder[] = (data || []).map(reminder => ({
+            ...reminder,
+            priority: reminder.priority as 'alta' | 'media' | 'baja',
+            status: reminder.status as 'pendiente' | 'completado'
+          }));
+
+          setReminders(typedReminders);
         } catch (error) {
           console.error("Unexpected error fetching reminders:", error);
           toast({
@@ -317,7 +337,13 @@ const Reminders = () => {
             return;
           }
   
-          setReminders(data || []);
+          const typedReminders: Reminder[] = (data || []).map(reminder => ({
+            ...reminder,
+            priority: reminder.priority as 'alta' | 'media' | 'baja',
+            status: reminder.status as 'pendiente' | 'completado'
+          }));
+
+          setReminders(typedReminders);
         } catch (error) {
           console.error("Unexpected error fetching reminders:", error);
           toast({
