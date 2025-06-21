@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { FileText, Upload, Star, Calendar, MessageSquare, Phone, Clock } from "lucide-react";
 
 const ClientFileSimulator = () => {
@@ -24,22 +23,22 @@ const ClientFileSimulator = () => {
     status: "En seguimiento",
     source: "Facebook Ads",
     rating: 4,
-    notes: "Busca propiedad para inversión, preferiblemente en zonas céntricas de Lima.",
+    notes: "Busca propiedad para inversión, preferiblemente en zonas céntricas.",
     documents: [
       { name: "DNI", date: "16/04/2023" },
-      { name: "Ficha técnica - Depto en San Isidro", date: "20/04/2023" },
+      { name: "Ficha técnica - Piso C/Gran Vía", date: "20/04/2023" },
       { name: "Aprobación bancaria", date: "25/04/2023" }
     ],
     interactions: [
-      { type: "Llamada", date: "15/04/2023", description: "Primer contacto. Interesada en departamentos para inversión." },
+      { type: "Llamada", date: "15/04/2023", description: "Primer contacto. Interesada en pisos para inversión." },
       { type: "Email", date: "17/04/2023", description: "Envío de 3 propiedades según sus criterios." },
-      { type: "Visita", date: "22/04/2023", description: "Visita al departamento en San Isidro. Interesada pero preocupada por el precio." },
+      { type: "Visita", date: "22/04/2023", description: "Visita al piso de Gran Vía. Interesada pero preocupada por el precio." },
       { type: "Llamada", date: "24/04/2023", description: "Seguimiento post-visita. Solicitó más información sobre financiación." },
       { type: "Email", date: "28/04/2023", description: "Envío de opciones de financiación y nueva propiedad." }
     ],
     nextActions: [
       { date: "05/05/2023", action: "Llamada de seguimiento", priority: "alta" },
-      { date: "10/05/2023", action: "Visita a nuevo departamento en Miraflores", priority: "media" }
+      { date: "10/05/2023", action: "Visita a nuevo piso en Salamanca", priority: "media" }
     ]
   };
 
@@ -109,10 +108,10 @@ const ClientFileSimulator = () => {
                         <SelectValue placeholder="Selecciona tipo de propiedad" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="departamento">Departamento</SelectItem>
-                        <SelectItem value="casa">Casa</SelectItem>
-                        <SelectItem value="penthouse">Penthouse</SelectItem>
-                        <SelectItem value="duplex">Dúplex</SelectItem>
+                        <SelectItem value="piso">Piso</SelectItem>
+                        <SelectItem value="chalet">Chalet</SelectItem>
+                        <SelectItem value="ático">Ático</SelectItem>
+                        <SelectItem value="dúplex">Dúplex</SelectItem>
                         <SelectItem value="local">Local comercial</SelectItem>
                         <SelectItem value="oficina">Oficina</SelectItem>
                       </SelectContent>
@@ -126,19 +125,19 @@ const ClientFileSimulator = () => {
                         <SelectValue placeholder="Selecciona rango de presupuesto" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="0-150000">Menos de S/ 150,000</SelectItem>
-                        <SelectItem value="150000-300000">S/ 150,000 - S/ 300,000</SelectItem>
-                        <SelectItem value="300000-500000">S/ 300,000 - S/ 500,000</SelectItem>
-                        <SelectItem value="500000-800000">S/ 500,000 - S/ 800,000</SelectItem>
-                        <SelectItem value="800000-1500000">S/ 800,000 - S/ 1,500,000</SelectItem>
-                        <SelectItem value="1500000+">Más de S/ 1,500,000</SelectItem>
+                        <SelectItem value="0-100000">Menos de 100.000€</SelectItem>
+                        <SelectItem value="100000-200000">100.000€ - 200.000€</SelectItem>
+                        <SelectItem value="200000-300000">200.000€ - 300.000€</SelectItem>
+                        <SelectItem value="300000-500000">300.000€ - 500.000€</SelectItem>
+                        <SelectItem value="500000-1000000">500.000€ - 1.000.000€</SelectItem>
+                        <SelectItem value="1000000+">Más de 1.000.000€</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="zones">Zonas preferidas</Label>
-                    <Input id="zones" placeholder="Ej: San Isidro, Miraflores, Surco..." />
+                    <Input id="zones" placeholder="Ej: Centro, Salamanca, Chamberí..." />
                   </div>
 
                   <div className="space-y-2">
@@ -291,5 +290,8 @@ const ClientFileSimulator = () => {
     </div>
   );
 };
+
+// Importamos Badge ya que no lo teníamos importado al principio
+import { Badge } from "@/components/ui/badge";
 
 export default ClientFileSimulator;

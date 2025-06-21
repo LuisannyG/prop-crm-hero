@@ -4,79 +4,34 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    phone: "+51 ",
     agentType: "",
-    willingToPay: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    
-    // Ensure phone always starts with +51
-    if (name === "phone") {
-      if (!value.startsWith("+51")) {
-        setFormData(prev => ({ ...prev, [name]: "+51 " + value.replace("+51", "").trim() }));
-        return;
-      }
-    }
-    
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleRadioChange = (value: string) => {
-    setFormData(prev => ({ ...prev, willingToPay: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    try {
-      const { error } = await supabase
-        .from('contact_submissions')
-        .insert([
-          {
-            name: formData.name,
-            email: formData.email,
-            phone: formData.phone,
-            agent_type: formData.agentType,
-            willing_to_pay: formData.willingToPay === "yes",
-          }
-        ]);
-
-      if (error) {
-        console.error('Error saving contact submission:', error);
-        toast({
-          title: "Error",
-          description: "Hubo un problema al enviar tu solicitud. Por favor, inténtalo de nuevo.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "¡Gracias por tu interés!",
-          description: "Te hemos añadido a nuestra lista de espera. Te contactaremos pronto.",
-        });
-        setFormData({ name: "", email: "", phone: "+51 ", agentType: "", willingToPay: "" });
-      }
-    } catch (error) {
-      console.error('Unexpected error:', error);
+    // Simulate form submission
+    setTimeout(() => {
       toast({
-        title: "Error",
-        description: "Hubo un problema al enviar tu solicitud. Por favor, inténtalo de nuevo.",
-        variant: "destructive",
+        title: "¡Gracias por tu interés!",
+        description: "Te hemos añadido a nuestra lista de espera. Te contactaremos pronto.",
       });
-    } finally {
+      setFormData({ name: "", email: "", agentType: "" });
       setIsSubmitting(false);
-    }
+    }, 1500);
   };
 
   return (
@@ -107,19 +62,6 @@ const ContactForm = () => {
               required
             />
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="phone">Número de teléfono</Label>
-            <Input 
-              id="phone" 
-              name="phone"
-              type="tel"
-              placeholder="+51 987 654 321"
-              value={formData.phone}
-              onChange={handleChange}
-              required
-            />
-          </div>
           
           <div className="space-y-2">
             <Label htmlFor="agentType">Tipo de agente</Label>
@@ -132,23 +74,10 @@ const ContactForm = () => {
               required
             >
               <option value="">Seleccionar...</option>
-              <option value="independiente">Agentes Inmobiliarios Independientes</option>
-              <option value="pequena_empresa">Pequeñas Empresas Inmobiliarias</option>
+              <option value="independiente">Agente Independiente</option>
+              <option value="inmobiliaria">Pequeña Inmobiliaria</option>
+              <option value="otro">Otro</option>
             </select>
-          </div>
-          
-          <div className="space-y-3">
-            <Label>¿Estarías dispuesto a pagar por funcionalidades avanzadas?</Label>
-            <RadioGroup value={formData.willingToPay} onValueChange={handleRadioChange}>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="yes" id="yes" />
-                <Label htmlFor="yes">Sí</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="no" id="no" />
-                <Label htmlFor="no">No</Label>
-              </div>
-            </RadioGroup>
           </div>
           
           <Button 

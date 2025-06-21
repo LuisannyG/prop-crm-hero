@@ -33,7 +33,7 @@ const DashboardSimulator = () => {
     { name: "Baja", value: 25, color: "#EF4444" }
   ];
 
-  // Lista de clientes con ubicaciones peruanas
+  // Lista de clientes
   const clients = [
     { id: 1, name: "Ana Martínez", type: "Familia", intention: "Alta", stage: "Visita Programada", lastContact: "Hoy" },
     { id: 2, name: "Carlos López", type: "Inversionista", intention: "Media", stage: "Seguimiento", lastContact: "Hace 3 días" },
@@ -44,7 +44,7 @@ const DashboardSimulator = () => {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="shadow-md">
           <CardHeader className="bg-blue-50">
             <CardTitle className="text-blue-800">Embudo de Ventas</CardTitle>
@@ -52,18 +52,12 @@ const DashboardSimulator = () => {
           <CardContent className="pt-4">
             <div className="space-y-4">
               {funnelData.map((stage) => (
-                <div key={stage.name} className="space-y-2">
+                <div key={stage.name} className="space-y-1">
                   <div className="flex justify-between text-sm">
-                    <span className="truncate pr-2">{stage.name}</span>
+                    <span>{stage.name}</span>
                     <span className="font-medium">{stage.value}</span>
                   </div>
-                  <Progress 
-                    value={(stage.value / 120) * 100} 
-                    className="h-3" 
-                    style={{
-                      '--progress-background': stage.fill
-                    } as React.CSSProperties}
-                  />
+                  <Progress value={stage.value/1.2} className="h-3" indicatorClassName={`bg-[${stage.fill}]`} />
                 </div>
               ))}
             </div>
@@ -75,7 +69,7 @@ const DashboardSimulator = () => {
             <CardTitle className="text-blue-800">Tipos de Cliente</CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
-            <div className="h-48 w-full">
+            <div className="h-60">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -83,7 +77,7 @@ const DashboardSimulator = () => {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    outerRadius={60}
+                    outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
                     label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
@@ -96,14 +90,14 @@ const DashboardSimulator = () => {
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <div className="flex flex-wrap justify-center gap-2 mt-2">
+            <div className="flex flex-wrap justify-center gap-4 mt-2">
               {clientTypeData.map((type, index) => (
-                <div key={type.name} className="flex items-center gap-1">
+                <div key={type.name} className="flex items-center gap-2">
                   <div 
-                    className="w-2 h-2 rounded-full" 
+                    className="w-3 h-3 rounded-full" 
                     style={{ backgroundColor: COLORS[index % COLORS.length] }}
                   />
-                  <span className="text-xs">{type.name}</span>
+                  <span className="text-sm">{type.name}</span>
                 </div>
               ))}
             </div>
@@ -115,21 +109,26 @@ const DashboardSimulator = () => {
             <CardTitle className="text-blue-800">Intención de Compra</CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
-            <div className="h-48 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={intentionData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="value" fill="#8884d8">
-                    {intentionData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            <ChartContainer
+              config={{
+                alta: { label: "Alta" },
+                media: { label: "Media" },
+                baja: { label: "Baja" }
+              }}
+              className="h-60"
+            >
+              <BarChart data={intentionData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="value" fill="#8884d8">
+                  {intentionData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ChartContainer>
           </CardContent>
         </Card>
       </div>
@@ -161,7 +160,7 @@ const DashboardSimulator = () => {
 
             <TabsContent value="todos">
               <div className="overflow-x-auto">
-                <table className="w-full min-w-full">
+                <table className="w-full">
                   <thead>
                     <tr className="border-b">
                       <th className="px-4 py-2 text-left">Cliente</th>
