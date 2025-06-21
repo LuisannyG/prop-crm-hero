@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface Contact {
   id: string;
@@ -387,7 +387,7 @@ const EnhancedDashboardSimulator = () => {
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Embudo de Ventas - Solo Leyenda */}
+        {/* Embudo de Ventas - Expandible */}
         <Card className="shadow-md">
           <CardHeader className="bg-blue-50">
             <CardTitle className="text-blue-800 flex items-center">
@@ -402,30 +402,70 @@ const EnhancedDashboardSimulator = () => {
                 <p>No hay datos del embudo de ventas</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-3 text-sm">
+              <Accordion type="multiple" className="w-full">
                 {funnelStages.map((stage, index) => {
-                  const count = contacts.filter(contact => contact.sales_stage === stage.key).length;
+                  const stageContacts = contacts.filter(contact => contact.sales_stage === stage.key);
+                  const count = stageContacts.length;
+                  
                   return (
-                    <div key={stage.key} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 border">
-                      <div className="flex items-center gap-3">
-                        <div 
-                          className="w-4 h-4 rounded-full" 
-                          style={{ backgroundColor: stage.color }}
-                        ></div>
-                        <span className="text-gray-700 font-medium">{stage.name}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="font-bold">
-                          {count}
-                        </Badge>
-                        <span className="text-gray-500 text-xs">
-                          ({totalContacts > 0 ? Math.round((count / totalContacts) * 100) : 0}%)
-                        </span>
-                      </div>
-                    </div>
+                    <AccordionItem key={stage.key} value={stage.key}>
+                      <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center justify-between w-full pr-4">
+                          <div className="flex items-center gap-3">
+                            <div 
+                              className="w-4 h-4 rounded-full" 
+                              style={{ backgroundColor: stage.color }}
+                            ></div>
+                            <span className="text-gray-700 font-medium text-left">{stage.name}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary" className="font-bold">
+                              {count}
+                            </Badge>
+                            <span className="text-gray-500 text-xs">
+                              ({totalContacts > 0 ? Math.round((count / totalContacts) * 100) : 0}%)
+                            </span>
+                          </div>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        {stageContacts.length === 0 ? (
+                          <div className="text-center py-4 text-gray-500 text-sm">
+                            No hay contactos en esta etapa
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            {stageContacts.map(contact => (
+                              <div key={contact.id} className="flex items-center justify-between p-2 bg-gray-50 rounded border">
+                                <div>
+                                  <div className="font-medium text-sm">{contact.full_name}</div>
+                                  <div className="text-xs text-gray-600 flex items-center gap-4">
+                                    {contact.email && (
+                                      <span className="flex items-center gap-1">
+                                        <Mail className="w-3 h-3" />
+                                        {contact.email}
+                                      </span>
+                                    )}
+                                    {contact.phone && (
+                                      <span className="flex items-center gap-1">
+                                        <Phone className="w-3 h-3" />
+                                        {contact.phone}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {new Date(contact.created_at).toLocaleDateString()}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </AccordionContent>
+                    </AccordionItem>
                   );
                 })}
-              </div>
+              </Accordion>
             )}
           </CardContent>
         </Card>
