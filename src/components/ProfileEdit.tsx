@@ -11,10 +11,11 @@ import { Camera, Save, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ProfileEditProps {
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-const ProfileEdit = ({ onClose }: ProfileEditProps) => {
+const ProfileEdit = ({ open, onOpenChange }: ProfileEditProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -23,10 +24,10 @@ const ProfileEdit = ({ onClose }: ProfileEditProps) => {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user) {
+    if (user && open) {
       getProfile();
     }
-  }, [user]);
+  }, [user, open]);
 
   const getProfile = async () => {
     try {
@@ -34,9 +35,12 @@ const ProfileEdit = ({ onClose }: ProfileEditProps) => {
         .from('profiles')
         .select('full_name, avatar_url')
         .eq('id', user?.id)
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return;
+      }
 
       if (data) {
         setFullName(data.full_name || '');
@@ -66,7 +70,7 @@ const ProfileEdit = ({ onClose }: ProfileEditProps) => {
         description: "Tus datos han sido guardados correctamente.",
       });
       
-      onClose();
+      onOpenChange(false);
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
@@ -122,13 +126,15 @@ const ProfileEdit = ({ onClose }: ProfileEditProps) => {
     }
   };
 
+  if (!open) return null;
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <Card className="w-full max-w-md mx-4">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Editar Perfil</CardTitle>
-            <Button variant="ghost" size="sm" onClick={onClose}>
+            <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
               <X className="h-4 w-4" />
             </Button>
           </div>
@@ -186,7 +192,7 @@ const ProfileEdit = ({ onClose }: ProfileEditProps) => {
               <Save className="w-4 h-4 mr-2" />
               {loading ? 'Guardando...' : 'Guardar'}
             </Button>
-            <Button variant="outline" onClick={onClose} className="flex-1">
+            <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
               Cancelar
             </Button>
           </div>
