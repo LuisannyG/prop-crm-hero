@@ -26,6 +26,7 @@ interface Contact {
   status: string;
   client_type?: string;
   acquisition_source?: string;
+  sales_stage?: string;
   created_at: string;
 }
 
@@ -33,7 +34,6 @@ const Contacts = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [contacts, setContacts] = useState<Contact[]>([]);
-  const [salesFunnelData, setSalesFunnelData] = useState<{[key: string]: string}>({});
   const [loading, setLoading] = useState(true);
   const [isAddingContact, setIsAddingContact] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
@@ -65,7 +65,6 @@ const Contacts = () => {
   useEffect(() => {
     if (user) {
       fetchContacts();
-      fetchSalesFunnelData();
     }
   }, [user]);
 
@@ -97,37 +96,6 @@ const Contacts = () => {
     }
   };
 
-  const fetchSalesFunnelData = async () => {
-    try {
-      console.log('Fetching sales funnel data for user:', user?.id);
-      const { data, error } = await supabase
-        .from('sales_funnel')
-        .select('contact_id, stage, stage_date')
-        .eq('user_id', user?.id)
-        .order('stage_date', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching sales funnel:', error);
-        throw error;
-      }
-      
-      console.log('Sales funnel data fetched:', data);
-      
-      // Create a map with the most recent stage for each contact
-      const funnelMap = (data || []).reduce((acc, item) => {
-        if (!acc[item.contact_id]) {
-          acc[item.contact_id] = item.stage;
-        }
-        return acc;
-      }, {} as {[key: string]: string});
-      
-      console.log('Sales funnel map:', funnelMap);
-      setSalesFunnelData(funnelMap);
-    } catch (error) {
-      console.error('Error fetching sales funnel data:', error);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -153,10 +121,9 @@ const Contacts = () => {
         status: formData.status,
         client_type: formData.client_type,
         acquisition_source: formData.acquisition_source,
+        sales_stage: formData.sales_stage,
         user_id: user.id
       };
-
-      let contactId = editingContact?.id;
 
       if (editingContact) {
         console.log('Updating contact:', editingContact.id, 'with data:', contactData);
@@ -166,51 +133,19 @@ const Contacts = () => {
           .eq('id', editingContact.id);
 
         if (error) throw error;
-        contactId = editingContact.id;
         toast({ title: 'Contacto actualizado exitosamente' });
       } else {
         console.log('Creating new contact with data:', contactData);
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('contacts')
-          .insert([contactData])
-          .select()
-          .single();
+          .insert([contactData]);
 
         if (error) throw error;
-        contactId = data.id;
         toast({ title: 'Contacto agregado exitosamente' });
-      }
-
-      // Update sales funnel stage
-      if (contactId && formData.sales_stage) {
-        console.log('Updating sales funnel for contact:', contactId, 'with stage:', formData.sales_stage);
-        
-        const { error: funnelError } = await supabase
-          .from('sales_funnel')
-          .upsert({
-            contact_id: contactId,
-            user_id: user.id,
-            stage: formData.sales_stage,
-            stage_date: new Date().toISOString(),
-            notes: `Etapa: ${salesStages.find(s => s.key === formData.sales_stage)?.name}`
-          }, {
-            onConflict: 'contact_id,user_id'
-          });
-
-        if (funnelError) {
-          console.error('Error inserting sales funnel:', funnelError);
-        } else {
-          console.log('Sales funnel updated successfully');
-          setSalesFunnelData(prev => ({
-            ...prev,
-            [contactId]: formData.sales_stage
-          }));
-        }
       }
 
       resetForm();
       await fetchContacts();
-      await fetchSalesFunnelData();
     } catch (error) {
       console.error('Error saving contact:', error);
       toast({
@@ -259,7 +194,7 @@ const Contacts = () => {
   };
 
   const startEdit = (contact: Contact) => {
-    console.log('Starting edit for contact:', contact.id, 'Current sales stage:', salesFunnelData[contact.id]);
+    console.log('Starting edit for contact:', contact.id, 'Current sales stage:', contact.sales_stage);
     setFormData({
       full_name: contact.full_name,
       email: contact.email || '',
@@ -270,7 +205,7 @@ const Contacts = () => {
       status: contact.status,
       client_type: contact.client_type || '',
       acquisition_source: contact.acquisition_source || '',
-      sales_stage: salesFunnelData[contact.id] || 'contacto_inicial_recibido'
+      sales_stage: contact.sales_stage || 'contacto_inicial_recibido'
     });
     setEditingContact(contact);
     setIsAddingContact(true);
@@ -511,9 +446,8 @@ const Contacts = () => {
                 </TableHeader>
                 <TableBody>
                   {contacts.map((contact) => {
-                    const currentStage = salesFunnelData[contact.id];
-                    const stageInfo = getSalesStageInfo(currentStage);
-                    console.log('Rendering contact:', contact.id, 'Stage:', currentStage, 'Stage info:', stageInfo);
+                    const stageInfo = getSalesStageInfo(contact.sales_stage || '');
+                    console.log('Rendering contact:', contact.id, 'Stage:', contact.sales_stage, 'Stage info:', stageInfo);
                     
                     return (
                       <TableRow key={contact.id}>
@@ -571,9 +505,9 @@ const Contacts = () => {
                             >
                               {stageInfo.name}
                             </Badge>
-                          ) : currentStage ? (
+                          ) : contact.sales_stage ? (
                             <Badge variant="outline" className="text-xs">
-                              {currentStage}
+                              {contact.sales_stage}
                             </Badge>
                           ) : (
                             <span className="text-gray-400 text-xs">Sin etapa</span>
