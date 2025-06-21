@@ -16,6 +16,7 @@ interface Contact {
   phone: string;
   status: string;
   client_type: string;
+  acquisition_source: string;
   created_at: string;
 }
 
