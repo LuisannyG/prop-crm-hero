@@ -44,10 +44,11 @@ const AuthForm = () => {
         if (!result.error) {
           toast({
             title: '¡Cuenta creada exitosamente!',
-            description: 'Ya puedes acceder a tu dashboard',
+            description: 'Revisa tu email para confirmar tu cuenta antes de iniciar sesión',
           });
-          // El usuario se registra y automáticamente se loguea
-          navigate('/dashboard');
+          // Cambiar al modo login después del registro exitoso
+          setIsLogin(true);
+          setFormData({ email: formData.email, password: '', fullName: '' });
         }
       }
 
@@ -59,12 +60,12 @@ const AuthForm = () => {
           errorMessage = 'Esta cuenta ya existe. Intenta iniciar sesión.';
         } else if (result.error.message?.includes('Invalid login credentials')) {
           errorMessage = 'Email o contraseña incorrectos';
+        } else if (result.error.message?.includes('Email not confirmed')) {
+          errorMessage = 'Debes confirmar tu email antes de iniciar sesión. Revisa tu bandeja de entrada.';
         } else if (result.error.message?.includes('Password should be at least')) {
           errorMessage = 'La contraseña debe tener al menos 6 caracteres';
         } else if (result.error.message?.includes('Unable to validate email address')) {
           errorMessage = 'Email inválido';
-        } else if (result.error.message?.includes('User already registered')) {
-          errorMessage = 'Esta cuenta ya existe. Intenta iniciar sesión.';
         } else if (result.error.message) {
           errorMessage = result.error.message;
         }
