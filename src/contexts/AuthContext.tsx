@@ -42,6 +42,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
+      // Primero verificar si el usuario ya existe
+      const { data: existingUser, error: checkError } = await supabase.auth.signInWithPassword({
+        email,
+        password: 'dummy-password-check'
+      });
+
+      // Si no hay error de credenciales inválidas, significa que el usuario ya existe
+      if (!checkError || (checkError && !checkError.message.includes('Invalid login credentials'))) {
+        // Verificar si el usuario existe con una consulta diferente
+        const { data: signInAttempt } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+        
+        if (signInAttempt.user) {
+          return { 
+            error: { 
+              message: 'User already registered',
+              code: 'user_already_exists' 
+            } 
+          };
+        }
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,

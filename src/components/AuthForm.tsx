@@ -55,14 +55,16 @@ const AuthForm = () => {
         let errorMessage = 'Ha ocurrido un error';
         
         // Manejar errores específicos
-        if (result.error.message?.includes('User already registered')) {
-          errorMessage = 'Este email ya está registrado. Intenta iniciar sesión.';
+        if (result.error.message?.includes('User already registered') || result.error.code === 'user_already_exists') {
+          errorMessage = 'Esta cuenta ya existe. Intenta iniciar sesión.';
         } else if (result.error.message?.includes('Invalid login credentials')) {
           errorMessage = 'Email o contraseña incorrectos';
         } else if (result.error.message?.includes('Password should be at least')) {
           errorMessage = 'La contraseña debe tener al menos 6 caracteres';
         } else if (result.error.message?.includes('Unable to validate email address')) {
           errorMessage = 'Email inválido';
+        } else if (result.error.message?.includes('User already registered')) {
+          errorMessage = 'Esta cuenta ya existe. Intenta iniciar sesión.';
         } else if (result.error.message) {
           errorMessage = result.error.message;
         }
