@@ -23,7 +23,9 @@ const AuthFormSection = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    console.log('Auth form - user changed:', user?.email);
     if (user) {
+      console.log('Redirecting to dashboard...');
       navigate('/dashboard');
     }
   }, [user, navigate]);
@@ -31,17 +33,20 @@ const AuthFormSection = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    console.log('Form submitted:', { email, isLogin });
 
     try {
       if (isLogin) {
         const { error } = await signIn(email, password);
         if (error) {
+          console.error('Sign in error:', error);
           toast({
             title: 'Error al iniciar sesión',
             description: error.message,
             variant: 'destructive'
           });
         } else {
+          console.log('Sign in successful');
           toast({
             title: '¡Bienvenido!',
             description: 'Has iniciado sesión correctamente'
@@ -59,19 +64,22 @@ const AuthFormSection = () => {
         
         const { error } = await signUp(email, password, fullName, agentType);
         if (error) {
+          console.error('Sign up error:', error);
           toast({
             title: 'Error al registrarse',
             description: error.message,
             variant: 'destructive'
           });
         } else {
+          console.log('Sign up successful');
           toast({
             title: '¡Registro exitoso!',
-            description: 'Revisa tu email para confirmar tu cuenta'
+            description: 'Tu cuenta ha sido creada. Redirigiendo al dashboard...'
           });
         }
       }
     } catch (error) {
+      console.error('Unexpected error:', error);
       toast({
         title: 'Error',
         description: 'Algo salió mal. Inténtalo de nuevo.',

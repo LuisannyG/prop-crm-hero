@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,13 +43,15 @@ const ContactForm = () => {
     try {
       const { error } = await supabase
         .from('contact_submissions')
-        .insert({
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          agent_type: formData.agentType,
-          willing_to_pay: formData.willingToPay === "yes",
-        });
+        .insert([
+          {
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            agent_type: formData.agentType,
+            willing_to_pay: formData.willingToPay === "yes",
+          }
+        ]);
 
       if (error) {
         console.error('Error saving contact submission:', error);

@@ -28,51 +28,83 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('Setting up auth state listener...');
+    
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        
+        // Create profile if user just signed up
+        if (event === 'SIGNED_IN' && session?.user && !session.user.email_confirmed_at) {
+          console.log('Creating user profile...');
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert({
+              id: session.user.id,
+              email: session.user.email,
+              full_name: session.user.user_metadata?.full_name || '',
+              agent_type: session.user.user_metadata?.agent_type || ''
+            }, { onConflict: 'id' });
+          
+          if (profileError) {
+            console.error('Error creating profile:', profileError);
+          } else {
+            console.log('Profile created successfully');
+          }
+        }
       }
     );
 
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session:', session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('Cleaning up auth subscription');
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string, fullName: string, agentType: string) => {
-    const redirectUrl = `${window.location.origin}/`;
+    console.log('Attempting sign up for:', email);
     
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: redirectUrl,
         data: {
           full_name: fullName,
           agent_type: agentType
         }
       }
     });
+    
+    console.log('Sign up result:', { data: data?.user?.email, error });
     return { error };
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    console.log('Attempting sign in for:', email);
+    
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
     });
+    
+    console.log('Sign in result:', { data: data?.user?.email, error });
     return { error };
   };
 
   const signOut = async () => {
+    console.log('Signing out...');
     await supabase.auth.signOut();
   };
 
