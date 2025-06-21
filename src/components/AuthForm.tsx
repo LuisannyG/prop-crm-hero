@@ -89,7 +89,7 @@ const AuthForm = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <img 
-            src="/lovable-uploads/94f300e7-f28f-4112-b26a-35b332c36ccf.png" 
+            src="/lovable-uploads/e554c651-b04c-46c2-bb83-871da034773d.png" 
             alt="Proptor Logo" 
             className="w-48 mx-auto mb-4"
           />

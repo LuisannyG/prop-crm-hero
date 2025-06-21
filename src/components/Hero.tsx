@@ -10,15 +10,6 @@ const Hero = ({ onCtaClick }: HeroProps) => {
     <section className="relative min-h-[90vh] bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 flex items-center justify-center overflow-hidden">
       
       <div className="container mx-auto px-4 relative z-10 text-center">
-        <div className="flex justify-end items-center mb-8">
-          <Button 
-            onClick={onCtaClick}
-            variant="outline"
-            className="bg-transparent border-white text-white hover:bg-white hover:text-slate-900"
-          >
-            Iniciar Sesión
-          </Button>
-        </div>
         
         <div className="mb-8">
           <img 
@@ -35,21 +26,13 @@ const Hero = ({ onCtaClick }: HeroProps) => {
           <span className="block text-blue-200 mt-4 font-semibold">Ahorra hasta 5 horas semanales en seguimiento de clientes.</span>
         </p>
         
-        <div className="flex flex-col md:flex-row gap-4 justify-center">
+        <div className="flex justify-center mb-12">
           <Button 
             size="lg" 
             className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-6 text-lg rounded-md"
             onClick={onCtaClick}
           >
-            Empieza gratis
-          </Button>
-          <Button 
-            size="lg" 
-            variant="outline" 
-            className="bg-transparent border-2 border-white text-white hover:bg-white/10 px-8 py-6 text-lg rounded-md"
-            onClick={onCtaClick}
-          >
-            Solicita una demo
+            Iniciar Sesión
           </Button>
         </div>
         
