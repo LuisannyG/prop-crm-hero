@@ -63,7 +63,7 @@ export const reminderDescriptions = [
 
 // Configuración de cantidad de datos a generar
 export const SEED_CONFIG = {
-  CONTACTS_COUNT: 100,
-  PROPERTIES_COUNT: 50,
-  REMINDERS_COUNT: 50
+  CONTACTS_COUNT: 150,
+  PROPERTIES_COUNT: 75,
+  REMINDERS_COUNT: 100
 };
