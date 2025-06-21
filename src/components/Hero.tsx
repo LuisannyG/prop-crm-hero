@@ -10,12 +10,7 @@ const Hero = ({ onCtaClick }: HeroProps) => {
     <section className="relative min-h-[90vh] bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 flex items-center justify-center overflow-hidden">
       
       <div className="container mx-auto px-4 relative z-10 text-center">
-        <div className="flex justify-between items-center mb-8">
-          <img 
-            src="/lovable-uploads/94f300e7-f28f-4112-b26a-35b332c36ccf.png" 
-            alt="Proptor Logo" 
-            className="h-12"
-          />
+        <div className="flex justify-end items-center mb-8">
           <Button 
             onClick={onCtaClick}
             variant="outline"
@@ -27,7 +22,7 @@ const Hero = ({ onCtaClick }: HeroProps) => {
         
         <div className="mb-8">
           <img 
-            src="/lovable-uploads/94f300e7-f28f-4112-b26a-35b332c36ccf.png" 
+            src="/lovable-uploads/e554c651-b04c-46c2-bb83-871da034773d.png" 
             alt="Proptor Logo" 
             className="w-96 md:w-[600px] lg:w-[700px] mx-auto"
           />
