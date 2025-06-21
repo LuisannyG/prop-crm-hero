@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,6 +16,8 @@ const AuthForm = () => {
     password: '',
     fullName: '',
     userType: 'independent_agent' as 'independent_agent' | 'small_company',
+    companyName: '',
+    userRole: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { signIn, signUp } = useAuth();
@@ -28,7 +29,13 @@ const AuthForm = () => {
   };
 
   const handleUserTypeChange = (value: 'independent_agent' | 'small_company') => {
-    setFormData(prev => ({ ...prev, userType: value }));
+    setFormData(prev => ({ 
+      ...prev, 
+      userType: value,
+      // Limpiar los campos de empresa cuando se cambia el tipo
+      companyName: value === 'independent_agent' ? '' : prev.companyName,
+      userRole: value === 'independent_agent' ? '' : prev.userRole,
+    }));
   };
 
   const handleBackToHome = () => {
@@ -51,7 +58,14 @@ const AuthForm = () => {
           navigate('/dashboard');
         }
       } else {
-        result = await signUp(formData.email, formData.password, formData.fullName, formData.userType);
+        result = await signUp(
+          formData.email, 
+          formData.password, 
+          formData.fullName, 
+          formData.userType,
+          formData.companyName,
+          formData.userRole
+        );
         if (!result.error) {
           toast({
             title: '¡Cuenta creada exitosamente!',
@@ -59,7 +73,14 @@ const AuthForm = () => {
           });
           // Cambiar al modo login después del registro exitoso
           setIsLogin(true);
-          setFormData({ email: formData.email, password: '', fullName: '', userType: 'independent_agent' });
+          setFormData({ 
+            email: formData.email, 
+            password: '', 
+            fullName: '', 
+            userType: 'independent_agent',
+            companyName: '',
+            userRole: '',
+          });
         }
       }
 
@@ -155,6 +176,40 @@ const AuthForm = () => {
                     </SelectContent>
                   </Select>
                 </div>
+
+                {formData.userType === 'small_company' && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="companyName">Nombre de la empresa</Label>
+                      <Input
+                        id="companyName"
+                        name="companyName"
+                        placeholder="Nombre de tu empresa"
+                        value={formData.companyName}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="userRole">Tu rol en la empresa</Label>
+                      <Select 
+                        value={formData.userRole} 
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, userRole: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona tu rol" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="owner">Propietario</SelectItem>
+                          <SelectItem value="manager">Gerente</SelectItem>
+                          <SelectItem value="agent">Agente</SelectItem>
+                          <SelectItem value="assistant">Asistente</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
+                )}
               </>
             )}
             

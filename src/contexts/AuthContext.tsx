@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,7 +5,14 @@ import { supabase } from '@/integrations/supabase/client';
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  signUp: (email: string, password: string, fullName: string, userType: 'independent_agent' | 'small_company') => Promise<{ error: any; data?: any }>;
+  signUp: (
+    email: string, 
+    password: string, 
+    fullName: string, 
+    userType: 'independent_agent' | 'small_company',
+    companyName?: string,
+    userRole?: string
+  ) => Promise<{ error: any; data?: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   loading: boolean;
@@ -40,7 +46,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string, userType: 'independent_agent' | 'small_company') => {
+  const signUp = async (
+    email: string, 
+    password: string, 
+    fullName: string, 
+    userType: 'independent_agent' | 'small_company',
+    companyName?: string,
+    userRole?: string
+  ) => {
     try {
       // Verificar si ya existe un usuario con este email en la tabla profiles
       const { data: existingProfile } = await supabase
@@ -58,14 +71,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         };
       }
 
+      const userData: any = {
+        full_name: fullName,
+        user_type: userType,
+      };
+
+      // Agregar campos adicionales para empresas
+      if (userType === 'small_company' && companyName && userRole) {
+        userData.company_name = companyName;
+        userData.user_role = userRole;
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: {
-            full_name: fullName,
-            user_type: userType,
-          },
+          data: userData,
           emailRedirectTo: `${window.location.origin}/dashboard`
         }
       });
