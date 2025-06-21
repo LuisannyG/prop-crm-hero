@@ -50,15 +50,15 @@ const Contacts = () => {
   });
 
   const salesStages = [
-    { key: 'contacto_inicial_recibido', name: 'Contacto inicial recibido' },
-    { key: 'primer_contacto_activo', name: 'Primer contacto activo' },
-    { key: 'llenado_ficha', name: 'Llenado de ficha' },
-    { key: 'seguimiento_inicial', name: 'Seguimiento inicial' },
-    { key: 'agendamiento_visitas', name: 'Agendamiento de visitas o reuniones' },
-    { key: 'presentacion_personalizada', name: 'Presentación personalizada' },
-    { key: 'negociacion', name: 'Negociación' },
-    { key: 'cierre_firma_contrato', name: 'Cierre / Firma de contrato' },
-    { key: 'postventa_fidelizacion', name: 'Postventa y fidelización' }
+    { key: 'contacto_inicial_recibido', name: 'Contacto inicial recibido', color: '#ef4444' },
+    { key: 'primer_contacto_activo', name: 'Primer contacto activo', color: '#f97316' },
+    { key: 'llenado_ficha', name: 'Llenado de ficha', color: '#eab308' },
+    { key: 'seguimiento_inicial', name: 'Seguimiento inicial', color: '#84cc16' },
+    { key: 'agendamiento_visitas', name: 'Agendamiento de visitas o reuniones', color: '#22c55e' },
+    { key: 'presentacion_personalizada', name: 'Presentación personalizada', color: '#06b6d4' },
+    { key: 'negociacion', name: 'Negociación', color: '#3b82f6' },
+    { key: 'cierre_firma_contrato', name: 'Cierre / Firma de contrato', color: '#8b5cf6' },
+    { key: 'postventa_fidelizacion', name: 'Postventa y fidelización', color: '#10b981' }
   ];
 
   useEffect(() => {
@@ -98,12 +98,16 @@ const Contacts = () => {
 
       if (error) throw error;
       
+      // Create a map with the most recent stage for each contact
       const funnelMap = (data || []).reduce((acc, item) => {
-        acc[item.contact_id] = item.stage;
+        if (!acc[item.contact_id]) {
+          acc[item.contact_id] = item.stage;
+        }
         return acc;
       }, {} as {[key: string]: string});
       
       setSalesFunnelData(funnelMap);
+      console.log('Sales funnel data loaded:', funnelMap);
     } catch (error) {
       console.error('Error fetching sales funnel data:', error);
     }
@@ -162,46 +166,35 @@ const Contacts = () => {
 
       // Update or insert sales funnel stage
       if (contactId) {
-        // Check if sales funnel entry exists
-        const { data: existingFunnel } = await supabase
+        console.log('Updating sales funnel for contact:', contactId, 'with stage:', formData.sales_stage);
+        
+        // Delete existing funnel entries for this contact to avoid duplicates
+        await supabase
           .from('sales_funnel')
-          .select('id')
-          .eq('contact_id', contactId)
-          .single();
+          .delete()
+          .eq('contact_id', contactId);
 
-        const funnelData = {
-          contact_id: contactId,
-          user_id: user.id,
-          stage: formData.sales_stage,
-          stage_date: new Date().toISOString(),
-          notes: `Etapa actualizada: ${salesStages.find(s => s.key === formData.sales_stage)?.name}`
-        };
+        // Insert new funnel entry
+        const { error: funnelError } = await supabase
+          .from('sales_funnel')
+          .insert([{
+            contact_id: contactId,
+            user_id: user.id,
+            stage: formData.sales_stage,
+            stage_date: new Date().toISOString(),
+            notes: `Etapa actualizada: ${salesStages.find(s => s.key === formData.sales_stage)?.name}`
+          }]);
 
-        if (existingFunnel) {
-          // Update existing funnel entry
-          const { error: funnelError } = await supabase
-            .from('sales_funnel')
-            .update(funnelData)
-            .eq('id', existingFunnel.id);
-
-          if (funnelError) {
-            console.error('Error updating sales funnel:', funnelError);
-          }
+        if (funnelError) {
+          console.error('Error inserting sales funnel:', funnelError);
         } else {
-          // Insert new funnel entry
-          const { error: funnelError } = await supabase
-            .from('sales_funnel')
-            .insert([funnelData]);
-
-          if (funnelError) {
-            console.error('Error inserting sales funnel:', funnelError);
-          }
+          console.log('Sales funnel updated successfully');
         }
       }
 
       resetForm();
-      fetchContacts();
-      fetchSalesFunnelData();
+      await fetchContacts();
+      await fetchSalesFunnelData();
     } catch (error) {
       console.error('Error saving contact:', error);
       toast({
@@ -272,6 +265,10 @@ const Contacts = () => {
       case 'prospect': return 'bg-blue-500';
       default: return 'bg-gray-500';
     }
+  };
+
+  const getSalesStageInfo = (stageKey: string) => {
+    return salesStages.find(s => s.key === stageKey);
   };
 
   if (loading) {
@@ -483,97 +480,114 @@ const Contacts = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {contacts.map((contact) => (
-                    <TableRow key={contact.id}>
-                      <TableCell className="font-medium">{contact.full_name}</TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          {contact.email && (
-                            <div className="flex items-center text-sm text-gray-600">
-                              <Mail className="w-3 h-3 mr-1" />
-                              {contact.email}
-                            </div>
+                  {contacts.map((contact) => {
+                    const stageInfo = getSalesStageInfo(salesFunnelData[contact.id]);
+                    return (
+                      <TableRow key={contact.id}>
+                        <TableCell className="font-medium">{contact.full_name}</TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            {contact.email && (
+                              <div className="flex items-center text-sm text-gray-600">
+                                <Mail className="w-3 h-3 mr-1" />
+                                {contact.email}
+                              </div>
+                            )}
+                            {contact.phone && (
+                              <div className="flex items-center text-sm text-gray-600">
+                                <Phone className="w-3 h-3 mr-1" />
+                                {contact.phone}
+                              </div>
+                            )}
+                            {contact.address && (
+                              <div className="flex items-center text-sm text-gray-600">
+                                <MapPin className="w-3 h-3 mr-1" />
+                                {contact.address}
+                                {contact.district && `, ${contact.district}`}
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {contact.client_type && (
+                            <Badge variant="outline">
+                              {contact.client_type === 'familiar' ? 'Familiar' :
+                               contact.client_type === 'individual' ? 'Individual' :
+                               contact.client_type === 'negocio' ? 'Negocio' :
+                               contact.client_type === 'empresa' ? 'Empresa' :
+                               contact.client_type === 'inversionista' ? 'Inversionista' : 
+                               contact.client_type}
+                            </Badge>
                           )}
-                          {contact.phone && (
-                            <div className="flex items-center text-sm text-gray-600">
-                              <Phone className="w-3 h-3 mr-1" />
-                              {contact.phone}
-                            </div>
-                          )}
-                          {contact.address && (
-                            <div className="flex items-center text-sm text-gray-600">
-                              <MapPin className="w-3 h-3 mr-1" />
-                              {contact.address}
-                              {contact.district && `, ${contact.district}`}
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {contact.client_type && (
-                          <Badge variant="outline">
-                            {contact.client_type === 'familiar' ? 'Familiar' :
-                             contact.client_type === 'individual' ? 'Individual' :
-                             contact.client_type === 'negocio' ? 'Negocio' :
-                             contact.client_type === 'empresa' ? 'Empresa' :
-                             contact.client_type === 'inversionista' ? 'Inversionista' : 
-                             contact.client_type}
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getStatusColor(contact.status)}>
+                            {contact.status === 'prospect' ? 'Prospecto' : 'Cliente'}
                           </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getStatusColor(contact.status)}>
-                          {contact.status === 'prospect' ? 'Prospecto' : 'Cliente'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {salesFunnelData[contact.id] && (
-                          <Badge variant="outline" className="text-xs">
-                            {salesStages.find(s => s.key === salesFunnelData[contact.id])?.name || salesFunnelData[contact.id]}
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {contact.acquisition_source && (
-                          <span className="text-sm text-gray-600">
-                            {contact.acquisition_source === 'tiktok' ? 'TikTok' :
-                             contact.acquisition_source === 'instagram' ? 'Instagram' :
-                             contact.acquisition_source === 'facebook' ? 'Facebook' :
-                             contact.acquisition_source === 'referido' ? 'Referido' :
-                             contact.acquisition_source === 'feria-inmobiliaria' ? 'Feria Inmobiliaria' :
-                             contact.acquisition_source === 'google' ? 'Google' :
-                             contact.acquisition_source === 'whatsapp' ? 'WhatsApp' :
-                             contact.acquisition_source === 'llamada-fria' ? 'Llamada en frío' :
-                             contact.acquisition_source === 'sitio-web' ? 'Sitio Web' :
-                             contact.acquisition_source === 'otro' ? 'Otro' :
-                             contact.acquisition_source}
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {new Date(contact.created_at).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => startEdit(contact)}
-                          >
-                            <Edit className="w-3 h-3" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleDelete(contact.id)}
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                        </TableCell>
+                        <TableCell>
+                          {stageInfo ? (
+                            <Badge 
+                              variant="outline" 
+                              className="text-xs border-2"
+                              style={{ 
+                                borderColor: stageInfo.color, 
+                                color: stageInfo.color,
+                                backgroundColor: `${stageInfo.color}10`
+                              }}
+                            >
+                              {stageInfo.name}
+                            </Badge>
+                          ) : salesFunnelData[contact.id] ? (
+                            <Badge variant="outline" className="text-xs">
+                              {salesFunnelData[contact.id]}
+                            </Badge>
+                          ) : (
+                            <span className="text-gray-400 text-xs">Sin etapa</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {contact.acquisition_source && (
+                            <span className="text-sm text-gray-600">
+                              {contact.acquisition_source === 'tiktok' ? 'TikTok' :
+                               contact.acquisition_source === 'instagram' ? 'Instagram' :
+                               contact.acquisition_source === 'facebook' ? 'Facebook' :
+                               contact.acquisition_source === 'referido' ? 'Referido' :
+                               contact.acquisition_source === 'feria-inmobiliaria' ? 'Feria Inmobiliaria' :
+                               contact.acquisition_source === 'google' ? 'Google' :
+                               contact.acquisition_source === 'whatsapp' ? 'WhatsApp' :
+                               contact.acquisition_source === 'llamada-fria' ? 'Llamada en frío' :
+                               contact.acquisition_source === 'sitio-web' ? 'Sitio Web' :
+                               contact.acquisition_source === 'otro' ? 'Otro' :
+                               contact.acquisition_source}
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {new Date(contact.created_at).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => startEdit(contact)}
+                            >
+                              <Edit className="w-3 h-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleDelete(contact.id)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             )}
