@@ -79,6 +79,16 @@ const Contacts = () => {
     e.preventDefault();
     if (!user) return;
 
+    // Validate required fields
+    if (!formData.full_name || !formData.email || !formData.phone || !formData.address || !formData.district || !formData.status || !formData.client_type || !formData.acquisition_source) {
+      toast({
+        title: 'Error',
+        description: 'Todos los campos son obligatorios excepto las notas',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
       const contactData = {
         ...formData,
@@ -217,33 +227,36 @@ const Contacts = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">Email *</Label>
                   <Input
                     id="email"
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    required
                   />
                 </div>
                 <div>
-                  <Label htmlFor="phone">Teléfono</Label>
+                  <Label htmlFor="phone">Teléfono *</Label>
                   <Input
                     id="phone"
                     value={formData.phone}
                     onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    required
                   />
                 </div>
                 <div>
-                  <Label htmlFor="address">Dirección</Label>
+                  <Label htmlFor="address">Dirección *</Label>
                   <Input
                     id="address"
                     value={formData.address}
                     onChange={(e) => setFormData({...formData, address: e.target.value})}
+                    required
                   />
                 </div>
                 <div>
-                  <Label htmlFor="district">Distrito</Label>
-                  <Select value={formData.district} onValueChange={(value) => setFormData({...formData, district: value})}>
+                  <Label htmlFor="district">Distrito *</Label>
+                  <Select value={formData.district} onValueChange={(value) => setFormData({...formData, district: value})} required>
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccionar distrito" />
                     </SelectTrigger>
@@ -273,8 +286,8 @@ const Contacts = () => {
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="status">Estado</Label>
-                  <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
+                  <Label htmlFor="status">Estado *</Label>
+                  <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})} required>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -285,8 +298,8 @@ const Contacts = () => {
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="client_type">Tipo de Cliente</Label>
-                  <Select value={formData.client_type} onValueChange={(value) => setFormData({...formData, client_type: value})}>
+                  <Label htmlFor="client_type">Tipo de Cliente *</Label>
+                  <Select value={formData.client_type} onValueChange={(value) => setFormData({...formData, client_type: value})} required>
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccionar tipo" />
                     </SelectTrigger>
@@ -300,8 +313,8 @@ const Contacts = () => {
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="acquisition_source">¿Cómo nos conoció?</Label>
-                  <Select value={formData.acquisition_source} onValueChange={(value) => setFormData({...formData, acquisition_source: value})}>
+                  <Label htmlFor="acquisition_source">¿Cómo nos conoció? *</Label>
+                  <Select value={formData.acquisition_source} onValueChange={(value) => setFormData({...formData, acquisition_source: value})} required>
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccionar fuente" />
                     </SelectTrigger>
