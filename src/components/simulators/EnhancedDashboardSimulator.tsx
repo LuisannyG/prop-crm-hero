@@ -422,19 +422,31 @@ const EnhancedDashboardSimulator = () => {
                 <p>No hay datos del embudo de ventas</p>
               </div>
             ) : (
-              <div className="h-64">
+              <div className="h-64 mb-4">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={funnelData} layout="horizontal">
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis type="number" />
-                    <YAxis dataKey="name" type="category" width={120} />
+                    <YAxis dataKey="name" type="category" width={150} fontSize={10} />
                     <Tooltip />
-                    <Legend />
                     <Bar dataKey="value" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             )}
+            {/* Legend for sales funnel */}
+            <div className="grid grid-cols-1 gap-1 text-xs">
+              {funnelStages.map((stage, index) => (
+                <div key={stage.key} className="flex items-center gap-2">
+                  <div 
+                    className="w-3 h-3 rounded" 
+                    style={{ backgroundColor: stage.color }}
+                  ></div>
+                  <span className="text-gray-700">{stage.name}</span>
+                  <span className="text-gray-500">({funnelData[index]?.value || 0})</span>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
 

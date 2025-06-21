@@ -146,6 +146,7 @@ const Contacts = () => {
           .eq('id', editingContact.id);
 
         if (error) throw error;
+        contactId = editingContact.id;
         toast({ title: 'Contacto actualizado exitosamente' });
       } else {
         const { data, error } = await supabase
@@ -161,18 +162,40 @@ const Contacts = () => {
 
       // Update or insert sales funnel stage
       if (contactId) {
-        const { error: funnelError } = await supabase
+        // Check if sales funnel entry exists
+        const { data: existingFunnel } = await supabase
           .from('sales_funnel')
-          .upsert({
-            contact_id: contactId,
-            user_id: user.id,
-            stage: formData.sales_stage,
-            stage_date: new Date().toISOString(),
-            notes: `Etapa actualizada: ${salesStages.find(s => s.key === formData.sales_stage)?.name}`
-          });
+          .select('id')
+          .eq('contact_id', contactId)
+          .single();
 
-        if (funnelError) {
-          console.error('Error updating sales funnel:', funnelError);
+        const funnelData = {
+          contact_id: contactId,
+          user_id: user.id,
+          stage: formData.sales_stage,
+          stage_date: new Date().toISOString(),
+          notes: `Etapa actualizada: ${salesStages.find(s => s.key === formData.sales_stage)?.name}`
+        };
+
+        if (existingFunnel) {
+          // Update existing funnel entry
+          const { error: funnelError } = await supabase
+            .from('sales_funnel')
+            .update(funnelData)
+            .eq('id', existingFunnel.id);
+
+          if (funnelError) {
+            console.error('Error updating sales funnel:', funnelError);
+          }
+        } else {
+          // Insert new funnel entry
+          const { error: funnelError } = await supabase
+            .from('sales_funnel')
+            .insert([funnelData]);
+
+          if (funnelError) {
+            console.error('Error inserting sales funnel:', funnelError);
+          }
         }
       }
 
@@ -505,7 +528,7 @@ const Contacts = () => {
                       </TableCell>
                       <TableCell>
                         {salesFunnelData[contact.id] && (
-                          <Badge variant="outline">
+                          <Badge variant="outline" className="text-xs">
                             {salesStages.find(s => s.key === salesFunnelData[contact.id])?.name || salesFunnelData[contact.id]}
                           </Badge>
                         )}
