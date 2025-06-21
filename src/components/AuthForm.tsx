@@ -70,7 +70,7 @@ const AuthForm = () => {
         if (result.error.message?.includes('User already registered') || 
             result.error.code === 'user_already_exists' ||
             result.error.message?.includes('already been registered')) {
-          errorMessage = 'Esta cuenta ya existe. Intenta iniciar sesión en su lugar.';
+          errorMessage = 'Esta cuenta ya está creada. Puedes iniciar sesión directamente.';
           // Cambiar automáticamente al modo login
           setIsLogin(true);
           setFormData(prev => ({ ...prev, password: '', fullName: '', userType: 'independent_agent' }));
