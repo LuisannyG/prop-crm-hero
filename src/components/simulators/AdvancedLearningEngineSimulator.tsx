@@ -1,448 +1,467 @@
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Brain, 
   TrendingUp, 
   Target, 
-  AlertTriangle, 
-  Zap, 
-  BarChart3,
-  PieChart,
-  Activity,
-  Cpu,
-  Database,
-  Network,
-  Eye
-} from 'lucide-react';
-import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar, PieChart as RechartsPieChart, Cell } from 'recharts';
+  BarChart3, 
+  Users, 
+  DollarSign, 
+  Calendar,
+  Crown,
+  Zap,
+  Star,
+  Bot,
+  ChartBar,
+  Lightbulb
+} from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
 
 const AdvancedLearningEngineSimulator = () => {
-  const [progress, setProgress] = useState(0);
-  const [analyzing, setAnalyzing] = useState(true);
-  const [currentPhase, setCurrentPhase] = useState(0);
+  const [selectedPeriod, setSelectedPeriod] = useState("30d");
+  const [activeTab, setActiveTab] = useState("analytics");
 
-  const analysisPhases = [
-    "Recolectando datos del mercado...",
-    "Analizando patrones de comportamiento...",
-    "Procesando tendencias inmobiliarias...",
-    "Generando predicciones IA...",
-    "Optimizando estrategias...",
-    "Análisis completado ✓"
+  // Datos simulados para análisis predictivo
+  const predictiveData = [
+    { month: "Ene", ventas: 15, prediccion: 18, trend: 85 },
+    { month: "Feb", ventas: 22, prediccion: 25, trend: 88 },
+    { month: "Mar", ventas: 18, prediccion: 28, trend: 92 },
+    { month: "Abr", ventas: 31, prediccion: 32, trend: 96 },
+    { month: "May", ventas: 29, prediccion: 35, trend: 98 },
+    { month: "Jun", ventas: 35, prediccion: 38, trend: 95 }
   ];
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          setAnalyzing(false);
-          return 100;
-        }
-        const newProgress = prev + 2;
-        setCurrentPhase(Math.floor(newProgress / 20));
-        return newProgress;
-      });
-    }, 100);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // Datos para gráficos
-  const marketTrendData = [
-    { month: 'Ene', precio: 450000, volumen: 120, prediccion: 465000 },
-    { month: 'Feb', precio: 462000, volumen: 135, prediccion: 470000 },
-    { month: 'Mar', precio: 458000, volumen: 142, prediccion: 475000 },
-    { month: 'Abr', precio: 471000, volumen: 156, prediccion: 480000 },
-    { month: 'May', precio: 485000, volumen: 171, prediccion: 492000 },
-    { month: 'Jun', precio: 478000, volumen: 163, prediccion: 495000 }
+  // Datos de comportamiento de clientes
+  const clientBehaviorData = [
+    { segment: "Inversionistas", interes: 92, conversion: 45, value: 35 },
+    { segment: "Familias", interes: 78, conversion: 62, value: 45 },
+    { segment: "Jóvenes", interes: 85, conversion: 38, value: 15 },
+    { segment: "Jubilados", interes: 65, conversion: 72, value: 5 }
   ];
 
-  const propertyTypeData = [
-    { type: 'Apartamentos', value: 45, color: '#3B82F6' },
-    { type: 'Casas', value: 30, color: '#10B981' },
-    { type: 'Locales', value: 15, color: '#F59E0B' },
-    { type: 'Oficinas', value: 10, color: '#EF4444' }
-  ];
-
-  const zonePerformanceData = [
-    { zona: 'San Isidro', actual: 520000, prediccion: 562000, confidence: 94 },
-    { zona: 'Miraflores', actual: 480000, prediccion: 518000, confidence: 89 },
-    { zona: 'Surco', actual: 380000, prediccion: 437000, confidence: 96 },
-    { zona: 'La Molina', actual: 420000, prediccion: 445000, confidence: 82 },
-    { zona: 'San Borja', actual: 350000, prediccion: 378000, confidence: 91 }
-  ];
-
-  const marketPredictions = [
-    { zone: "San Isidro", trend: "+12%", confidence: 94, risk: "Bajo" },
-    { zone: "Miraflores", trend: "+8%", confidence: 89, risk: "Medio" },
-    { zone: "Surco", trend: "+15%", confidence: 96, risk: "Bajo" },
-    { zone: "La Molina", trend: "+6%", confidence: 82, risk: "Alto" }
-  ];
-
-  const aiInsights = [
-    { type: "Oportunidad", icon: Target, message: "Propiedades en Surco tienen 73% probabilidad de incremento", color: "text-green-500" },
-    { type: "Alerta", icon: AlertTriangle, message: "Mercado saturado en Barranco - evitar inversiones", color: "text-orange-500" },
-    { type: "Tendencia", icon: TrendingUp, message: "Departamentos de 2 dormitorios aumentarán 18% en Q3", color: "text-blue-500" }
-  ];
-
-  const performanceMetrics = [
-    { label: "Precisión IA", value: 94, max: 100, color: "bg-green-500" },
-    { label: "Velocidad Análisis", value: 87, max: 100, color: "bg-blue-500" },
-    { label: "Datos Procesados", value: 76, max: 100, color: "bg-purple-500" },
-    { label: "Confiabilidad", value: 92, max: 100, color: "bg-orange-500" }
-  ];
-
-  const chartConfig = {
-    precio: {
-      label: "Precio Actual",
-      color: "#3B82F6",
+  // Recomendaciones de IA
+  const aiRecommendations = [
+    {
+      id: 1,
+      type: "precio",
+      titulo: "Optimización de Precio - Salamanca",
+      descripcion: "Reducir precio en 5% puede aumentar interés en 40%",
+      impacto: "Alto",
+      confianza: 94
     },
-    prediccion: {
-      label: "Predicción IA",
-      color: "#10B981",
+    {
+      id: 2,
+      type: "marketing",
+      titulo: "Segmentación de Audiencia",
+      descripcion: "Enfocar marketing en familias jóvenes incrementará ROI 25%",
+      impacto: "Medio",
+      confianza: 87
     },
-    volumen: {
-      label: "Volumen",
-      color: "#F59E0B",
+    {
+      id: 3,
+      type: "timing",
+      titulo: "Momento Optimal de Contacto",
+      descripcion: "Contactar clientes los martes por la tarde mejora respuesta 30%",
+      impacto: "Medio",
+      confianza: 91
     }
-  };
+  ];
+
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
   return (
     <div className="space-y-6">
-      {/* Header con estado del análisis */}
-      <Card className="border-2 border-blue-500/20 bg-gradient-to-r from-blue-50 to-purple-50">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-500 rounded-lg">
-                <Brain className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <CardTitle className="text-xl">Sistema de Análisis Predictivo IA</CardTitle>
-                <p className="text-sm text-gray-600">Versión 3.2.1 - Neural Engine Activo</p>
-              </div>
+      {/* Anuncio Premium llamativo */}
+      <div className="relative overflow-hidden">
+        <Card className="border-4 border-gradient-to-r from-blue-400 via-purple-500 to-pink-500 shadow-2xl bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
+          <CardContent className="p-6 text-white relative">
+            <div className="absolute top-0 right-0 bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-4 py-1 rounded-bl-lg font-bold text-sm animate-pulse">
+              🧠 IA PREMIUM
             </div>
-            <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${analyzing ? 'bg-green-500 animate-pulse' : 'bg-blue-500'}`}></div>
-              <span className="text-sm font-medium">
-                {analyzing ? 'Analizando...' : 'Listo'}
-              </span>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium">Progreso del Análisis</span>
-              <span className="text-sm text-gray-600">{progress}%</span>
-            </div>
-            <Progress value={progress} className="h-2" />
-            <p className="text-sm text-blue-600 font-medium">
-              {analysisPhases[Math.min(currentPhase, analysisPhases.length - 1)]}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Gráficos principales */}
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Tendencias del mercado con líneas */}
-        <Card className="border border-blue-200 bg-blue-50/30">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-blue-800">
-              <TrendingUp className="w-5 h-5" />
-              Tendencias del Mercado IA
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="h-[300px]">
-              <LineChart data={marketTrendData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
-                <ChartTooltip 
-                  content={<ChartTooltipContent />}
-                  formatter={(value, name) => [
-                    `$${(value as number).toLocaleString()}`, 
-                    name === 'precio' ? 'Precio Actual' : 'Predicción IA'
-                  ]}
-                />
-                <ChartLegend content={<ChartLegendContent />} />
-                <Line 
-                  type="monotone" 
-                  dataKey="precio" 
-                  stroke="#3B82F6" 
-                  strokeWidth={3}
-                  dot={{ r: 4 }}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="prediccion" 
-                  stroke="#10B981" 
-                  strokeWidth={2}
-                  strokeDasharray="5 5"
-                  dot={{ r: 3 }}
-                />
-              </LineChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-
-        {/* Distribución por tipo de propiedad */}
-        <Card className="border border-green-200 bg-green-50/30">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-green-800">
-              <PieChart className="w-5 h-5" />
-              Distribución del Mercado
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <RechartsPieChart>
-                  <RechartsPieChart data={propertyTypeData}>
-                    {propertyTypeData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </RechartsPieChart>
-                  <ChartTooltip 
-                    formatter={(value, name) => [`${value}%`, name]}
-                  />
-                  <ChartLegend />
-                </RechartsPieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              {propertyTypeData.map((item, index) => (
-                <div key={index} className="flex items-center gap-2 text-sm">
-                  <div 
-                    className="w-3 h-3 rounded-full" 
-                    style={{ backgroundColor: item.color }}
-                  ></div>
-                  <span>{item.type}: {item.value}%</span>
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <Brain className="w-8 h-8 text-blue-400 animate-pulse" />
+                  <h2 className="text-2xl font-bold">¡Motor de Aprendizaje IA Bloqueado!</h2>
+                  <Bot className="w-6 h-6 text-purple-400 animate-bounce" />
                 </div>
-              ))}
+                <p className="text-blue-100 mb-4">
+                  El <strong>Motor de Aprendizaje con IA</strong> es una función exclusiva Premium. 
+                  ¡Usa inteligencia artificial para predecir tendencias y optimizar tus estrategias automáticamente!
+                </p>
+                <div className="flex items-center gap-4 text-sm">
+                  <div className="flex items-center gap-1">
+                    <ChartBar className="w-4 h-4 text-blue-400" />
+                    <span>Análisis Predictivo</span>
+                  </div>
+                  <div className="text-blue-300">•</div>
+                  <div className="flex items-center gap-1">
+                    <Lightbulb className="w-4 h-4 text-yellow-400" />
+                    <span>Recomendaciones IA</span>
+                  </div>
+                  <div className="text-blue-300">•</div>
+                  <div className="flex items-center gap-1">
+                    <Target className="w-4 h-4 text-green-400" />
+                    <span>Optimización Automática</span>
+                  </div>
+                </div>
+              </div>
+              <div className="text-center">
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-to-r from-blue-400 to-purple-600 hover:from-blue-500 hover:to-purple-700 text-white font-bold px-8 py-4 text-lg shadow-xl transform hover:scale-105 transition-all duration-200 animate-pulse"
+                >
+                  🚀 Activar IA por S/60/mes
+                </Button>
+                <p className="text-xs text-blue-200 mt-2">
+                  Incluye todas las funciones Premium
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Gráfico de barras - Rendimiento por zona */}
-      <Card className="border border-purple-200 bg-purple-50/30">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-purple-800">
-            <BarChart3 className="w-5 h-5" />
-            Análisis Predictivo por Zonas
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer config={chartConfig} className="h-[350px]">
-            <BarChart data={zonePerformanceData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="zona" />
-              <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
-              <ChartTooltip 
-                content={<ChartTooltipContent />}
-                formatter={(value, name) => [
-                  `$${(value as number).toLocaleString()}`, 
-                  name === 'actual' ? 'Precio Actual' : 'Predicción IA'
-                ]}
-              />
-              <ChartLegend content={<ChartLegendContent />} />
-              <Bar dataKey="actual" fill="#3B82F6" name="Precio Actual" />
-              <Bar dataKey="prediccion" fill="#10B981" name="Predicción IA" />
-            </BarChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
+      <div className="relative">
+        <div className="absolute inset-0 bg-gray-900/30 z-10 flex items-center justify-center">
+          <div className="bg-white/95 p-8 rounded-lg shadow-2xl text-center max-w-md">
+            <Brain className="w-16 h-16 mx-auto mb-4 text-purple-600 animate-pulse" />
+            <h3 className="text-2xl font-bold mb-2">Vista Previa del Motor IA</h3>
+            <p className="text-gray-600 mb-4">Esta es solo una pequeña muestra del poder de la inteligencia artificial aplicada a tu negocio inmobiliario</p>
+            <Button className="bg-gradient-to-r from-purple-600 to-blue-600 text-white mb-2">
+              Desbloquear Motor IA Completo
+            </Button>
+            <p className="text-xs text-gray-500">+40% más ventas garantizado</p>
+          </div>
+        </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Predicciones de Mercado */}
-        <Card className="border border-green-200 bg-green-50/30">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-green-800">
-              <TrendingUp className="w-5 h-5" />
-              Predicciones de Mercado IA
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {marketPredictions.map((pred, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-white rounded-lg border">
-                  <div>
-                    <p className="font-medium">{pred.zone}</p>
-                    <p className="text-sm text-gray-600">Proyección 6 meses</p>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="opacity-60">
+          <div className="flex justify-between items-center mb-6">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="analytics">
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Analytics IA
+              </TabsTrigger>
+              <TabsTrigger value="predictions">
+                <TrendingUp className="w-4 h-4 mr-2" />
+                Predicciones
+              </TabsTrigger>
+              <TabsTrigger value="insights">
+                <Brain className="w-4 h-4 mr-2" />
+                Insights
+              </TabsTrigger>
+              <TabsTrigger value="recommendations">
+                <Target className="w-4 h-4 mr-2" />
+                Recomendaciones
+              </TabsTrigger>
+            </TabsList>
+            
+            <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="7d">7 días</SelectItem>
+                <SelectItem value="30d">30 días</SelectItem>
+                <SelectItem value="90d">90 días</SelectItem>
+                <SelectItem value="1y">1 año</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <TabsContent value="analytics" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <Brain className="w-8 h-8 mx-auto mb-2 text-purple-600" />
+                  <div className="text-2xl font-bold text-purple-600">94%</div>
+                  <div className="text-sm text-gray-600">Precisión IA</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <TrendingUp className="w-8 h-8 mx-auto mb-2 text-green-600" />
+                  <div className="text-2xl font-bold text-green-600">+127%</div>
+                  <div className="text-sm text-gray-600">ROI Mejorado</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <Target className="w-8 h-8 mx-auto mb-2 text-blue-600" />
+                  <div className="text-2xl font-bold text-blue-600">38</div>
+                  <div className="text-sm text-gray-600">Leads Calificados</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <DollarSign className="w-8 h-8 mx-auto mb-2 text-yellow-600" />
+                  <div className="text-2xl font-bold text-yellow-600">S/2.4M</div>
+                  <div className="text-sm text-gray-600">Ventas Proyectadas</div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5" />
+                    Análisis de Comportamiento por Segmento
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={clientBehaviorData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="segment" />
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="interes" fill="#8884d8" name="Interés %" />
+                        <Bar dataKey="conversion" fill="#82ca9d" name="Conversión %" />
+                      </BarChart>
+                    </ResponsiveContainer>
                   </div>
-                  <div className="text-right">
-                    <p className="text-lg font-bold text-green-600">{pred.trend}</p>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs">Confianza: {pred.confidence}%</span>
-                      <Badge variant={pred.risk === 'Bajo' ? 'default' : pred.risk === 'Medio' ? 'secondary' : 'destructive'} className="text-xs">
-                        {pred.risk}
-                      </Badge>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="w-5 h-5" />
+                    Distribución de Clientes
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={clientBehaviorData}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                          label={({ segment, percent }) => `${segment} ${(percent * 100).toFixed(0)}%`}
+                        >
+                          {clientBehaviorData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="predictions" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5" />
+                  Predicciones de Ventas con IA
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-96">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={predictiveData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip />
+                      <Line 
+                        type="monotone" 
+                        dataKey="ventas" 
+                        stroke="#8884d8" 
+                        strokeWidth={2}
+                        name="Ventas Reales"
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="prediccion" 
+                        stroke="#82ca9d" 
+                        strokeWidth={2}
+                        strokeDasharray="5 5"
+                        name="Predicción IA"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card className="bg-green-50 border-green-200">
+                <CardContent className="p-4 text-center">
+                  <TrendingUp className="w-8 h-8 mx-auto mb-2 text-green-600" />
+                  <div className="text-lg font-bold text-green-600">Próximo Mes</div>
+                  <div className="text-2xl font-bold">42 Ventas</div>
+                  <div className="text-sm text-gray-600">+24% vs mes anterior</div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-blue-50 border-blue-200">
+                <CardContent className="p-4 text-center">
+                  <Calendar className="w-8 h-8 mx-auto mb-2 text-blue-600" />
+                  <div className="text-lg font-bold text-blue-600">Trimestre</div>
+                  <div className="text-2xl font-bold">S/3.2M</div>
+                  <div className="text-sm text-gray-600">Ingresos proyectados</div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-purple-50 border-purple-200">
+                <CardContent className="p-4 text-center">
+                  <Target className="w-8 h-8 mx-auto mb-2 text-purple-600" />
+                  <div className="text-lg font-bold text-purple-600">Mejor Momento</div>
+                  <div className="text-lg font-bold">Mar 15-22</div>
+                  <div className="text-sm text-gray-600">Para lanzar campañas</div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="insights" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Brain className="w-5 h-5" />
+                    Insights Automatizados
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                        <span className="font-medium">Patrón Detectado</span>
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        Los clientes contactados los martes tienen 34% más probabilidad de responder positivamente.
+                      </p>
+                    </div>
+                    
+                    <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                        <span className="font-medium">Oportunidad</span>
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        El segmento "Familias jóvenes" muestra alta intención de compra pero baja conversión. Revisar estrategia.
+                      </p>
+                    </div>
+                    
+                    <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-2 h-2 bg-yellow-600 rounded-full"></div>
+                        <span className="font-medium">Alerta</span>
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        Las propiedades en Miraflores están recibiendo menos visitas. Considerar ajuste de precio.
+                      </p>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                </CardContent>
+              </Card>
 
-        {/* Insights de IA */}
-        <Card className="border border-purple-200 bg-purple-50/30">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-purple-800">
-              <Zap className="w-5 h-5" />
-              Insights Inteligentes
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {aiInsights.map((insight, index) => {
-                const Icon = insight.icon;
-                return (
-                  <div key={index} className="flex items-start gap-3 p-3 bg-white rounded-lg border">
-                    <Icon className={`w-5 h-5 mt-0.5 ${insight.color}`} />
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5" />
+                    Métricas de Rendimiento
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
                     <div>
-                      <p className="font-medium text-sm">{insight.type}</p>
-                      <p className="text-sm text-gray-700">{insight.message}</p>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-sm">Efectividad de Contacto</span>
+                        <span className="text-sm font-medium">78%</span>
+                      </div>
+                      <Progress value={78} className="h-2" />
+                    </div>
+                    
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-sm">Calidad de Leads</span>
+                        <span className="text-sm font-medium">92%</span>
+                      </div>
+                      <Progress value={92} className="h-2" />
+                    </div>
+                    
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-sm">Velocidad de Conversión</span>
+                        <span className="text-sm font-medium">85%</span>
+                      </div>
+                      <Progress value={85} className="h-2" />
+                    </div>
+                    
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-sm">Satisfacción del Cliente</span>
+                        <span className="text-sm font-medium">96%</span>
+                      </div>
+                      <Progress value={96} className="h-2" />
                     </div>
                   </div>
-                );
-              })}
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </TabsContent>
 
-      {/* Métricas de Rendimiento del Sistema */}
-      <Card className="border border-blue-200 bg-blue-50/30">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-blue-800">
-            <Activity className="w-5 h-5" />
-            Rendimiento del Motor Neural
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {performanceMetrics.map((metric, index) => (
-              <div key={index} className="text-center p-4 bg-white rounded-lg border">
-                <p className="text-2xl font-bold text-gray-800">{metric.value}%</p>
-                <p className="text-sm text-gray-600 mb-2">{metric.label}</p>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className={`h-2 rounded-full ${metric.color}`}
-                    style={{ width: `${metric.value}%` }}
-                  ></div>
+          <TabsContent value="recommendations" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="w-5 h-5" />
+                  Recomendaciones Personalizadas de IA
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {aiRecommendations.map((rec) => (
+                    <div key={rec.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-medium">{rec.titulo}</h4>
+                        <div className="flex gap-2">
+                          <Badge variant={rec.impacto === 'Alto' ? 'destructive' : 'default'}>
+                            {rec.impacto}
+                          </Badge>
+                          <Badge variant="outline">
+                            {rec.confianza}% confianza
+                          </Badge>
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-3">{rec.descripcion}</p>
+                      <div className="flex justify-between items-center">
+                        <div className="text-xs text-gray-500">
+                          Tipo: {rec.type} • Confianza: {rec.confianza}%
+                        </div>
+                        <Button size="sm" variant="outline">
+                          Aplicar Recomendación
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Panel de Control Avanzado */}
-      <div className="grid md:grid-cols-3 gap-6">
-        <Card className="border border-orange-200 bg-orange-50/30">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-orange-800 text-sm">
-              <BarChart3 className="w-4 h-4" />
-              Análisis de Datos
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Propiedades analizadas</span>
-                <span className="font-bold">12,847</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Transacciones procesadas</span>
-                <span className="font-bold">3,291</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Patrones identificados</span>
-                <span className="font-bold">156</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-indigo-200 bg-indigo-50/30">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-indigo-800 text-sm">
-              <Database className="w-4 h-4" />
-              Base de Datos IA
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Modelos entrenados</span>
-                <span className="font-bold">23</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Precisión promedio</span>
-                <span className="font-bold">94.2%</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Última actualización</span>
-                <span className="font-bold">2 min ago</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-pink-200 bg-pink-50/30">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-pink-800 text-sm">
-              <Network className="w-4 h-4" />
-              Red Neural
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Nodos activos</span>
-                <span className="font-bold">1,024</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Conexiones</span>
-                <span className="font-bold">45,892</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Estado</span>
-                <span className="font-bold text-green-600">Óptimo</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
-
-      {/* Visualización de datos en tiempo real */}
-      <Card className="border-2 border-gradient-to-r from-cyan-500 to-blue-500 bg-gradient-to-br from-cyan-50 to-blue-50">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-cyan-800">
-            <Eye className="w-5 h-5" />
-            Monitor de Actividad en Tiempo Real
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="bg-black rounded-lg p-4 font-mono text-green-400 text-sm">
-            <div className="space-y-1">
-              <p>[{new Date().toLocaleTimeString()}] Neural network processing market data...</p>
-              <p>[{new Date().toLocaleTimeString()}] Pattern recognition: 94.7% confidence</p>
-              <p>[{new Date().toLocaleTimeString()}] Predictive model updated: San Isidro sector</p>
-              <p>[{new Date().toLocaleTimeString()}] AI recommendation generated: BUY signal</p>
-              <p>[{new Date().toLocaleTimeString()}] Risk assessment completed: LOW risk zone</p>
-              <p className="text-yellow-400">[{new Date().toLocaleTimeString()}] System status: OPTIMAL</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };

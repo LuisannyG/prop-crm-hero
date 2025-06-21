@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { AlertTriangle, Filter, ArrowUpDown, Clock, Calendar, MessageSquare } from "lucide-react";
+import { AlertTriangle, Filter, ArrowUpDown, Clock, Calendar, MessageSquare, Crown, Zap, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -89,7 +89,68 @@ const RiskDetectionSimulator = () => {
 
   return (
     <div className="space-y-6">
-      <Card className="shadow-md">
+      {/* Anuncio Premium llamativo */}
+      <div className="relative overflow-hidden">
+        <Card className="border-4 border-gradient-to-r from-yellow-400 via-red-500 to-pink-500 shadow-2xl bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+          <CardContent className="p-6 text-white relative">
+            <div className="absolute top-0 right-0 bg-yellow-400 text-purple-900 px-4 py-1 rounded-bl-lg font-bold text-sm animate-pulse">
+              🔥 PREMIUM
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <Crown className="w-8 h-8 text-yellow-400" />
+                  <h2 className="text-2xl font-bold">¡Función Premium Bloqueada!</h2>
+                  <Zap className="w-6 h-6 text-yellow-400 animate-bounce" />
+                </div>
+                <p className="text-blue-100 mb-4">
+                  El sistema de <strong>Detección de Riesgo de No Compra</strong> es una función exclusiva para usuarios Premium. 
+                  ¡Identifica clientes en riesgo antes de perderlos y aumenta tus ventas un 40%!
+                </p>
+                <div className="flex items-center gap-4 text-sm">
+                  <div className="flex items-center gap-1">
+                    <Star className="w-4 h-4 text-yellow-400" />
+                    <span>IA Avanzada</span>
+                  </div>
+                  <div className="text-blue-300">•</div>
+                  <div className="flex items-center gap-1">
+                    <AlertTriangle className="w-4 h-4 text-red-400" />
+                    <span>Alertas Automáticas</span>
+                  </div>
+                  <div className="text-blue-300">•</div>
+                  <div className="flex items-center gap-1">
+                    <MessageSquare className="w-4 h-4 text-green-400" />
+                    <span>Estrategias de Recuperación</span>
+                  </div>
+                </div>
+              </div>
+              <div className="text-center">
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black font-bold px-8 py-4 text-lg shadow-xl transform hover:scale-105 transition-all duration-200 animate-pulse"
+                >
+                  🚀 Desbloquear por S/60/mes
+                </Button>
+                <p className="text-xs text-blue-200 mt-2">
+                  7 días gratis • Sin compromiso
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="shadow-md opacity-60 relative">
+        <div className="absolute inset-0 bg-gray-900/20 z-10 flex items-center justify-center">
+          <div className="bg-white/95 p-6 rounded-lg shadow-xl text-center">
+            <Crown className="w-12 h-12 mx-auto mb-4 text-yellow-500" />
+            <h3 className="text-xl font-bold mb-2">Vista Previa Limitada</h3>
+            <p className="text-gray-600 mb-4">Esta es solo una muestra del poder del sistema de detección de riesgo</p>
+            <Button className="bg-gradient-to-r from-purple-600 to-blue-600 text-white">
+              Activar Función Completa
+            </Button>
+          </div>
+        </div>
         <CardHeader className="bg-blue-50">
           <CardTitle className="text-blue-800 flex items-center gap-2">
             <AlertTriangle className="h-5 w-5" />
