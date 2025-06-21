@@ -20,6 +20,7 @@ interface Contact {
   email?: string;
   phone?: string;
   address?: string;
+  district?: string;
   notes?: string;
   status: string;
   created_at: string;
@@ -37,6 +38,7 @@ const Contacts = () => {
     email: '',
     phone: '',
     address: '',
+    district: '',
     notes: '',
     status: 'prospect'
   });
@@ -133,6 +135,7 @@ const Contacts = () => {
       email: '',
       phone: '',
       address: '',
+      district: '',
       notes: '',
       status: 'prospect'
     });
@@ -146,6 +149,7 @@ const Contacts = () => {
       email: contact.email || '',
       phone: contact.phone || '',
       address: contact.address || '',
+      district: contact.district || '',
       notes: contact.notes || '',
       status: contact.status
     });
@@ -230,12 +234,43 @@ const Contacts = () => {
                   />
                 </div>
                 <div>
+                  <Label htmlFor="district">Distrito</Label>
+                  <Select value={formData.district} onValueChange={(value) => setFormData({...formData, district: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar distrito" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white z-50">
+                      <SelectItem value="miraflores">Miraflores</SelectItem>
+                      <SelectItem value="san-isidro">San Isidro</SelectItem>
+                      <SelectItem value="barranco">Barranco</SelectItem>
+                      <SelectItem value="surco">Surco</SelectItem>
+                      <SelectItem value="la-molina">La Molina</SelectItem>
+                      <SelectItem value="chorrillos">Chorrillos</SelectItem>
+                      <SelectItem value="magdalena">Magdalena del Mar</SelectItem>
+                      <SelectItem value="pueblo-libre">Pueblo Libre</SelectItem>
+                      <SelectItem value="jesus-maria">Jesús María</SelectItem>
+                      <SelectItem value="lince">Lince</SelectItem>
+                      <SelectItem value="san-borja">San Borja</SelectItem>
+                      <SelectItem value="surquillo">Surquillo</SelectItem>
+                      <SelectItem value="lima">Lima Cercado</SelectItem>
+                      <SelectItem value="breña">Breña</SelectItem>
+                      <SelectItem value="rimac">Rímac</SelectItem>
+                      <SelectItem value="callao">Callao</SelectItem>
+                      <SelectItem value="san-miguel">San Miguel</SelectItem>
+                      <SelectItem value="los-olivos">Los Olivos</SelectItem>
+                      <SelectItem value="comas">Comas</SelectItem>
+                      <SelectItem value="independencia">Independencia</SelectItem>
+                      <SelectItem value="san-martin-porres">San Martín de Porres</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
                   <Label htmlFor="status">Estado</Label>
                   <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white z-50">
                       <SelectItem value="prospect">Prospecto</SelectItem>
                       <SelectItem value="client">Cliente</SelectItem>
                       <SelectItem value="inactive">Inactivo</SelectItem>
@@ -306,6 +341,7 @@ const Contacts = () => {
                             <div className="flex items-center text-sm text-gray-600">
                               <MapPin className="w-3 h-3 mr-1" />
                               {contact.address}
+                              {contact.district && `, ${contact.district}`}
                             </div>
                           )}
                         </div>
