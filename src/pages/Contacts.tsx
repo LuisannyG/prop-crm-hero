@@ -68,110 +68,22 @@ const Contacts = () => {
     }
   }, [user]);
 
-  // Update Maryuri's sales stage after data is loaded
-  useEffect(() => {
-    const updateMayuriStage = async () => {
-      if (user && contacts.length > 0) {
-        const mayuriContact = contacts.find(contact => 
-          contact.full_name.toLowerCase().includes('maryuri') || 
-          contact.full_name.toLowerCase().includes('mayuri')
-        );
-        
-        if (mayuriContact) {
-          console.log('Found Maryuri contact:', mayuriContact.id);
-          console.log('Current sales funnel data:', salesFunnelData);
-          
-          const currentStage = salesFunnelData[mayuriContact.id];
-          console.log('Maryuri current stage:', currentStage);
-          
-          if (currentStage !== 'primer_contacto_activo') {
-            try {
-              // First, try to update existing record if any
-              const { data: existingRecord } = await supabase
-                .from('sales_funnel')
-                .select('id')
-                .eq('contact_id', mayuriContact.id)
-                .order('stage_date', { ascending: false })
-                .limit(1)
-                .single();
-
-              if (existingRecord) {
-                // Update existing record
-                const { error } = await supabase
-                  .from('sales_funnel')
-                  .update({
-                    stage: 'primer_contacto_activo',
-                    stage_date: new Date().toISOString(),
-                    notes: 'Etapa actualizada automáticamente: Primer contacto activo'
-                  })
-                  .eq('id', existingRecord.id);
-
-                if (error) {
-                  console.error('Error updating Maryuri stage (update):', error);
-                } else {
-                  console.log('Successfully updated Maryuri to primer_contacto_activo');
-                  setSalesFunnelData(prev => ({
-                    ...prev,
-                    [mayuriContact.id]: 'primer_contacto_activo'
-                  }));
-                  toast({
-                    title: 'Etapa actualizada',
-                    description: 'Maryuri ha sido actualizada a "Primer contacto activo"'
-                  });
-                }
-              } else {
-                // Insert new record
-                const { error } = await supabase
-                  .from('sales_funnel')
-                  .insert([{
-                    contact_id: mayuriContact.id,
-                    user_id: user.id,
-                    stage: 'primer_contacto_activo',
-                    stage_date: new Date().toISOString(),
-                    notes: 'Etapa creada automáticamente: Primer contacto activo'
-                  }]);
-
-                if (error) {
-                  console.error('Error updating Maryuri stage (insert):', error);
-                  console.error('Error details:', error.details, error.hint, error.message);
-                } else {
-                  console.log('Successfully created Maryuri stage as primer_contacto_activo');
-                  setSalesFunnelData(prev => ({
-                    ...prev,
-                    [mayuriContact.id]: 'primer_contacto_activo'
-                  }));
-                  toast({
-                    title: 'Etapa creada',
-                    description: 'Maryuri ha sido configurada en "Primer contacto activo"'
-                  });
-                }
-              }
-            } catch (error) {
-              console.error('Error in updateMayuriStage:', error);
-            }
-          }
-        } else {
-          console.log('Maryuri contact not found in contacts:', contacts.map(c => c.full_name));
-        }
-      }
-    };
-
-    // Only run after both contacts and salesFunnelData are loaded
-    if (contacts.length > 0 && Object.keys(salesFunnelData).length >= 0) {
-      updateMayuriStage();
-    }
-  }, [user, contacts, salesFunnelData]);
-
   const fetchContacts = async () => {
     try {
+      console.log('Fetching contacts for user:', user?.id);
       const { data, error } = await supabase
         .from('contacts')
         .select('*')
+        .eq('user_id', user?.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching contacts:', error);
+        throw error;
+      }
+      
+      console.log('Contacts fetched:', data);
       setContacts(data || []);
-      console.log('Contacts loaded:', data);
     } catch (error) {
       console.error('Error fetching contacts:', error);
       toast({
@@ -186,12 +98,19 @@ const Contacts = () => {
 
   const fetchSalesFunnelData = async () => {
     try {
+      console.log('Fetching sales funnel data for user:', user?.id);
       const { data, error } = await supabase
         .from('sales_funnel')
         .select('contact_id, stage, stage_date')
+        .eq('user_id', user?.id)
         .order('stage_date', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching sales funnel:', error);
+        throw error;
+      }
+      
+      console.log('Sales funnel data fetched:', data);
       
       // Create a map with the most recent stage for each contact
       const funnelMap = (data || []).reduce((acc, item) => {
@@ -201,12 +120,73 @@ const Contacts = () => {
         return acc;
       }, {} as {[key: string]: string});
       
+      console.log('Sales funnel map:', funnelMap);
       setSalesFunnelData(funnelMap);
-      console.log('Sales funnel data loaded:', funnelMap);
     } catch (error) {
       console.error('Error fetching sales funnel data:', error);
     }
   };
+
+  // Update Maryuri's sales stage after data is loaded
+  useEffect(() => {
+    const updateMayuriStage = async () => {
+      if (user && contacts.length > 0) {
+        const mayuriContact = contacts.find(contact => 
+          contact.full_name.toLowerCase().includes('maryuri') || 
+          contact.full_name.toLowerCase().includes('mayuri')
+        );
+        
+        if (mayuriContact) {
+          console.log('Found Maryuri contact:', mayuriContact.id);
+          console.log('Current sales funnel data:', salesFunnelData[mayuriContact.id]);
+          
+          const currentStage = salesFunnelData[mayuriContact.id];
+          
+          if (currentStage !== 'primer_contacto_activo') {
+            try {
+              console.log('Updating Maryuri to primer_contacto_activo');
+              
+              // Insert or update sales funnel entry
+              const { error } = await supabase
+                .from('sales_funnel')
+                .upsert({
+                  contact_id: mayuriContact.id,
+                  user_id: user.id,
+                  stage: 'primer_contacto_activo',
+                  stage_date: new Date().toISOString(),
+                  notes: 'Etapa actualizada automáticamente: Primer contacto activo'
+                }, {
+                  onConflict: 'contact_id,user_id'
+                });
+
+              if (error) {
+                console.error('Error updating Maryuri stage:', error);
+              } else {
+                console.log('Successfully updated Maryuri to primer_contacto_activo');
+                setSalesFunnelData(prev => ({
+                  ...prev,
+                  [mayuriContact.id]: 'primer_contacto_activo'
+                }));
+                toast({
+                  title: 'Etapa actualizada',
+                  description: 'Maryuri ha sido actualizada a "Primer contacto activo"'
+                });
+              }
+            } catch (error) {
+              console.error('Error in updateMayuriStage:', error);
+            }
+          }
+        } else {
+          console.log('Maryuri contact not found in contacts:', contacts.map(c => c.full_name));
+        }
+      }
+    };
+
+    // Only run after both contacts and salesFunnelData are loaded
+    if (contacts.length > 0) {
+      updateMayuriStage();
+    }
+  }, [user, contacts, salesFunnelData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -265,36 +245,26 @@ const Contacts = () => {
       if (contactId && formData.sales_stage) {
         console.log('Updating sales funnel for contact:', contactId, 'with stage:', formData.sales_stage);
         
-        // First, check if there's already an entry for this contact with this stage
-        const { data: existingEntry } = await supabase
+        const { error: funnelError } = await supabase
           .from('sales_funnel')
-          .select('id')
-          .eq('contact_id', contactId)
-          .eq('stage', formData.sales_stage)
-          .single();
+          .upsert({
+            contact_id: contactId,
+            user_id: user.id,
+            stage: formData.sales_stage,
+            stage_date: new Date().toISOString(),
+            notes: `Etapa: ${salesStages.find(s => s.key === formData.sales_stage)?.name}`
+          }, {
+            onConflict: 'contact_id,user_id'
+          });
 
-        if (!existingEntry) {
-          // Insert new funnel entry only if it doesn't exist
-          const { error: funnelError } = await supabase
-            .from('sales_funnel')
-            .insert([{
-              contact_id: contactId,
-              user_id: user.id,
-              stage: formData.sales_stage,
-              stage_date: new Date().toISOString(),
-              notes: `Etapa: ${salesStages.find(s => s.key === formData.sales_stage)?.name}`
-            }]);
-
-          if (funnelError) {
-            console.error('Error inserting sales funnel:', funnelError);
-          } else {
-            console.log('Sales funnel updated successfully');
-            // Update local state immediately
-            setSalesFunnelData(prev => ({
-              ...prev,
-              [contactId]: formData.sales_stage
-            }));
-          }
+        if (funnelError) {
+          console.error('Error inserting sales funnel:', funnelError);
+        } else {
+          console.log('Sales funnel updated successfully');
+          setSalesFunnelData(prev => ({
+            ...prev,
+            [contactId]: formData.sales_stage
+          }));
         }
       }
 
