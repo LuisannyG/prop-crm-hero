@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -205,6 +206,7 @@ const AuthForm = () => {
                           <SelectItem value="manager">Gerente</SelectItem>
                           <SelectItem value="agent">Agente</SelectItem>
                           <SelectItem value="assistant">Asistente</SelectItem>
+                          <SelectItem value="marketing">Marketing</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
