@@ -224,7 +224,9 @@ export type Database = {
           bedrooms: number | null
           created_at: string
           description: string | null
+          district: string | null
           id: string
+          photo_url: string | null
           price: number | null
           property_type: string | null
           status: string | null
@@ -239,7 +241,9 @@ export type Database = {
           bedrooms?: number | null
           created_at?: string
           description?: string | null
+          district?: string | null
           id?: string
+          photo_url?: string | null
           price?: number | null
           property_type?: string | null
           status?: string | null
@@ -254,7 +258,9 @@ export type Database = {
           bedrooms?: number | null
           created_at?: string
           description?: string | null
+          district?: string | null
           id?: string
+          photo_url?: string | null
           price?: number | null
           property_type?: string | null
           status?: string | null

@@ -8,9 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Home, ArrowLeft } from 'lucide-react';
+import { Plus, Edit, Trash2, Home, ArrowLeft, Upload } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useNavigate } from 'react-router-dom';
 
@@ -19,12 +20,14 @@ interface Property {
   title: string;
   description?: string;
   address: string;
+  district?: string;
   price?: number;
   property_type?: string;
   bedrooms?: number;
   bathrooms?: number;
   area_m2?: number;
   status: string;
+  photo_url?: string;
   created_at: string;
 }
 
@@ -35,16 +38,20 @@ const Properties = () => {
   const [loading, setLoading] = useState(true);
   const [isAddingProperty, setIsAddingProperty] = useState(false);
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     address: '',
+    district: '',
     price: '',
     property_type: 'casa',
     bedrooms: '',
     bathrooms: '',
     area_m2: '',
-    status: 'available'
+    status: 'available',
+    is_studio: false
   });
 
   useEffect(() => {
@@ -74,17 +81,55 @@ const Properties = () => {
     }
   };
 
+  const uploadPhoto = async (file: File): Promise<string | null> => {
+    if (!user) return null;
+
+    try {
+      setUploading(true);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      
+      const { data, error } = await supabase.storage
+        .from('property-photos')
+        .upload(fileName, file);
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('property-photos')
+        .getPublicUrl(fileName);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading photo:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo subir la foto',
+        variant: 'destructive',
+      });
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
     try {
+      let photoUrl = null;
+      if (photoFile) {
+        photoUrl = await uploadPhoto(photoFile);
+      }
+
       const propertyData = {
         ...formData,
         price: formData.price ? parseFloat(formData.price) : null,
-        bedrooms: formData.bedrooms ? parseInt(formData.bedrooms) : null,
-        bathrooms: formData.bathrooms ? parseInt(formData.bathrooms) : null,
+        bedrooms: formData.is_studio ? null : (formData.bedrooms ? parseInt(formData.bedrooms) : null),
+        bathrooms: formData.is_studio ? null : (formData.bathrooms ? parseInt(formData.bathrooms) : null),
         area_m2: formData.area_m2 ? parseFloat(formData.area_m2) : null,
+        photo_url: photoUrl || (editingProperty?.photo_url || null),
         user_id: user.id
       };
 
@@ -142,13 +187,16 @@ const Properties = () => {
       title: '',
       description: '',
       address: '',
+      district: '',
       price: '',
       property_type: 'casa',
       bedrooms: '',
       bathrooms: '',
       area_m2: '',
-      status: 'available'
+      status: 'available',
+      is_studio: false
     });
+    setPhotoFile(null);
     setIsAddingProperty(false);
     setEditingProperty(null);
   };
@@ -158,12 +206,14 @@ const Properties = () => {
       title: property.title,
       description: property.description || '',
       address: property.address,
+      district: property.district || '',
       price: property.price?.toString() || '',
       property_type: property.property_type || 'casa',
       bedrooms: property.bedrooms?.toString() || '',
       bathrooms: property.bathrooms?.toString() || '',
       area_m2: property.area_m2?.toString() || '',
-      status: property.status
+      status: property.status,
+      is_studio: !property.bedrooms && !property.bathrooms
     });
     setEditingProperty(property);
     setIsAddingProperty(true);
@@ -240,8 +290,17 @@ const Properties = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="property_type">Tipo de Propiedad</Label>
-                    <Select value={formData.property_type} onValueChange={(value) => setFormData({...formData, property_type: value})}>
+                    <Label htmlFor="district">Distrito *</Label>
+                    <Input
+                      id="district"
+                      value={formData.district}
+                      onChange={(e) => setFormData({...formData, district: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="property_type">Tipo de Propiedad *</Label>
+                    <Select value={formData.property_type} onValueChange={(value) => setFormData({...formData, property_type: value})} required>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -255,8 +314,8 @@ const Properties = () => {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="status">Estado</Label>
-                    <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
+                    <Label htmlFor="status">Estado *</Label>
+                    <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})} required>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -269,42 +328,73 @@ const Properties = () => {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="price">Precio (S/)</Label>
+                    <Label htmlFor="price">Precio (S/) *</Label>
                     <Input
                       id="price"
                       type="number"
                       step="0.01"
                       value={formData.price}
                       onChange={(e) => setFormData({...formData, price: e.target.value})}
+                      required
                     />
                   </div>
                   <div>
-                    <Label htmlFor="area_m2">Área (m²)</Label>
+                    <Label htmlFor="area_m2">Área (m²) *</Label>
                     <Input
                       id="area_m2"
                       type="number"
                       step="0.01"
                       value={formData.area_m2}
                       onChange={(e) => setFormData({...formData, area_m2: e.target.value})}
+                      required
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="bedrooms">Dormitorios</Label>
-                    <Input
-                      id="bedrooms"
-                      type="number"
-                      value={formData.bedrooms}
-                      onChange={(e) => setFormData({...formData, bedrooms: e.target.value})}
-                    />
+                  <div className="col-span-2">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="is_studio"
+                        checked={formData.is_studio}
+                        onCheckedChange={(checked) => setFormData({...formData, is_studio: checked as boolean})}
+                      />
+                      <Label htmlFor="is_studio">Es un monoambiente</Label>
+                    </div>
                   </div>
-                  <div>
-                    <Label htmlFor="bathrooms">Baños</Label>
-                    <Input
-                      id="bathrooms"
-                      type="number"
-                      value={formData.bathrooms}
-                      onChange={(e) => setFormData({...formData, bathrooms: e.target.value})}
-                    />
+                  {!formData.is_studio && (
+                    <>
+                      <div>
+                        <Label htmlFor="bedrooms">Dormitorios *</Label>
+                        <Input
+                          id="bedrooms"
+                          type="number"
+                          value={formData.bedrooms}
+                          onChange={(e) => setFormData({...formData, bedrooms: e.target.value})}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="bathrooms">Baños *</Label>
+                        <Input
+                          id="bathrooms"
+                          type="number"
+                          value={formData.bathrooms}
+                          onChange={(e) => setFormData({...formData, bathrooms: e.target.value})}
+                          required
+                        />
+                      </div>
+                    </>
+                  )}
+                  <div className="col-span-2">
+                    <Label htmlFor="photo">Foto de la Propiedad</Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        id="photo"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setPhotoFile(e.target.files?.[0] || null)}
+                        className="flex-1"
+                      />
+                      {uploading && <span className="text-sm text-gray-500">Subiendo...</span>}
+                    </div>
                   </div>
                   <div className="col-span-2">
                     <Label htmlFor="description">Descripción</Label>
@@ -317,7 +407,7 @@ const Properties = () => {
                   </div>
                 </div>
                 <div className="flex space-x-2">
-                  <Button type="submit">
+                  <Button type="submit" disabled={uploading}>
                     {editingProperty ? 'Actualizar' : 'Guardar'}
                   </Button>
                   <Button type="button" variant="outline" onClick={resetForm}>
@@ -354,9 +444,21 @@ const Properties = () => {
                   {properties.map((property) => (
                     <TableRow key={property.id}>
                       <TableCell>
-                        <div>
-                          <div className="font-medium">{property.title}</div>
-                          <div className="text-sm text-gray-500">{property.address}</div>
+                        <div className="flex items-center gap-3">
+                          {property.photo_url && (
+                            <img
+                              src={property.photo_url}
+                              alt={property.title}
+                              className="w-12 h-12 object-cover rounded"
+                            />
+                          )}
+                          <div>
+                            <div className="font-medium">{property.title}</div>
+                            <div className="text-sm text-gray-500">{property.address}</div>
+                            {property.district && (
+                              <div className="text-sm text-gray-400">{property.district}</div>
+                            )}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>{formatPrice(property.price)}</TableCell>
@@ -370,8 +472,12 @@ const Properties = () => {
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          {property.bedrooms && `${property.bedrooms} dorm`}
-                          {property.bathrooms && ` • ${property.bathrooms} baños`}
+                          {!property.bedrooms && !property.bathrooms ? 'Monoambiente' : (
+                            <>
+                              {property.bedrooms && `${property.bedrooms} dorm`}
+                              {property.bathrooms && ` • ${property.bathrooms} baños`}
+                            </>
+                          )}
                           {property.area_m2 && ` • ${property.area_m2}m²`}
                         </div>
                       </TableCell>
