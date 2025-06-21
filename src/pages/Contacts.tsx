@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -126,67 +127,6 @@ const Contacts = () => {
       console.error('Error fetching sales funnel data:', error);
     }
   };
-
-  // Update Maryuri's sales stage after data is loaded
-  useEffect(() => {
-    const updateMayuriStage = async () => {
-      if (user && contacts.length > 0) {
-        const mayuriContact = contacts.find(contact => 
-          contact.full_name.toLowerCase().includes('maryuri') || 
-          contact.full_name.toLowerCase().includes('mayuri')
-        );
-        
-        if (mayuriContact) {
-          console.log('Found Maryuri contact:', mayuriContact.id);
-          console.log('Current sales funnel data:', salesFunnelData[mayuriContact.id]);
-          
-          const currentStage = salesFunnelData[mayuriContact.id];
-          
-          if (currentStage !== 'primer_contacto_activo') {
-            try {
-              console.log('Updating Maryuri to primer_contacto_activo');
-              
-              // Insert or update sales funnel entry
-              const { error } = await supabase
-                .from('sales_funnel')
-                .upsert({
-                  contact_id: mayuriContact.id,
-                  user_id: user.id,
-                  stage: 'primer_contacto_activo',
-                  stage_date: new Date().toISOString(),
-                  notes: 'Etapa actualizada automáticamente: Primer contacto activo'
-                }, {
-                  onConflict: 'contact_id,user_id'
-                });
-
-              if (error) {
-                console.error('Error updating Maryuri stage:', error);
-              } else {
-                console.log('Successfully updated Maryuri to primer_contacto_activo');
-                setSalesFunnelData(prev => ({
-                  ...prev,
-                  [mayuriContact.id]: 'primer_contacto_activo'
-                }));
-                toast({
-                  title: 'Etapa actualizada',
-                  description: 'Maryuri ha sido actualizada a "Primer contacto activo"'
-                });
-              }
-            } catch (error) {
-              console.error('Error in updateMayuriStage:', error);
-            }
-          }
-        } else {
-          console.log('Maryuri contact not found in contacts:', contacts.map(c => c.full_name));
-        }
-      }
-    };
-
-    // Only run after both contacts and salesFunnelData are loaded
-    if (contacts.length > 0) {
-      updateMayuriStage();
-    }
-  }, [user, contacts, salesFunnelData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -622,7 +562,7 @@ const Contacts = () => {
                           {stageInfo ? (
                             <Badge 
                               variant="outline" 
-                              className="text-xs border-2 px-2 py-1"
+                              className="text-xs border-2 px-2 py-1 whitespace-nowrap"
                               style={{ 
                                 borderColor: stageInfo.color, 
                                 color: stageInfo.color,
