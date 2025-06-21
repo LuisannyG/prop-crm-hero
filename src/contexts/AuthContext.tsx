@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: any; data?: any }>;
+  signUp: (email: string, password: string, fullName: string, userType: 'independent_agent' | 'small_company') => Promise<{ error: any; data?: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   loading: boolean;
@@ -40,16 +40,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string) => {
+  const signUp = async (email: string, password: string, fullName: string, userType: 'independent_agent' | 'small_company') => {
     try {
-      // Primero verificar si el usuario ya existe
-      const { data: existingUser } = await supabase.auth.signInWithPassword({
-        email,
-        password: 'dummy-password-check'
-      });
+      // Verificar si ya existe un usuario con este email en la tabla profiles
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('email', email)
+        .single();
 
-      // Si no hay error en el login, significa que el usuario ya existe
-      if (existingUser?.user) {
+      if (existingProfile) {
         return { 
           error: { 
             message: 'User already registered',
@@ -64,6 +64,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         options: {
           data: {
             full_name: fullName,
+            user_type: userType,
           },
           emailRedirectTo: `${window.location.origin}/dashboard`
         }
@@ -89,39 +90,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return { error: null, data };
     } catch (error) {
       console.error('Sign up exception:', error);
-      
-      // Si el error es de credenciales inválidas, continuar con el registro
-      if (error.message?.includes('Invalid login credentials')) {
-        try {
-          const { data, error: signUpError } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              data: {
-                full_name: fullName,
-              },
-              emailRedirectTo: `${window.location.origin}/dashboard`
-            }
-          });
-
-          if (signUpError) {
-            if (signUpError.message?.includes('User already registered') || signUpError.message?.includes('already been registered')) {
-              return { 
-                error: { 
-                  message: 'User already registered',
-                  code: 'user_already_exists' 
-                } 
-              };
-            }
-            return { error: signUpError };
-          }
-
-          return { error: null, data };
-        } catch (innerError) {
-          return { error: innerError };
-        }
-      }
-      
       return { error };
     }
   };

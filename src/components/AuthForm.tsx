@@ -1,8 +1,10 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -14,6 +16,7 @@ const AuthForm = () => {
     email: '',
     password: '',
     fullName: '',
+    userType: 'independent_agent' as 'independent_agent' | 'small_company',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { signIn, signUp } = useAuth();
@@ -22,6 +25,10 @@ const AuthForm = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleUserTypeChange = (value: 'independent_agent' | 'small_company') => {
+    setFormData(prev => ({ ...prev, userType: value }));
   };
 
   const handleBackToHome = () => {
@@ -44,7 +51,7 @@ const AuthForm = () => {
           navigate('/dashboard');
         }
       } else {
-        result = await signUp(formData.email, formData.password, formData.fullName);
+        result = await signUp(formData.email, formData.password, formData.fullName, formData.userType);
         if (!result.error) {
           toast({
             title: '¡Cuenta creada exitosamente!',
@@ -52,7 +59,7 @@ const AuthForm = () => {
           });
           // Cambiar al modo login después del registro exitoso
           setIsLogin(true);
-          setFormData({ email: formData.email, password: '', fullName: '' });
+          setFormData({ email: formData.email, password: '', fullName: '', userType: 'independent_agent' });
         }
       }
 
@@ -66,7 +73,7 @@ const AuthForm = () => {
           errorMessage = 'Esta cuenta ya existe. Intenta iniciar sesión en su lugar.';
           // Cambiar automáticamente al modo login
           setIsLogin(true);
-          setFormData(prev => ({ ...prev, password: '', fullName: '' }));
+          setFormData(prev => ({ ...prev, password: '', fullName: '', userType: 'independent_agent' }));
         } else if (result.error.message?.includes('Invalid login credentials')) {
           errorMessage = 'Email o contraseña incorrectos';
         } else if (result.error.message?.includes('Email not confirmed')) {
@@ -123,17 +130,32 @@ const AuthForm = () => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="fullName">Nombre completo</Label>
-                <Input
-                  id="fullName"
-                  name="fullName"
-                  placeholder="Tu nombre completo"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Nombre completo</Label>
+                  <Input
+                    id="fullName"
+                    name="fullName"
+                    placeholder="Tu nombre completo"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="userType">Tipo de usuario</Label>
+                  <Select value={formData.userType} onValueChange={handleUserTypeChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona tu tipo de usuario" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="independent_agent">Agente Inmobiliario Independiente</SelectItem>
+                      <SelectItem value="small_company">Pequeña Empresa Inmobiliaria</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
             )}
             
             <div className="space-y-2">
