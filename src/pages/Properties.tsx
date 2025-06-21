@@ -1,0 +1,398 @@
+
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
+import { Plus, Edit, Trash2, Home } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+
+interface Property {
+  id: string;
+  title: string;
+  description?: string;
+  address: string;
+  price?: number;
+  property_type?: string;
+  bedrooms?: number;
+  bathrooms?: number;
+  area_m2?: number;
+  status: string;
+  created_at: string;
+}
+
+const Properties = () => {
+  const { user } = useAuth();
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isAddingProperty, setIsAddingProperty] = useState(false);
+  const [editingProperty, setEditingProperty] = useState<Property | null>(null);
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    address: '',
+    price: '',
+    property_type: 'casa',
+    bedrooms: '',
+    bathrooms: '',
+    area_m2: '',
+    status: 'available'
+  });
+
+  useEffect(() => {
+    if (user) {
+      fetchProperties();
+    }
+  }, [user]);
+
+  const fetchProperties = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('properties')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setProperties(data || []);
+    } catch (error) {
+      console.error('Error fetching properties:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudieron cargar las propiedades',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    try {
+      const propertyData = {
+        ...formData,
+        price: formData.price ? parseFloat(formData.price) : null,
+        bedrooms: formData.bedrooms ? parseInt(formData.bedrooms) : null,
+        bathrooms: formData.bathrooms ? parseInt(formData.bathrooms) : null,
+        area_m2: formData.area_m2 ? parseFloat(formData.area_m2) : null,
+        user_id: user.id
+      };
+
+      if (editingProperty) {
+        const { error } = await supabase
+          .from('properties')
+          .update(propertyData)
+          .eq('id', editingProperty.id);
+
+        if (error) throw error;
+        toast({ title: 'Propiedad actualizada exitosamente' });
+      } else {
+        const { error } = await supabase
+          .from('properties')
+          .insert([propertyData]);
+
+        if (error) throw error;
+        toast({ title: 'Propiedad agregada exitosamente' });
+      }
+
+      resetForm();
+      fetchProperties();
+    } catch (error) {
+      console.error('Error saving property:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo guardar la propiedad',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('properties')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      toast({ title: 'Propiedad eliminada' });
+      fetchProperties();
+    } catch (error) {
+      console.error('Error deleting property:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo eliminar la propiedad',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      description: '',
+      address: '',
+      price: '',
+      property_type: 'casa',
+      bedrooms: '',
+      bathrooms: '',
+      area_m2: '',
+      status: 'available'
+    });
+    setIsAddingProperty(false);
+    setEditingProperty(null);
+  };
+
+  const startEdit = (property: Property) => {
+    setFormData({
+      title: property.title,
+      description: property.description || '',
+      address: property.address,
+      price: property.price?.toString() || '',
+      property_type: property.property_type || 'casa',
+      bedrooms: property.bedrooms?.toString() || '',
+      bathrooms: property.bathrooms?.toString() || '',
+      area_m2: property.area_m2?.toString() || '',
+      status: property.status
+    });
+    setEditingProperty(property);
+    setIsAddingProperty(true);
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'available': return 'bg-green-500';
+      case 'sold': return 'bg-red-500';
+      case 'reserved': return 'bg-yellow-500';
+      case 'inactive': return 'bg-gray-500';
+      default: return 'bg-gray-500';
+    }
+  };
+
+  const formatPrice = (price?: number) => {
+    if (!price) return 'No especificado';
+    return new Intl.NumberFormat('es-PE', {
+      style: 'currency',
+      currency: 'PEN'
+    }).format(price);
+  };
+
+  if (loading) {
+    return <div className="p-8">Cargando propiedades...</div>;
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">Gestión de Propiedades</h1>
+          <Dialog open={isAddingProperty} onOpenChange={setIsAddingProperty}>
+            <DialogTrigger asChild>
+              <Button onClick={() => setIsAddingProperty(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Nueva Propiedad
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingProperty ? 'Editar Propiedad' : 'Nueva Propiedad'}
+                </DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="col-span-2">
+                    <Label htmlFor="title">Título *</Label>
+                    <Input
+                      id="title"
+                      value={formData.title}
+                      onChange={(e) => setFormData({...formData, title: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <Label htmlFor="address">Dirección *</Label>
+                    <Input
+                      id="address"
+                      value={formData.address}
+                      onChange={(e) => setFormData({...formData, address: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="property_type">Tipo de Propiedad</Label>
+                    <Select value={formData.property_type} onValueChange={(value) => setFormData({...formData, property_type: value})}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="casa">Casa</SelectItem>
+                        <SelectItem value="departamento">Departamento</SelectItem>
+                        <SelectItem value="oficina">Oficina</SelectItem>
+                        <SelectItem value="terreno">Terreno</SelectItem>
+                        <SelectItem value="local">Local Comercial</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="status">Estado</Label>
+                    <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="available">Disponible</SelectItem>
+                        <SelectItem value="sold">Vendida</SelectItem>
+                        <SelectItem value="reserved">Reservada</SelectItem>
+                        <SelectItem value="inactive">Inactiva</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="price">Precio (S/)</Label>
+                    <Input
+                      id="price"
+                      type="number"
+                      step="0.01"
+                      value={formData.price}
+                      onChange={(e) => setFormData({...formData, price: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="area_m2">Área (m²)</Label>
+                    <Input
+                      id="area_m2"
+                      type="number"
+                      step="0.01"
+                      value={formData.area_m2}
+                      onChange={(e) => setFormData({...formData, area_m2: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="bedrooms">Dormitorios</Label>
+                    <Input
+                      id="bedrooms"
+                      type="number"
+                      value={formData.bedrooms}
+                      onChange={(e) => setFormData({...formData, bedrooms: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="bathrooms">Baños</Label>
+                    <Input
+                      id="bathrooms"
+                      type="number"
+                      value={formData.bathrooms}
+                      onChange={(e) => setFormData({...formData, bathrooms: e.target.value})}
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <Label htmlFor="description">Descripción</Label>
+                    <Textarea
+                      id="description"
+                      value={formData.description}
+                      onChange={(e) => setFormData({...formData, description: e.target.value})}
+                      rows={3}
+                    />
+                  </div>
+                </div>
+                <div className="flex space-x-2">
+                  <Button type="submit">
+                    {editingProperty ? 'Actualizar' : 'Guardar'}
+                  </Button>
+                  <Button type="button" variant="outline" onClick={resetForm}>
+                    Cancelar
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Propiedades ({properties.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {properties.length === 0 ? (
+              <p className="text-center text-gray-500 py-8">
+                No tienes propiedades registradas. ¡Agrega tu primera propiedad!
+              </p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Propiedad</TableHead>
+                    <TableHead>Precio</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead>Detalles</TableHead>
+                    <TableHead>Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {properties.map((property) => (
+                    <TableRow key={property.id}>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{property.title}</div>
+                          <div className="text-sm text-gray-500">{property.address}</div>
+                        </div>
+                      </TableCell>
+                      <TableCell>{formatPrice(property.price)}</TableCell>
+                      <TableCell className="capitalize">{property.property_type}</TableCell>
+                      <TableCell>
+                        <Badge className={getStatusColor(property.status)}>
+                          {property.status === 'available' ? 'Disponible' :
+                           property.status === 'sold' ? 'Vendida' :
+                           property.status === 'reserved' ? 'Reservada' : 'Inactiva'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm">
+                          {property.bedrooms && `${property.bedrooms} dorm`}
+                          {property.bathrooms && ` • ${property.bathrooms} baños`}
+                          {property.area_m2 && ` • ${property.area_m2}m²`}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => startEdit(property)}
+                          >
+                            <Edit className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDelete(property.id)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default Properties;
