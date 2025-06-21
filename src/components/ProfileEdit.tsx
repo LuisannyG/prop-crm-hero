@@ -39,15 +39,24 @@ const ProfileEdit = ({ open, onOpenChange }: ProfileEditProps) => {
 
       if (error) {
         console.error('Error fetching profile:', error);
+        // Initialize with empty values if there's an error
+        setFullName('');
+        setAvatarUrl(null);
         return;
       }
 
       if (data) {
         setFullName(data.full_name || '');
         setAvatarUrl(data.avatar_url || null);
+      } else {
+        // No profile found, initialize with empty values
+        setFullName('');
+        setAvatarUrl(null);
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
+      setFullName('');
+      setAvatarUrl(null);
     }
   };
 
