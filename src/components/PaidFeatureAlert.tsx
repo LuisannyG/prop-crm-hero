@@ -2,6 +2,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Lock, Star, TrendingUp, Zap } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface PaidFeatureAlertProps {
   title: string;
@@ -12,6 +13,12 @@ interface PaidFeatureAlertProps {
 }
 
 const PaidFeatureAlert = ({ title, description, features, icon, previewImage }: PaidFeatureAlertProps) => {
+  const navigate = useNavigate();
+
+  const handleViewPlans = () => {
+    navigate('/', { state: { scrollTo: 'pricing' } });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6 flex items-center justify-center">
       <Card className="max-w-4xl w-full border-2 border-gradient-to-r from-blue-500 to-purple-600 shadow-2xl">
@@ -85,7 +92,11 @@ const PaidFeatureAlert = ({ title, description, features, icon, previewImage }: 
               <p className="text-sm text-gray-500 mb-2">
                 ✅ 7 días de prueba gratis • ✅ Sin compromiso • ✅ Cancela cuando quieras
               </p>
-              <Button variant="outline" className="text-blue-600 border-blue-600 hover:bg-blue-50">
+              <Button 
+                variant="outline" 
+                className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                onClick={handleViewPlans}
+              >
                 Ver todos los planes
               </Button>
             </div>

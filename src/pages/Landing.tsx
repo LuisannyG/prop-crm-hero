@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import Hero from "@/components/Hero";
 import BenefitsSection from "@/components/BenefitsSection";
@@ -14,6 +14,7 @@ import { benefits, plans, faqs } from "@/data/proptorData";
 const Landing = () => {
   const [showAuthForm, setShowAuthForm] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, loading } = useAuth();
 
   // Redirigir a dashboard si el usuario ya está logueado
@@ -22,6 +23,16 @@ const Landing = () => {
       navigate('/dashboard');
     }
   }, [user, loading, navigate]);
+
+  // Manejar scroll a sección específica
+  useEffect(() => {
+    if (location.state?.scrollTo) {
+      const element = document.getElementById(location.state.scrollTo);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }, [location.state]);
 
   const handleCtaClick = () => {
     if (user) {
