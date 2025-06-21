@@ -17,7 +17,7 @@ const Dashboard = () => {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-4">
             <img 
-              src="/lovable-uploads/94f300e7-f28f-4112-b26a-35b332c36ccf.png" 
+              src="/lovable-uploads/bf2605cc-bd63-49db-9eb1-655d60adffc4.png" 
               alt="Proptor Logo" 
               className="h-10"
             />
