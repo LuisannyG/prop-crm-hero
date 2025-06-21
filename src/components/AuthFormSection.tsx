@@ -126,9 +126,7 @@ const AuthFormSection = () => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="independiente">Agente Independiente</SelectItem>
-                          <SelectItem value="inmobiliaria">Inmobiliaria</SelectItem>
-                          <SelectItem value="corredor">Corredor</SelectItem>
-                          <SelectItem value="desarrollador">Desarrollador</SelectItem>
+                          <SelectItem value="pequeña_inmobiliaria">Pequeña Inmobiliaria</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
