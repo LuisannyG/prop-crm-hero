@@ -1,8 +1,8 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Lock, Star, TrendingUp, Zap } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Lock, Star, TrendingUp, Zap, BarChart, Brain, Target } from 'lucide-react';
+import LearningEngineSimulator from '@/components/simulators/LearningEngineSimulator';
 
 interface PaidFeatureAlertProps {
   title: string;
@@ -12,33 +12,11 @@ interface PaidFeatureAlertProps {
   previewImage?: string;
 }
 
-const PaidFeatureAlert = ({ title, description, features, icon, previewImage }: PaidFeatureAlertProps) => {
-  const navigate = useNavigate();
-
-  const handleViewPlans = () => {
-    navigate('/', { state: { scrollTo: 'pricing' } });
-  };
-
+const PaidFeatureAlert = ({ title, description, features, icon }: PaidFeatureAlertProps) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6 flex items-center justify-center">
-      <Card className="max-w-4xl w-full border-2 border-gradient-to-r from-blue-500 to-purple-600 shadow-2xl">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+      <Card className="max-w-4xl w-full mx-auto border-2 border-gradient-to-r from-blue-500 to-purple-600 shadow-2xl mb-8">
         <CardContent className="p-8">
-          {/* Preview Image Section */}
-          {previewImage && (
-            <div className="mb-8">
-              <img 
-                src={previewImage} 
-                alt={`Vista previa de ${title}`}
-                className="w-full h-64 object-cover rounded-lg shadow-lg"
-              />
-              <div className="text-center mt-4">
-                <span className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium">
-                  ✨ Vista previa de la funcionalidad
-                </span>
-              </div>
-            </div>
-          )}
-
           <div className="text-center mb-6">
             <div className="mx-auto w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-4">
               {icon || <Lock className="w-10 h-10 text-white" />}
@@ -89,16 +67,9 @@ const PaidFeatureAlert = ({ title, description, features, icon, previewImage }: 
             </Button>
             
             <div className="text-center">
-              <p className="text-sm text-gray-500 mb-2">
+              <p className="text-sm text-gray-500">
                 ✅ 7 días de prueba gratis • ✅ Sin compromiso • ✅ Cancela cuando quieras
               </p>
-              <Button 
-                variant="outline" 
-                className="text-blue-600 border-blue-600 hover:bg-blue-50"
-                onClick={handleViewPlans}
-              >
-                Ver todos los planes
-              </Button>
             </div>
           </div>
 
@@ -109,6 +80,19 @@ const PaidFeatureAlert = ({ title, description, features, icon, previewImage }: 
           </div>
         </CardContent>
       </Card>
+
+      {/* Preview Section */}
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-2">
+            <BarChart className="w-6 h-6 text-blue-600" />
+            Vista Previa del Motor de Aprendizaje
+          </h2>
+          <p className="text-gray-600">Así es como se vería tu análisis predictivo y reportes automáticos</p>
+        </div>
+        
+        <LearningEngineSimulator />
+      </div>
     </div>
   );
 };

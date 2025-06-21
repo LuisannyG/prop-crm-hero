@@ -56,12 +56,12 @@ const ProfileEdit = ({ open, onOpenChange }: ProfileEditProps) => {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({
+        .upsert({
+          id: user?.id,
           full_name: fullName,
           avatar_url: avatarUrl,
           updated_at: new Date().toISOString(),
-        })
-        .eq('id', user?.id);
+        });
 
       if (error) throw error;
 
