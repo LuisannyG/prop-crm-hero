@@ -68,7 +68,7 @@ const Contacts = () => {
     }
   }, [user]);
 
-  // Update Maryuri's sales stage on component mount
+  // Update Maryuri's sales stage after data is loaded
   useEffect(() => {
     const updateMayuriStage = async () => {
       if (user && contacts.length > 0) {
@@ -79,44 +79,87 @@ const Contacts = () => {
         
         if (mayuriContact) {
           console.log('Found Maryuri contact:', mayuriContact.id);
+          console.log('Current sales funnel data:', salesFunnelData);
           
-          // Check if Maryuri already has the correct stage
           const currentStage = salesFunnelData[mayuriContact.id];
+          console.log('Maryuri current stage:', currentStage);
+          
           if (currentStage !== 'primer_contacto_activo') {
             try {
-              const { error } = await supabase
+              // First, try to update existing record if any
+              const { data: existingRecord } = await supabase
                 .from('sales_funnel')
-                .insert([{
-                  contact_id: mayuriContact.id,
-                  user_id: user.id,
-                  stage: 'primer_contacto_activo',
-                  stage_date: new Date().toISOString(),
-                  notes: 'Etapa actualizada automáticamente: Primer contacto activo'
-                }]);
+                .select('id')
+                .eq('contact_id', mayuriContact.id)
+                .order('stage_date', { ascending: false })
+                .limit(1)
+                .single();
 
-              if (error) {
-                console.error('Error updating Maryuri stage:', error);
+              if (existingRecord) {
+                // Update existing record
+                const { error } = await supabase
+                  .from('sales_funnel')
+                  .update({
+                    stage: 'primer_contacto_activo',
+                    stage_date: new Date().toISOString(),
+                    notes: 'Etapa actualizada automáticamente: Primer contacto activo'
+                  })
+                  .eq('id', existingRecord.id);
+
+                if (error) {
+                  console.error('Error updating Maryuri stage (update):', error);
+                } else {
+                  console.log('Successfully updated Maryuri to primer_contacto_activo');
+                  setSalesFunnelData(prev => ({
+                    ...prev,
+                    [mayuriContact.id]: 'primer_contacto_activo'
+                  }));
+                  toast({
+                    title: 'Etapa actualizada',
+                    description: 'Maryuri ha sido actualizada a "Primer contacto activo"'
+                  });
+                }
               } else {
-                console.log('Successfully updated Maryuri to primer_contacto_activo');
-                // Update local state
-                setSalesFunnelData(prev => ({
-                  ...prev,
-                  [mayuriContact.id]: 'primer_contacto_activo'
-                }));
-                toast({
-                  title: 'Etapa actualizada',
-                  description: 'Maryuri ha sido actualizada a "Primer contacto activo"'
-                });
+                // Insert new record
+                const { error } = await supabase
+                  .from('sales_funnel')
+                  .insert([{
+                    contact_id: mayuriContact.id,
+                    user_id: user.id,
+                    stage: 'primer_contacto_activo',
+                    stage_date: new Date().toISOString(),
+                    notes: 'Etapa creada automáticamente: Primer contacto activo'
+                  }]);
+
+                if (error) {
+                  console.error('Error updating Maryuri stage (insert):', error);
+                  console.error('Error details:', error.details, error.hint, error.message);
+                } else {
+                  console.log('Successfully created Maryuri stage as primer_contacto_activo');
+                  setSalesFunnelData(prev => ({
+                    ...prev,
+                    [mayuriContact.id]: 'primer_contacto_activo'
+                  }));
+                  toast({
+                    title: 'Etapa creada',
+                    description: 'Maryuri ha sido configurada en "Primer contacto activo"'
+                  });
+                }
               }
             } catch (error) {
-              console.error('Error updating Maryuri stage:', error);
+              console.error('Error in updateMayuriStage:', error);
             }
           }
+        } else {
+          console.log('Maryuri contact not found in contacts:', contacts.map(c => c.full_name));
         }
       }
     };
 
-    updateMayuriStage();
+    // Only run after both contacts and salesFunnelData are loaded
+    if (contacts.length > 0 && Object.keys(salesFunnelData).length >= 0) {
+      updateMayuriStage();
+    }
   }, [user, contacts, salesFunnelData]);
 
   const fetchContacts = async () => {
