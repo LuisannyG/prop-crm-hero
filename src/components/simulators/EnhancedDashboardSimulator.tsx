@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -66,6 +65,9 @@ interface PerformanceMetric {
 interface UserProfile {
   user_type: 'independent_agent' | 'small_company';
 }
+
+// Move COLORS array to the top before it's used
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
 const EnhancedDashboardSimulator = () => {
   const { user } = useAuth();
@@ -274,8 +276,6 @@ const EnhancedDashboardSimulator = () => {
     value,
     fill: ['#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#06B6D4', '#F97316'][index % 6]
   }));
-
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
   // Sort reminders by priority (alta first) and overdue status
   const sortedReminders = [...reminders].sort((a, b) => {
