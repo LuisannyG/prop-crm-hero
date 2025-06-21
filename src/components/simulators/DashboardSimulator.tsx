@@ -277,9 +277,6 @@ const DashboardSimulator = () => {
                   <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
                   <p>No hay contactos registrados</p>
                   <p className="text-sm">Comienza agregando tu primer contacto</p>
-                  <Button variant="outline" className="mt-4">
-                    Agregar Contacto
-                  </Button>
                 </div>
               ) : (
                 <Table>
@@ -315,9 +312,6 @@ const DashboardSimulator = () => {
                   <Building className="w-12 h-12 mx-auto mb-2 opacity-50" />
                   <p>No hay propiedades registradas</p>
                   <p className="text-sm">Comienza agregando tu primera propiedad</p>
-                  <Button variant="outline" className="mt-4">
-                    Agregar Propiedad
-                  </Button>
                 </div>
               ) : (
                 <Table>
@@ -355,9 +349,6 @@ const DashboardSimulator = () => {
                   <Calendar className="w-12 h-12 mx-auto mb-2 opacity-50" />
                   <p>No hay recordatorios pendientes</p>
                   <p className="text-sm">Programa tu primer recordatorio</p>
-                  <Button variant="outline" className="mt-4">
-                    Crear Recordatorio
-                  </Button>
                 </div>
               ) : (
                 <Table>
