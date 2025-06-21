@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 // Distritos de Lima
@@ -7,17 +6,24 @@ const limaDistricts = [
   'Jesús María', 'Magdalena', 'Pueblo Libre', 'Lince', 'Breña', 'Lima Cercado',
   'Chorrillos', 'Villa El Salvador', 'San Juan de Miraflores', 'Villa María del Triunfo',
   'Los Olivos', 'Comas', 'San Martín de Porres', 'Independencia', 'Rímac',
-  'Ate', 'Santa Anita', 'El Agustino', 'Chaclacayo', 'Lurigancho-Chosica'
+  'Ate', 'Santa Anita', 'El Agustino', 'Chaclacayo', 'Lurigancho-Chosica',
+  'Callao', 'Bellavista', 'La Perla', 'La Punta', 'Ventanilla', 'San Luis',
+  'La Victoria'
 ];
 
-// Nombres peruanos comunes
+// Nombres peruanos más extensos
 const firstNames = [
-  'Carlos', 'María', 'José', 'Ana', 'Luis', 'Carmen', 'Jorge', 'Rosa', 'Miguel', 'Elena',
-  'Francisco', 'Patricia', 'Manuel', 'Lucía', 'Antonio', 'Isabel', 'Juan', 'Martha',
-  'Pedro', 'Gloria', 'Roberto', 'Teresa', 'Ricardo', 'Pilar', 'Fernando', 'Adriana',
-  'Alberto', 'Mónica', 'Raúl', 'Sandra', 'Eduardo', 'Beatriz', 'Alejandro', 'Cecilia',
-  'Gabriel', 'Roxana', 'Daniel', 'Verónica', 'Sergio', 'Gladys', 'Pablo', 'Norma',
-  'Víctor', 'Sonia', 'Óscar', 'Esperanza', 'Arturo', 'Milagros', 'Enrique', 'Yolanda'
+  // Nombres masculinos
+  'Carlos', 'José', 'Luis', 'Jorge', 'Miguel', 'Francisco', 'Manuel', 'Antonio', 'Juan', 'Pedro',
+  'Roberto', 'Ricardo', 'Fernando', 'Alberto', 'Raúl', 'Eduardo', 'Alejandro', 'Gabriel', 'Daniel', 'Sergio',
+  'Pablo', 'Víctor', 'Óscar', 'Arturo', 'Enrique', 'Marco', 'Diego', 'Andrés', 'Javier', 'Gonzalo',
+  'Rafael', 'Emilio', 'Guillermo', 'Augusto', 'Humberto', 'Armando', 'Gerardo', 'César', 'Orlando', 'Alfredo',
+  // Nombres femeninos
+  'María', 'Ana', 'Carmen', 'Rosa', 'Elena', 'Patricia', 'Lucía', 'Isabel', 'Martha', 'Gloria',
+  'Teresa', 'Pilar', 'Adriana', 'Mónica', 'Sandra', 'Beatriz', 'Cecilia', 'Roxana', 'Verónica', 'Gladys',
+  'Norma', 'Sonia', 'Esperanza', 'Milagros', 'Yolanda', 'Silvia', 'Doris', 'Nancy', 'Lourdes', 'Vanessa',
+  'Karina', 'Paola', 'Giovanna', 'Fiorella', 'Stephanie', 'Jessica', 'Melissa', 'Andrea', 'Claudia', 'Maritza',
+  'Liliana', 'Rocío', 'Magaly', 'Elizabeth', 'Katherine', 'Ingrid', 'Vivian', 'Diana', 'Carla', 'Alejandra'
 ];
 
 const lastNames = [
@@ -26,7 +32,10 @@ const lastNames = [
   'Herrera', 'Ruiz', 'Vega', 'Guerrero', 'Medina', 'Rojas', 'Jiménez', 'Díaz',
   'Torres', 'Aguilar', 'Mendoza', 'Chávez', 'Quispe', 'Mamani', 'Huamán', 'Condori',
   'Apaza', 'Ccahuana', 'Villanueva', 'Espinoza', 'Paredes', 'Ramos', 'Silva',
-  'Navarro', 'Moreno', 'Álvarez', 'Romero', 'Gutiérrez', 'Fernández', 'Domínguez'
+  'Navarro', 'Moreno', 'Álvarez', 'Romero', 'Gutiérrez', 'Fernández', 'Domínguez',
+  'Vásquez', 'Reyes', 'Salazar', 'Contreras', 'Ponce', 'Espejo', 'Córdova', 'Núñez',
+  'Tapia', 'Campos', 'Cabrera', 'Acosta', 'Valencia', 'Bermúdez', 'Ochoa', 'Montes',
+  'Arévalo', 'Bustamante', 'Cardenas', 'Figueroa', 'Miranda', 'Valverde', 'Velásquez', 'Ayala'
 ];
 
 // Calles principales de Lima
@@ -36,30 +45,86 @@ const streets = [
   'Jr. de la Unión', 'Jr. Lampa', 'Jr. Camaná', 'Jr. Junín', 'Jr. Huancavelica',
   'Calle Las Begonias', 'Calle Los Eucaliptos', 'Calle Las Camelias', 'Calle Schell',
   'Malecón de la Reserva', 'Malecón Cisneros', 'Av. Petit Thouars', 'Av. Larco',
-  'Av. Diagonal', 'Av. El Sol', 'Av. Tomás Marsano', 'Av. Primavera', 'Av. Velasco Astete'
+  'Av. Diagonal', 'Av. El Sol', 'Av. Tomás Marsano', 'Av. Primavera', 'Av. Velasco Astete',
+  'Av. Angamos', 'Av. San Luis', 'Av. Salaverry', 'Av. Benavides', 'Av. Comandante Espinar',
+  'Calle Porta', 'Calle José González', 'Av. Ricardo Palma', 'Av. República de Panamá',
+  'Calle Alcanfores', 'Av. Santa Cruz', 'Calle Berlin', 'Av. Del Ejército'
 ];
 
 // Tipos de propiedad
 const propertyTypes = ['casa', 'departamento', 'oficina', 'local', 'terreno'];
 
-// Generar datos de contactos
-export const generateContacts = (userId: string) => {
-  const contacts = [];
-  
-  for (let i = 0; i < 50; i++) {
+// Etapas de venta disponibles
+const salesStages = [
+  'contacto_inicial_recibido', 'primer_contacto_activo', 'llenado_ficha', 'seguimiento_inicial',
+  'agendamiento_visitas', 'presentacion_personalizada', 'negociacion', 'cierre_firma_contrato',
+  'postventa_fidelizacion'
+];
+
+// Generar teléfonos únicos
+const generateUniquePhone = (usedPhones: Set<string>): string => {
+  let phone: string;
+  do {
+    phone = `9${Math.floor(Math.random() * 90000000) + 10000000}`;
+  } while (usedPhones.has(phone));
+  usedPhones.add(phone);
+  return phone;
+};
+
+// Generar emails únicos
+const generateUniqueEmail = (firstName: string, lastName: string, usedEmails: Set<string>): string => {
+  let email: string;
+  let counter = 0;
+  do {
+    const suffix = counter === 0 ? '' : counter.toString();
+    email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${suffix}@gmail.com`;
+    counter++;
+  } while (usedEmails.has(email));
+  usedEmails.add(email);
+  return email;
+};
+
+// Generar nombres únicos
+const generateUniqueName = (usedNames: Set<string>): string => {
+  let fullName: string;
+  do {
     const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
     const lastName1 = lastNames[Math.floor(Math.random() * lastNames.length)];
     const lastName2 = lastNames[Math.floor(Math.random() * lastNames.length)];
+    fullName = `${firstName} ${lastName1} ${lastName2}`;
+  } while (usedNames.has(fullName));
+  usedNames.add(fullName);
+  return fullName;
+};
+
+// Generar datos de contactos
+export const generateContacts = (userId: string) => {
+  const contacts = [];
+  const usedPhones = new Set<string>();
+  const usedEmails = new Set<string>();
+  const usedNames = new Set<string>();
+  
+  for (let i = 0; i < 100; i++) { // Aumentado a 100 contactos
+    const fullName = generateUniqueName(usedNames);
+    const [firstName, ...lastNameParts] = fullName.split(' ');
+    const lastName = lastNameParts[0];
+    
     const district = limaDistricts[Math.floor(Math.random() * limaDistricts.length)];
     const street = streets[Math.floor(Math.random() * streets.length)];
+    const phone = generateUniquePhone(usedPhones);
+    const email = generateUniqueEmail(firstName, lastName, usedEmails);
     
     contacts.push({
       user_id: userId,
-      full_name: `${firstName} ${lastName1} ${lastName2}`,
-      email: `${firstName.toLowerCase()}.${lastName1.toLowerCase()}${Math.floor(Math.random() * 999)}@gmail.com`,
-      phone: `9${Math.floor(Math.random() * 90000000) + 10000000}`,
-      address: `${street} ${Math.floor(Math.random() * 2000) + 100}, ${district}, Lima`,
-      status: ['prospect', 'client', 'inactive'][Math.floor(Math.random() * 3)],
+      full_name: fullName,
+      email: email,
+      phone: phone,
+      address: `${street} ${Math.floor(Math.random() * 2000) + 100}`,
+      district: district,
+      status: ['prospect', 'client'][Math.floor(Math.random() * 2)],
+      client_type: ['familiar', 'individual', 'negocio', 'empresa', 'inversionista'][Math.floor(Math.random() * 5)],
+      acquisition_source: ['tiktok', 'instagram', 'facebook', 'referido', 'feria-inmobiliaria', 'google', 'whatsapp', 'llamada-fria', 'sitio-web', 'otro'][Math.floor(Math.random() * 10)],
+      sales_stage: salesStages[Math.floor(Math.random() * salesStages.length)],
       notes: [
         'Interesado en propiedades en zona residencial',
         'Cliente potencial con buen presupuesto',
@@ -67,8 +132,13 @@ export const generateContacts = (userId: string) => {
         'Interesado en casas familiares',
         'Cliente referido por conocido',
         'Busca oficina para negocio',
-        'Interesado en terrenos para construcción'
-      ][Math.floor(Math.random() * 7)]
+        'Interesado en terrenos para construcción',
+        'Cliente serio con capacidad de compra',
+        'Necesita crédito hipotecario',
+        'Busca propiedad para alquiler',
+        'Interesado en zona comercial',
+        'Cliente con urgencia de mudanza'
+      ][Math.floor(Math.random() * 12)]
     });
   }
   
