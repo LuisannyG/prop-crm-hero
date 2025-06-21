@@ -23,6 +23,7 @@ const SeedDataButton = () => {
 
     setLoading(true);
     try {
+      console.log('Iniciando inserción de datos para usuario:', user.id);
       const result = await seedDatabase(user.id);
       
       if (result.success) {
@@ -30,7 +31,13 @@ const SeedDataButton = () => {
           title: "¡Datos insertados exitosamente!",
           description: `Se insertaron ${result.stats?.contacts} contactos, ${result.stats?.properties} propiedades y ${result.stats?.reminders} recordatorios`,
         });
+        
+        // Recargar la página para mostrar los nuevos datos
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
       } else {
+        console.error('Error en seedDatabase:', result.error);
         toast({
           title: "Error",
           description: result.message || "Error al insertar datos",
@@ -38,7 +45,7 @@ const SeedDataButton = () => {
         });
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error inesperado:', error);
       toast({
         title: "Error",
         description: "Error inesperado al insertar datos",

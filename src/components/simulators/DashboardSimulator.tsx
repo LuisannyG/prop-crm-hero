@@ -49,30 +49,49 @@ const DashboardSimulator = () => {
       if (!user) return;
 
       try {
+        console.log('Obteniendo datos para usuario:', user.id);
+        
         // Fetch contacts
-        const { data: contactsData } = await supabase
+        const { data: contactsData, error: contactsError } = await supabase
           .from('contacts')
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false });
 
+        if (contactsError) {
+          console.error('Error fetching contacts:', contactsError);
+        } else {
+          console.log('Contactos obtenidos:', contactsData?.length || 0);
+          setContacts(contactsData || []);
+        }
+
         // Fetch properties
-        const { data: propertiesData } = await supabase
+        const { data: propertiesData, error: propertiesError } = await supabase
           .from('properties')
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false });
 
+        if (propertiesError) {
+          console.error('Error fetching properties:', propertiesError);
+        } else {
+          console.log('Propiedades obtenidas:', propertiesData?.length || 0);
+          setProperties(propertiesData || []);
+        }
+
         // Fetch reminders
-        const { data: remindersData } = await supabase
+        const { data: remindersData, error: remindersError } = await supabase
           .from('reminders')
           .select('*')
           .eq('user_id', user.id)
           .order('reminder_date', { ascending: true });
 
-        setContacts(contactsData || []);
-        setProperties(propertiesData || []);
-        setReminders(remindersData || []);
+        if (remindersError) {
+          console.error('Error fetching reminders:', remindersError);
+        } else {
+          console.log('Recordatorios obtenidos:', remindersData?.length || 0);
+          setReminders(remindersData || []);
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -105,7 +124,24 @@ const DashboardSimulator = () => {
   }, {} as Record<string, number>);
 
   const propertyChartData = Object.entries(propertyTypeData).map(([name, value]) => ({
-    name,
+    name: name === 'casa' ? 'Casa' : 
+          name === 'departamento' ? 'Departamento' : 
+          name === 'oficina' ? 'Oficina' : 
+          name === 'local' ? 'Local' : 
+          name === 'terreno' ? 'Terreno' : name,
+    value
+  }));
+
+  const statusData = properties.reduce((acc, property) => {
+    const status = property.status || 'disponible';
+    acc[status] = (acc[status] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const statusChartData = Object.entries(statusData).map(([name, value]) => ({
+    name: name === 'available' ? 'Disponible' : 
+          name === 'sold' ? 'Vendida' : 
+          name === 'reserved' ? 'Reservada' : name,
     value
   }));
 
@@ -116,11 +152,13 @@ const DashboardSimulator = () => {
   }, {} as Record<string, number>);
 
   const priorityChartData = Object.entries(priorityData).map(([name, value]) => ({
-    name,
+    name: name === 'alta' ? 'Alta' : 
+          name === 'media' ? 'Media' : 
+          name === 'baja' ? 'Baja' : name,
     value
   }));
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
   return (
     <div className="space-y-6">
@@ -159,35 +197,6 @@ const DashboardSimulator = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="shadow-md">
           <CardHeader className="bg-blue-50">
-            <CardTitle className="text-blue-800">Resumen General</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4">
-            {totalContacts === 0 && totalProperties === 0 && totalReminders === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                  <Users className="w-8 h-8 text-gray-400" />
-                </div>
-                <p className="font-medium">¡Comienza tu CRM!</p>
-                <p className="text-sm mt-1">Agrega tus primeros contactos y propiedades para ver estadísticas aquí</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span>Total de datos:</span>
-                  <span className="font-bold">{totalContacts + totalProperties + totalReminders}</span>
-                </div>
-                <div className="text-sm text-gray-600">
-                  <p>Contactos: {totalContacts}</p>
-                  <p>Propiedades: {totalProperties}</p>
-                  <p>Recordatorios: {totalReminders}</p>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-md">
-          <CardHeader className="bg-blue-50">
             <CardTitle className="text-blue-800">Tipos de Propiedades</CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
@@ -195,7 +204,6 @@ const DashboardSimulator = () => {
               <div className="text-center py-8 text-gray-500">
                 <Building className="w-12 h-12 mx-auto mb-2 opacity-50" />
                 <p>No hay propiedades registradas</p>
-                <p className="text-sm mt-1">Comienza agregando tu primera propiedad</p>
               </div>
             ) : (
               <div className="h-48">
@@ -224,6 +232,32 @@ const DashboardSimulator = () => {
 
         <Card className="shadow-md">
           <CardHeader className="bg-blue-50">
+            <CardTitle className="text-blue-800">Estado de Propiedades</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            {statusChartData.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <Building className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <p>No hay propiedades registradas</p>
+              </div>
+            ) : (
+              <div className="h-48">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={statusChartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="value" fill="#00C49F" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-md">
+          <CardHeader className="bg-blue-50">
             <CardTitle className="text-blue-800">Prioridad de Recordatorios</CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
@@ -231,7 +265,6 @@ const DashboardSimulator = () => {
               <div className="text-center py-8 text-gray-500">
                 <Calendar className="w-12 h-12 mx-auto mb-2 opacity-50" />
                 <p>No hay recordatorios pendientes</p>
-                <p className="text-sm mt-1">Programa tu primer recordatorio</p>
               </div>
             ) : (
               <div className="h-48">
@@ -241,7 +274,7 @@ const DashboardSimulator = () => {
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="value" fill="#8884d8" />
+                    <Bar dataKey="value" fill="#FFBB28" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -276,7 +309,6 @@ const DashboardSimulator = () => {
                 <div className="text-center py-8 text-gray-500">
                   <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
                   <p>No hay contactos registrados</p>
-                  <p className="text-sm">Comienza agregando tu primer contacto</p>
                 </div>
               ) : (
                 <Table>
@@ -289,14 +321,16 @@ const DashboardSimulator = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {contacts.slice(0, 5).map((contact) => (
+                    {contacts.slice(0, 10).map((contact) => (
                       <TableRow key={contact.id}>
                         <TableCell className="font-medium">{contact.full_name}</TableCell>
                         <TableCell>{contact.email || 'N/A'}</TableCell>
                         <TableCell>{contact.phone || 'N/A'}</TableCell>
                         <TableCell>
-                          <Badge variant={contact.status === 'active' ? 'default' : 'secondary'}>
-                            {contact.status || 'activo'}
+                          <Badge variant={contact.status === 'client' ? 'default' : 'secondary'}>
+                            {contact.status === 'client' ? 'Cliente' : 
+                             contact.status === 'prospect' ? 'Prospecto' : 
+                             contact.status === 'inactive' ? 'Inactivo' : contact.status}
                           </Badge>
                         </TableCell>
                       </TableRow>
@@ -311,7 +345,6 @@ const DashboardSimulator = () => {
                 <div className="text-center py-8 text-gray-500">
                   <Building className="w-12 h-12 mx-auto mb-2 opacity-50" />
                   <p>No hay propiedades registradas</p>
-                  <p className="text-sm">Comienza agregando tu primera propiedad</p>
                 </div>
               ) : (
                 <Table>
@@ -324,16 +357,26 @@ const DashboardSimulator = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {properties.slice(0, 5).map((property) => (
+                    {properties.slice(0, 10).map((property) => (
                       <TableRow key={property.id}>
                         <TableCell className="font-medium">{property.title}</TableCell>
-                        <TableCell>{property.property_type || 'N/A'}</TableCell>
+                        <TableCell className="capitalize">
+                          {property.property_type === 'casa' ? 'Casa' : 
+                           property.property_type === 'departamento' ? 'Departamento' : 
+                           property.property_type === 'oficina' ? 'Oficina' : 
+                           property.property_type === 'local' ? 'Local' : 
+                           property.property_type === 'terreno' ? 'Terreno' : 
+                           property.property_type || 'N/A'}
+                        </TableCell>
                         <TableCell>
                           {property.price ? `S/ ${property.price.toLocaleString()}` : 'N/A'}
                         </TableCell>
                         <TableCell>
                           <Badge variant={property.status === 'available' ? 'default' : 'secondary'}>
-                            {property.status || 'disponible'}
+                            {property.status === 'available' ? 'Disponible' : 
+                             property.status === 'sold' ? 'Vendida' : 
+                             property.status === 'reserved' ? 'Reservada' : 
+                             property.status === 'inactive' ? 'Inactiva' : property.status}
                           </Badge>
                         </TableCell>
                       </TableRow>
@@ -348,7 +391,6 @@ const DashboardSimulator = () => {
                 <div className="text-center py-8 text-gray-500">
                   <Calendar className="w-12 h-12 mx-auto mb-2 opacity-50" />
                   <p>No hay recordatorios pendientes</p>
-                  <p className="text-sm">Programa tu primer recordatorio</p>
                 </div>
               ) : (
                 <Table>
@@ -361,20 +403,26 @@ const DashboardSimulator = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {reminders.slice(0, 5).map((reminder) => (
+                    {reminders.slice(0, 10).map((reminder) => (
                       <TableRow key={reminder.id}>
                         <TableCell className="font-medium">{reminder.title}</TableCell>
                         <TableCell>
                           {new Date(reminder.reminder_date).toLocaleDateString()}
                         </TableCell>
                         <TableCell>
-                          <Badge variant={reminder.priority === 'alta' ? 'destructive' : 'secondary'}>
-                            {reminder.priority || 'media'}
+                          <Badge variant={
+                            reminder.priority === 'alta' ? 'destructive' : 
+                            reminder.priority === 'media' ? 'default' : 'outline'
+                          }>
+                            {reminder.priority === 'alta' ? 'Alta' : 
+                             reminder.priority === 'media' ? 'Media' : 
+                             reminder.priority === 'baja' ? 'Baja' : reminder.priority}
                           </Badge>
                         </TableCell>
                         <TableCell>
                           <Badge variant={reminder.status === 'completado' ? 'default' : 'outline'}>
-                            {reminder.status || 'pendiente'}
+                            {reminder.status === 'completado' ? 'Completado' : 
+                             reminder.status === 'pendiente' ? 'Pendiente' : reminder.status}
                           </Badge>
                         </TableCell>
                       </TableRow>
