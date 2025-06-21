@@ -9,6 +9,9 @@ import {
   Users, 
   Building, 
   Bell, 
+  Calendar,
+  FileText,
+  BarChart3,
   Brain, 
   Shield,
   LogOut,
@@ -31,6 +34,9 @@ const DashboardNav = () => {
     { path: '/contacts', icon: Users, label: 'Contactos', color: 'text-green-600' },
     { path: '/properties', icon: Building, label: 'Propiedades', color: 'text-purple-600' },
     { path: '/reminders', icon: Bell, label: 'Recordatorios', color: 'text-orange-600' },
+    { path: '/smart-agenda', icon: Calendar, label: 'Agenda Inteligente', color: 'text-blue-600' },
+    { path: '/purchase-reasons', icon: FileText, label: 'Motivos No Compra', color: 'text-red-600' },
+    { path: '/auto-reports', icon: BarChart3, label: 'Reportes Auto', color: 'text-indigo-600' },
     { path: '/learning-engine', icon: Brain, label: 'Motor IA', color: 'text-pink-600', isPaid: true },
     { path: '/risk-detection', icon: Shield, label: 'Detección Riesgo', color: 'text-red-600', isPaid: true },
   ];
@@ -49,7 +55,7 @@ const DashboardNav = () => {
               />
             </div>
             
-            <nav className="flex space-x-1">
+            <nav className="flex space-x-1 overflow-x-auto">
               {navItems.map((item) => {
                 const isActive = location.pathname === item.path;
                 const Icon = item.icon;
@@ -60,7 +66,7 @@ const DashboardNav = () => {
                     variant={isActive ? "default" : "ghost"}
                     size="sm"
                     onClick={() => navigate(item.path)}
-                    className={`relative ${isActive ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'}`}
+                    className={`relative whitespace-nowrap ${isActive ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'}`}
                   >
                     <Icon className={`w-4 h-4 mr-2 ${isActive ? 'text-white' : item.color}`} />
                     {item.label}
