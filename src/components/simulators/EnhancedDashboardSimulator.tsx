@@ -17,6 +17,7 @@ interface Contact {
   status: string;
   client_type: string;
   acquisition_source: string;
+  sales_stage: string;
   created_at: string;
 }
 
@@ -36,14 +37,6 @@ interface Reminder {
   priority: string;
   status: string;
   reminder_date: string;
-}
-
-interface SalesFunnelData {
-  id: string;
-  contact_id: string;
-  stage: string;
-  stage_date: string;
-  notes: string;
 }
 
 interface NoPurchaseReason {
@@ -75,7 +68,6 @@ const EnhancedDashboardSimulator = () => {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
-  const [salesFunnel, setSalesFunnel] = useState<SalesFunnelData[]>([]);
   const [noPurchaseReasons, setNoPurchaseReasons] = useState<NoPurchaseReason[]>([]);
   const [performanceMetrics, setPerformanceMetrics] = useState<PerformanceMetric[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -97,7 +89,7 @@ const EnhancedDashboardSimulator = () => {
         
         setUserProfile(profileData);
 
-        // Fetch contacts
+        // Fetch contacts with sales_stage
         const { data: contactsData, error: contactsError } = await supabase
           .from('contacts')
           .select('*')
@@ -134,19 +126,6 @@ const EnhancedDashboardSimulator = () => {
           console.error('Error fetching reminders:', remindersError);
         } else {
           setReminders(remindersData || []);
-        }
-
-        // Fetch sales funnel data
-        const { data: salesFunnelData, error: salesFunnelError } = await supabase
-          .from('sales_funnel')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('stage_date', { ascending: false });
-
-        if (salesFunnelError) {
-          console.error('Error fetching sales funnel:', salesFunnelError);
-        } else {
-          setSalesFunnel(salesFunnelData || []);
         }
 
         // Fetch no purchase reasons
@@ -198,7 +177,7 @@ const EnhancedDashboardSimulator = () => {
   const totalReminders = reminders.length;
   const highPriorityReminders = reminders.filter(r => r.priority === 'alta' && r.status === 'pendiente').length;
 
-  // Updated sales funnel stages with specific colors
+  // Updated sales funnel stages with specific colors - now using sales_stage from contacts
   const funnelStages = [
     { key: 'contacto_inicial_recibido', name: 'Contacto inicial recibido', color: '#FF6B6B' },
     { key: 'primer_contacto_activo', name: 'Primer contacto activo', color: '#4ECDC4' },
@@ -212,7 +191,7 @@ const EnhancedDashboardSimulator = () => {
   ];
 
   const funnelData = funnelStages.map(stage => {
-    const count = salesFunnel.filter(item => item.stage === stage.key).length;
+    const count = contacts.filter(contact => contact.sales_stage === stage.key).length;
     return { 
       name: stage.name, 
       value: count, 
