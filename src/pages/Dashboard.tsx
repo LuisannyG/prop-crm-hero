@@ -11,74 +11,61 @@ import {
   FileText, 
   Brain,
   Shield,
-  Settings
+  Settings,
+  AlertCircle
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import DashboardNav from "@/components/DashboardNav";
-import DashboardSimulator from "@/components/simulators/DashboardSimulator";
+import EnhancedDashboardSimulator from "@/components/simulators/EnhancedDashboardSimulator";
+import NoPurchaseReasonModal from "@/components/NoPurchaseReasonModal";
 import SeedDataButton from "@/components/SeedDataButton";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+
+interface Contact {
+  id: string;
+  full_name: string;
+}
+
+interface Property {
+  id: string;
+  title: string;
+}
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const features = [
-    {
-      title: "Gestión de Contactos",
-      description: "Administra tu base de datos de clientes y prospectos",
-      icon: Users,
-      color: "bg-blue-500",
-      route: "/contacts"
-    },
-    {
-      title: "Gestión de Propiedades",
-      description: "Cataloga y gestiona tu portafolio inmobiliario",
-      icon: Building,
-      color: "bg-green-500",
-      route: "/properties"
-    },
-    {
-      title: "Agenda Inteligente",
-      description: "Recordatorios automáticos y seguimiento de clientes",
-      icon: Calendar,
-      color: "bg-purple-500",
-      route: "/smart-agenda"
-    },
-    {
-      title: "Reportes Automáticos",
-      description: "Análisis y reportes de tu negocio inmobiliario",
-      icon: BarChart3,
-      color: "bg-orange-500",
-      route: "/auto-reports"
-    },
-    {
-      title: "Motor de Aprendizaje",
-      description: "IA que aprende de tus datos para mejores recomendaciones",
-      icon: Brain,
-      color: "bg-indigo-500",
-      route: "/learning-engine"
-    },
-    {
-      title: "Detección de Riesgos",
-      description: "Identifica y previene riesgos en tus transacciones",
-      icon: Shield,
-      color: "bg-red-500",
-      route: "/risk-detection"
-    },
-    {
-      title: "Registro de Motivos",
-      description: "Analiza por qué los clientes no compran",
-      icon: FileText,
-      color: "bg-yellow-500",
-      route: "/purchase-reasons"
-    },
-    {
-      title: "Recordatorios",
-      description: "Gestiona recordatorios y tareas pendientes",
-      icon: Phone,
-      color: "bg-teal-500",
-      route: "/reminders"
-    }
-  ];
+  useEffect(() => {
+    const fetchContactsAndProperties = async () => {
+      if (!user) return;
+
+      // Fetch contacts
+      const { data: contactsData } = await supabase
+        .from('contacts')
+        .select('id, full_name')
+        .eq('user_id', user.id);
+
+      // Fetch properties
+      const { data: propertiesData } = await supabase
+        .from('properties')
+        .select('id, title')
+        .eq('user_id', user.id);
+
+      setContacts(contactsData || []);
+      setProperties(propertiesData || []);
+    };
+
+    fetchContactsAndProperties();
+  }, [user]);
+
+  const handleReasonAdded = () => {
+    setRefreshKey(prev => prev + 1);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -90,12 +77,19 @@ const Dashboard = () => {
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard Inmobiliario</h1>
             <p className="text-gray-600">Gestiona tu negocio inmobiliario de forma inteligente</p>
           </div>
-          <SeedDataButton />
+          <div className="flex gap-2">
+            <NoPurchaseReasonModal 
+              contacts={contacts}
+              properties={properties}
+              onReasonAdded={handleReasonAdded}
+            />
+            <SeedDataButton />
+          </div>
         </div>
 
-        {/* Vista general */}
+        {/* Vista general mejorada */}
         <div className="mb-8">
-          <DashboardSimulator />
+          <EnhancedDashboardSimulator key={refreshKey} />
         </div>
       </main>
     </div>

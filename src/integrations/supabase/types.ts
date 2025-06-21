@@ -108,6 +108,81 @@ export type Database = {
           },
         ]
       }
+      no_purchase_reasons: {
+        Row: {
+          contact_id: string
+          created_at: string
+          follow_up_date: string | null
+          id: string
+          notes: string | null
+          price_feedback: number | null
+          property_id: string | null
+          reason_category: string
+          reason_details: string | null
+          user_id: string
+          will_reconsider: boolean | null
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string
+          follow_up_date?: string | null
+          id?: string
+          notes?: string | null
+          price_feedback?: number | null
+          property_id?: string | null
+          reason_category: string
+          reason_details?: string | null
+          user_id: string
+          will_reconsider?: boolean | null
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string
+          follow_up_date?: string | null
+          id?: string
+          notes?: string | null
+          price_feedback?: number | null
+          property_id?: string | null
+          reason_category?: string
+          reason_details?: string | null
+          user_id?: string
+          will_reconsider?: boolean | null
+        }
+        Relationships: []
+      }
+      performance_metrics: {
+        Row: {
+          channel: string | null
+          created_at: string
+          id: string
+          metric_date: string
+          metric_type: string
+          metric_value: number
+          team_member_id: string | null
+          user_id: string
+        }
+        Insert: {
+          channel?: string | null
+          created_at?: string
+          id?: string
+          metric_date?: string
+          metric_type: string
+          metric_value: number
+          team_member_id?: string | null
+          user_id: string
+        }
+        Update: {
+          channel?: string | null
+          created_at?: string
+          id?: string
+          metric_date?: string
+          metric_type?: string
+          metric_value?: number
+          team_member_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -235,6 +310,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      sales_funnel: {
+        Row: {
+          contact_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          stage: string
+          stage_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          stage: string
+          stage_date?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          stage?: string
+          stage_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
