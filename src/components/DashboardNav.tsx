@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
-  Home, 
   Users, 
   Building, 
   Bell, 
@@ -24,7 +23,6 @@ const DashboardNav = () => {
   };
 
   const navItems = [
-    { path: '/dashboard', icon: Home, label: 'Dashboard', color: 'text-blue-600' },
     { path: '/contacts', icon: Users, label: 'Contactos', color: 'text-green-600' },
     { path: '/properties', icon: Building, label: 'Propiedades', color: 'text-purple-600' },
     { path: '/reminders', icon: Bell, label: 'Recordatorios', color: 'text-orange-600' },
@@ -37,13 +35,13 @@ const DashboardNav = () => {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center py-4">
           <div className="flex items-center space-x-8">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center">
               <img 
                 src="/lovable-uploads/bf2605cc-bd63-49db-9eb1-655d60adffc4.png" 
                 alt="Proptor Logo" 
-                className="h-8"
+                className="h-8 cursor-pointer"
+                onClick={() => navigate('/dashboard')}
               />
-              <span className="text-xl font-bold text-gray-800">Proptor</span>
             </div>
             
             <nav className="flex space-x-1">
