@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -300,27 +299,37 @@ const Contacts = () => {
                       <SelectValue placeholder="Seleccionar distrito" />
                     </SelectTrigger>
                     <SelectContent className="bg-white z-50">
-                      <SelectItem value="barranco">Barranco</SelectItem>
-                      <SelectItem value="breña">Breña</SelectItem>
-                      <SelectItem value="callao">Callao</SelectItem>
-                      <SelectItem value="chorrillos">Chorrillos</SelectItem>
-                      <SelectItem value="comas">Comas</SelectItem>
-                      <SelectItem value="independencia">Independencia</SelectItem>
-                      <SelectItem value="jesus-maria">Jesús María</SelectItem>
-                      <SelectItem value="la-molina">La Molina</SelectItem>
-                      <SelectItem value="lima">Lima Cercado</SelectItem>
-                      <SelectItem value="lince">Lince</SelectItem>
-                      <SelectItem value="los-olivos">Los Olivos</SelectItem>
-                      <SelectItem value="magdalena">Magdalena del Mar</SelectItem>
-                      <SelectItem value="miraflores">Miraflores</SelectItem>
-                      <SelectItem value="pueblo-libre">Pueblo Libre</SelectItem>
-                      <SelectItem value="rimac">Rímac</SelectItem>
-                      <SelectItem value="san-borja">San Borja</SelectItem>
-                      <SelectItem value="san-isidro">San Isidro</SelectItem>
-                      <SelectItem value="san-martin-porres">San Martín de Porres</SelectItem>
-                      <SelectItem value="san-miguel">San Miguel</SelectItem>
-                      <SelectItem value="surco">Surco</SelectItem>
-                      <SelectItem value="surquillo">Surquillo</SelectItem>
+                      <SelectItem value="Ate">Ate</SelectItem>
+                      <SelectItem value="Barranco">Barranco</SelectItem>
+                      <SelectItem value="Bellavista">Bellavista</SelectItem>
+                      <SelectItem value="Breña">Breña</SelectItem>
+                      <SelectItem value="Callao">Callao</SelectItem>
+                      <SelectItem value="Cercado de Lima">Cercado de Lima</SelectItem>
+                      <SelectItem value="Chorrillos">Chorrillos</SelectItem>
+                      <SelectItem value="Comas">Comas</SelectItem>
+                      <SelectItem value="El Agustino">El Agustino</SelectItem>
+                      <SelectItem value="Independencia">Independencia</SelectItem>
+                      <SelectItem value="Jesús María">Jesús María</SelectItem>
+                      <SelectItem value="La Molina">La Molina</SelectItem>
+                      <SelectItem value="La Perla">La Perla</SelectItem>
+                      <SelectItem value="La Punta">La Punta</SelectItem>
+                      <SelectItem value="La Victoria">La Victoria</SelectItem>
+                      <SelectItem value="Lince">Lince</SelectItem>
+                      <SelectItem value="Los Olivos">Los Olivos</SelectItem>
+                      <SelectItem value="Magdalena">Magdalena</SelectItem>
+                      <SelectItem value="Miraflores">Miraflores</SelectItem>
+                      <SelectItem value="Pueblo Libre">Pueblo Libre</SelectItem>
+                      <SelectItem value="San Borja">San Borja</SelectItem>
+                      <SelectItem value="San Isidro">San Isidro</SelectItem>
+                      <SelectItem value="San Juan de Miraflores">San Juan de Miraflores</SelectItem>
+                      <SelectItem value="San Luis">San Luis</SelectItem>
+                      <SelectItem value="San Martín de Porres">San Martín de Porres</SelectItem>
+                      <SelectItem value="San Miguel">San Miguel</SelectItem>
+                      <SelectItem value="Santa Anita">Santa Anita</SelectItem>
+                      <SelectItem value="Surco">Surco</SelectItem>
+                      <SelectItem value="Ventanilla">Ventanilla</SelectItem>
+                      <SelectItem value="Villa El Salvador">Villa El Salvador</SelectItem>
+                      <SelectItem value="Villa María del Triunfo">Villa María del Triunfo</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
