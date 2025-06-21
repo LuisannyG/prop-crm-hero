@@ -291,12 +291,44 @@ const Properties = () => {
                   </div>
                   <div>
                     <Label htmlFor="district">Distrito *</Label>
-                    <Input
-                      id="district"
-                      value={formData.district}
-                      onChange={(e) => setFormData({...formData, district: e.target.value})}
-                      required
-                    />
+                    <Select value={formData.district} onValueChange={(value) => setFormData({...formData, district: value})} required>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar distrito" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Miraflores">Miraflores</SelectItem>
+                        <SelectItem value="San Isidro">San Isidro</SelectItem>
+                        <SelectItem value="Barranco">Barranco</SelectItem>
+                        <SelectItem value="La Molina">La Molina</SelectItem>
+                        <SelectItem value="Surco">Surco</SelectItem>
+                        <SelectItem value="San Borja">San Borja</SelectItem>
+                        <SelectItem value="Magdalena">Magdalena</SelectItem>
+                        <SelectItem value="Jesús María">Jesús María</SelectItem>
+                        <SelectItem value="Lince">Lince</SelectItem>
+                        <SelectItem value="Pueblo Libre">Pueblo Libre</SelectItem>
+                        <SelectItem value="Breña">Breña</SelectItem>
+                        <SelectItem value="La Victoria">La Victoria</SelectItem>
+                        <SelectItem value="Cercado de Lima">Cercado de Lima</SelectItem>
+                        <SelectItem value="San Miguel">San Miguel</SelectItem>
+                        <SelectItem value="Chorrillos">Chorrillos</SelectItem>
+                        <SelectItem value="Villa El Salvador">Villa El Salvador</SelectItem>
+                        <SelectItem value="Villa María del Triunfo">Villa María del Triunfo</SelectItem>
+                        <SelectItem value="San Juan de Miraflores">San Juan de Miraflores</SelectItem>
+                        <SelectItem value="Los Olivos">Los Olivos</SelectItem>
+                        <SelectItem value="Comas">Comas</SelectItem>
+                        <SelectItem value="Independencia">Independencia</SelectItem>
+                        <SelectItem value="San Martín de Porres">San Martín de Porres</SelectItem>
+                        <SelectItem value="Callao">Callao</SelectItem>
+                        <SelectItem value="Bellavista">Bellavista</SelectItem>
+                        <SelectItem value="La Perla">La Perla</SelectItem>
+                        <SelectItem value="Ventanilla">Ventanilla</SelectItem>
+                        <SelectItem value="Ate">Ate</SelectItem>
+                        <SelectItem value="Santa Anita">Santa Anita</SelectItem>
+                        <SelectItem value="El Agustino">El Agustino</SelectItem>
+                        <SelectItem value="San Luis">San Luis</SelectItem>
+                        <SelectItem value="La Punta">La Punta</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
                     <Label htmlFor="property_type">Tipo de Propiedad *</Label>
