@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,9 +11,10 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardNav from '@/components/DashboardNav';
-import { CalendarIcon, Plus, Clock, AlertCircle, CheckCircle2, X, Mail } from 'lucide-react';
+import { CalendarIcon, Plus, Clock, AlertCircle, CheckCircle2, X, Mail, ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useNavigate } from 'react-router-dom';
 
 interface Contact {
   id: string;
@@ -51,6 +51,7 @@ interface NewReminder {
 const Reminders = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [newReminder, setNewReminder] = useState<NewReminder>({
@@ -420,12 +421,20 @@ const Reminders = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <DashboardNav />
-      
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Recordatorios</h1>
-          <p className="text-gray-600">Gestiona tus recordatorios y seguimientos de clientes</p>
+        <div className="flex items-center gap-4 mb-8">
+          <Button
+            variant="outline"
+            onClick={() => navigate('/dashboard')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Volver al Dashboard
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Recordatorios</h1>
+            <p className="text-gray-600">Gestiona tus recordatorios y seguimientos de clientes</p>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
