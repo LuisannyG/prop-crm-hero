@@ -19,7 +19,7 @@ import { useState, useEffect } from "react";
 import DashboardNav from "@/components/DashboardNav";
 import EnhancedDashboardSimulator from "@/components/simulators/EnhancedDashboardSimulator";
 import NoPurchaseReasonModal from "@/components/NoPurchaseReasonModal";
-import SeedDataButton from "@/components/SeedDataButton";
+import ExcelExportButton from "@/components/ExcelExportButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -83,7 +83,7 @@ const Dashboard = () => {
               properties={properties}
               onReasonAdded={handleReasonAdded}
             />
-            <SeedDataButton />
+            <ExcelExportButton />
           </div>
         </div>
 
