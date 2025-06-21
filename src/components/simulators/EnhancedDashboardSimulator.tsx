@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -386,7 +387,7 @@ const EnhancedDashboardSimulator = () => {
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Embudo de Ventas */}
+        {/* Embudo de Ventas - Solo Leyenda */}
         <Card className="shadow-md">
           <CardHeader className="bg-blue-50">
             <CardTitle className="text-blue-800 flex items-center">
@@ -401,31 +402,31 @@ const EnhancedDashboardSimulator = () => {
                 <p>No hay datos del embudo de ventas</p>
               </div>
             ) : (
-              <div className="h-64 mb-4">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={funnelData} layout="horizontal">
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" />
-                    <YAxis dataKey="name" type="category" width={150} fontSize={10} />
-                    <Tooltip />
-                    <Bar dataKey="value" />
-                  </BarChart>
-                </ResponsiveContainer>
+              <div className="grid grid-cols-1 gap-3 text-sm">
+                {funnelStages.map((stage, index) => {
+                  const count = contacts.filter(contact => contact.sales_stage === stage.key).length;
+                  return (
+                    <div key={stage.key} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 border">
+                      <div className="flex items-center gap-3">
+                        <div 
+                          className="w-4 h-4 rounded-full" 
+                          style={{ backgroundColor: stage.color }}
+                        ></div>
+                        <span className="text-gray-700 font-medium">{stage.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="font-bold">
+                          {count}
+                        </Badge>
+                        <span className="text-gray-500 text-xs">
+                          ({totalContacts > 0 ? Math.round((count / totalContacts) * 100) : 0}%)
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
-            {/* Legend for sales funnel */}
-            <div className="grid grid-cols-1 gap-1 text-xs">
-              {funnelStages.map((stage, index) => (
-                <div key={stage.key} className="flex items-center gap-2">
-                  <div 
-                    className="w-3 h-3 rounded" 
-                    style={{ backgroundColor: stage.color }}
-                  ></div>
-                  <span className="text-gray-700">{stage.name}</span>
-                  <span className="text-gray-500">({funnelData[index]?.value || 0})</span>
-                </div>
-              ))}
-            </div>
           </CardContent>
         </Card>
 
