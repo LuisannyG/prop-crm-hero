@@ -240,27 +240,27 @@ const Contacts = () => {
                       <SelectValue placeholder="Seleccionar distrito" />
                     </SelectTrigger>
                     <SelectContent className="bg-white z-50">
-                      <SelectItem value="miraflores">Miraflores</SelectItem>
-                      <SelectItem value="san-isidro">San Isidro</SelectItem>
                       <SelectItem value="barranco">Barranco</SelectItem>
-                      <SelectItem value="surco">Surco</SelectItem>
-                      <SelectItem value="la-molina">La Molina</SelectItem>
-                      <SelectItem value="chorrillos">Chorrillos</SelectItem>
-                      <SelectItem value="magdalena">Magdalena del Mar</SelectItem>
-                      <SelectItem value="pueblo-libre">Pueblo Libre</SelectItem>
-                      <SelectItem value="jesus-maria">Jesús María</SelectItem>
-                      <SelectItem value="lince">Lince</SelectItem>
-                      <SelectItem value="san-borja">San Borja</SelectItem>
-                      <SelectItem value="surquillo">Surquillo</SelectItem>
-                      <SelectItem value="lima">Lima Cercado</SelectItem>
                       <SelectItem value="breña">Breña</SelectItem>
-                      <SelectItem value="rimac">Rímac</SelectItem>
                       <SelectItem value="callao">Callao</SelectItem>
-                      <SelectItem value="san-miguel">San Miguel</SelectItem>
-                      <SelectItem value="los-olivos">Los Olivos</SelectItem>
+                      <SelectItem value="chorrillos">Chorrillos</SelectItem>
                       <SelectItem value="comas">Comas</SelectItem>
                       <SelectItem value="independencia">Independencia</SelectItem>
+                      <SelectItem value="jesus-maria">Jesús María</SelectItem>
+                      <SelectItem value="la-molina">La Molina</SelectItem>
+                      <SelectItem value="lima">Lima Cercado</SelectItem>
+                      <SelectItem value="lince">Lince</SelectItem>
+                      <SelectItem value="los-olivos">Los Olivos</SelectItem>
+                      <SelectItem value="magdalena">Magdalena del Mar</SelectItem>
+                      <SelectItem value="miraflores">Miraflores</SelectItem>
+                      <SelectItem value="pueblo-libre">Pueblo Libre</SelectItem>
+                      <SelectItem value="rimac">Rímac</SelectItem>
+                      <SelectItem value="san-borja">San Borja</SelectItem>
+                      <SelectItem value="san-isidro">San Isidro</SelectItem>
                       <SelectItem value="san-martin-porres">San Martín de Porres</SelectItem>
+                      <SelectItem value="san-miguel">San Miguel</SelectItem>
+                      <SelectItem value="surco">Surco</SelectItem>
+                      <SelectItem value="surquillo">Surquillo</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
