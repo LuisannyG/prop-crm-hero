@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Tooltip, FunnelChart, Funnel, LabelList } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 import { Users, Home, Building, User, AlertCircle, Calendar, Phone, Mail, TrendingUp, AlertTriangle, Target, DollarSign } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -195,11 +195,36 @@ const EnhancedDashboardSimulator = () => {
   const totalReminders = reminders.length;
   const highPriorityReminders = reminders.filter(r => r.priority === 'alta' && r.status === 'pendiente').length;
 
-  // Prepare sales funnel data
-  const funnelStages = ['prospecto', 'calificado', 'propuesta', 'negociacion', 'cerrado_ganado'];
+  // Updated sales funnel stages
+  const funnelStages = [
+    'contacto_inicial_recibido',
+    'primer_contacto_activo', 
+    'llenado_ficha',
+    'seguimiento_inicial',
+    'agendamiento_visitas',
+    'presentacion_personalizada',
+    'negociacion',
+    'cierre_firma_contrato',
+    'postventa_fidelizacion'
+  ];
+
   const funnelData = funnelStages.map(stage => {
     const count = salesFunnel.filter(item => item.stage === stage).length;
-    return { name: stage.charAt(0).toUpperCase() + stage.slice(1), value: count, fill: stage === 'cerrado_ganado' ? '#10B981' : '#3B82F6' };
+    const displayName = stage === 'contacto_inicial_recibido' ? 'Contacto Inicial' :
+                       stage === 'primer_contacto_activo' ? 'Primer Contacto' :
+                       stage === 'llenado_ficha' ? 'Llenado Ficha' :
+                       stage === 'seguimiento_inicial' ? 'Seguimiento' :
+                       stage === 'agendamiento_visitas' ? 'Agendamiento' :
+                       stage === 'presentacion_personalizada' ? 'Presentación' :
+                       stage === 'negociacion' ? 'Negociación' :
+                       stage === 'cierre_firma_contrato' ? 'Cierre/Firma' :
+                       stage === 'postventa_fidelizacion' ? 'Postventa' : stage;
+    
+    return { 
+      name: displayName, 
+      value: count, 
+      fill: stage === 'cierre_firma_contrato' ? '#10B981' : '#3B82F6' 
+    };
   });
 
   // Client type analysis
@@ -209,11 +234,12 @@ const EnhancedDashboardSimulator = () => {
     return acc;
   }, {} as Record<string, number>);
 
-  const clientTypeChartData = Object.entries(clientTypeData).map(([name, value]) => ({
+  const clientTypeChartData = Object.entries(clientTypeData).map(([name, value], index) => ({
     name: name === 'buyer' ? 'Comprador' : 
           name === 'seller' ? 'Vendedor' : 
           name === 'investor' ? 'Inversionista' : name,
-    value
+    value,
+    fill: COLORS[index % COLORS.length]
   }));
 
   // No purchase reasons analysis
@@ -223,7 +249,7 @@ const EnhancedDashboardSimulator = () => {
     return acc;
   }, {} as Record<string, number>);
 
-  const reasonsChartData = Object.entries(reasonsData).map(([name, value]) => ({
+  const reasonsChartData = Object.entries(reasonsData).map(([name, value], index) => ({
     name: name === 'precio' ? 'Precio' :
           name === 'ubicacion' ? 'Ubicación' :
           name === 'tamano' ? 'Tamaño' :
@@ -231,7 +257,8 @@ const EnhancedDashboardSimulator = () => {
           name === 'otra_propiedad' ? 'Otra Propiedad' :
           name === 'timing' ? 'Timing' :
           name === 'competencia' ? 'Competencia' : name,
-    value
+    value,
+    fill: ['#F59E0B', '#EF4444', '#8B5CF6', '#10B981', '#06B6D4', '#F97316', '#84CC16'][index % 7]
   }));
 
   // Performance metrics by channel (for independent agents) or team member (for companies)
@@ -242,9 +269,10 @@ const EnhancedDashboardSimulator = () => {
     return acc;
   }, {} as Record<string, number>);
 
-  const performanceChartData = Object.entries(performanceData).map(([name, value]) => ({
+  const performanceChartData = Object.entries(performanceData).map(([name, value], index) => ({
     name,
-    value
+    value,
+    fill: ['#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#06B6D4', '#F97316'][index % 6]
   }));
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
@@ -395,6 +423,7 @@ const EnhancedDashboardSimulator = () => {
                     <XAxis type="number" />
                     <YAxis dataKey="name" type="category" width={80} />
                     <Tooltip />
+                    <Legend />
                     <Bar dataKey="value" fill="#3B82F6" />
                   </BarChart>
                 </ResponsiveContainer>
@@ -431,10 +460,11 @@ const EnhancedDashboardSimulator = () => {
                       label
                     >
                       {clientTypeChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
                       ))}
                     </Pie>
                     <Tooltip />
+                    <Legend />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -466,6 +496,7 @@ const EnhancedDashboardSimulator = () => {
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip />
+                    <Legend />
                     <Bar dataKey="value" fill="#F59E0B" />
                   </BarChart>
                 </ResponsiveContainer>
@@ -479,7 +510,7 @@ const EnhancedDashboardSimulator = () => {
           <CardHeader className="bg-purple-50">
             <CardTitle className="text-purple-800 flex items-center">
               <TrendingUp className="mr-2 h-5 w-5" />
-              {userProfile?.user_type === 'independent_agent' ? 'Rendimiento por Canal' : 'Rendimiento del Equipo'}
+              Rendimiento por Canal
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
@@ -496,6 +527,7 @@ const EnhancedDashboardSimulator = () => {
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip />
+                    <Legend />
                     <Bar dataKey="value" fill="#8B5CF6" />
                   </BarChart>
                 </ResponsiveContainer>
