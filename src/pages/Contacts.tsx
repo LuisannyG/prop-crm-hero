@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -77,6 +78,7 @@ const Contacts = () => {
 
       if (error) throw error;
       setContacts(data || []);
+      console.log('Contacts loaded:', data);
     } catch (error) {
       console.error('Error fetching contacts:', error);
       toast({
@@ -93,7 +95,7 @@ const Contacts = () => {
     try {
       const { data, error } = await supabase
         .from('sales_funnel')
-        .select('contact_id, stage')
+        .select('contact_id, stage, stage_date')
         .order('stage_date', { ascending: false });
 
       if (error) throw error;
@@ -144,6 +146,7 @@ const Contacts = () => {
       let contactId = editingContact?.id;
 
       if (editingContact) {
+        console.log('Updating contact:', editingContact.id, 'with data:', contactData);
         const { error } = await supabase
           .from('contacts')
           .update(contactData)
@@ -153,6 +156,7 @@ const Contacts = () => {
         contactId = editingContact.id;
         toast({ title: 'Contacto actualizado exitosamente' });
       } else {
+        console.log('Creating new contact with data:', contactData);
         const { data, error } = await supabase
           .from('contacts')
           .insert([contactData])
@@ -164,31 +168,40 @@ const Contacts = () => {
         toast({ title: 'Contacto agregado exitosamente' });
       }
 
-      // Update or insert sales funnel stage
-      if (contactId) {
+      // Update sales funnel stage
+      if (contactId && formData.sales_stage) {
         console.log('Updating sales funnel for contact:', contactId, 'with stage:', formData.sales_stage);
         
-        // Delete existing funnel entries for this contact to avoid duplicates
-        await supabase
+        // First, check if there's already an entry for this contact with this stage
+        const { data: existingEntry } = await supabase
           .from('sales_funnel')
-          .delete()
-          .eq('contact_id', contactId);
+          .select('id')
+          .eq('contact_id', contactId)
+          .eq('stage', formData.sales_stage)
+          .single();
 
-        // Insert new funnel entry
-        const { error: funnelError } = await supabase
-          .from('sales_funnel')
-          .insert([{
-            contact_id: contactId,
-            user_id: user.id,
-            stage: formData.sales_stage,
-            stage_date: new Date().toISOString(),
-            notes: `Etapa actualizada: ${salesStages.find(s => s.key === formData.sales_stage)?.name}`
-          }]);
+        if (!existingEntry) {
+          // Insert new funnel entry only if it doesn't exist
+          const { error: funnelError } = await supabase
+            .from('sales_funnel')
+            .insert([{
+              contact_id: contactId,
+              user_id: user.id,
+              stage: formData.sales_stage,
+              stage_date: new Date().toISOString(),
+              notes: `Etapa: ${salesStages.find(s => s.key === formData.sales_stage)?.name}`
+            }]);
 
-        if (funnelError) {
-          console.error('Error inserting sales funnel:', funnelError);
-        } else {
-          console.log('Sales funnel updated successfully');
+          if (funnelError) {
+            console.error('Error inserting sales funnel:', funnelError);
+          } else {
+            console.log('Sales funnel updated successfully');
+            // Update local state immediately
+            setSalesFunnelData(prev => ({
+              ...prev,
+              [contactId]: formData.sales_stage
+            }));
+          }
         }
       }
 
@@ -243,6 +256,7 @@ const Contacts = () => {
   };
 
   const startEdit = (contact: Contact) => {
+    console.log('Starting edit for contact:', contact.id, 'Current sales stage:', salesFunnelData[contact.id]);
     setFormData({
       full_name: contact.full_name,
       email: contact.email || '',
@@ -421,14 +435,27 @@ const Contacts = () => {
                 </div>
                 <div>
                   <Label htmlFor="sales_stage">Etapa de Venta *</Label>
-                  <Select value={formData.sales_stage} onValueChange={(value) => setFormData({...formData, sales_stage: value})} required>
+                  <Select 
+                    value={formData.sales_stage} 
+                    onValueChange={(value) => {
+                      console.log('Sales stage changed to:', value);
+                      setFormData({...formData, sales_stage: value});
+                    }} 
+                    required
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccionar etapa" />
                     </SelectTrigger>
                     <SelectContent className="bg-white z-50">
                       {salesStages.map((stage) => (
                         <SelectItem key={stage.key} value={stage.key}>
-                          {stage.name}
+                          <div className="flex items-center gap-2">
+                            <div 
+                              className="w-3 h-3 rounded-full" 
+                              style={{ backgroundColor: stage.color }}
+                            ></div>
+                            {stage.name}
+                          </div>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -481,7 +508,10 @@ const Contacts = () => {
                 </TableHeader>
                 <TableBody>
                   {contacts.map((contact) => {
-                    const stageInfo = getSalesStageInfo(salesFunnelData[contact.id]);
+                    const currentStage = salesFunnelData[contact.id];
+                    const stageInfo = getSalesStageInfo(currentStage);
+                    console.log('Rendering contact:', contact.id, 'Stage:', currentStage, 'Stage info:', stageInfo);
+                    
                     return (
                       <TableRow key={contact.id}>
                         <TableCell className="font-medium">{contact.full_name}</TableCell>
@@ -529,18 +559,18 @@ const Contacts = () => {
                           {stageInfo ? (
                             <Badge 
                               variant="outline" 
-                              className="text-xs border-2"
+                              className="text-xs border-2 px-2 py-1"
                               style={{ 
                                 borderColor: stageInfo.color, 
                                 color: stageInfo.color,
-                                backgroundColor: `${stageInfo.color}10`
+                                backgroundColor: `${stageInfo.color}15`
                               }}
                             >
                               {stageInfo.name}
                             </Badge>
-                          ) : salesFunnelData[contact.id] ? (
+                          ) : currentStage ? (
                             <Badge variant="outline" className="text-xs">
-                              {salesFunnelData[contact.id]}
+                              {currentStage}
                             </Badge>
                           ) : (
                             <span className="text-gray-400 text-xs">Sin etapa</span>
