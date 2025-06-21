@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { 
   Brain, 
   TrendingUp, 
@@ -17,6 +18,7 @@ import {
   Network,
   Eye
 } from 'lucide-react';
+import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar, PieChart as RechartsPieChart, Cell } from 'recharts';
 
 const AdvancedLearningEngineSimulator = () => {
   const [progress, setProgress] = useState(0);
@@ -48,6 +50,31 @@ const AdvancedLearningEngineSimulator = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Datos para gráficos
+  const marketTrendData = [
+    { month: 'Ene', precio: 450000, volumen: 120, prediccion: 465000 },
+    { month: 'Feb', precio: 462000, volumen: 135, prediccion: 470000 },
+    { month: 'Mar', precio: 458000, volumen: 142, prediccion: 475000 },
+    { month: 'Abr', precio: 471000, volumen: 156, prediccion: 480000 },
+    { month: 'May', precio: 485000, volumen: 171, prediccion: 492000 },
+    { month: 'Jun', precio: 478000, volumen: 163, prediccion: 495000 }
+  ];
+
+  const propertyTypeData = [
+    { type: 'Apartamentos', value: 45, color: '#3B82F6' },
+    { type: 'Casas', value: 30, color: '#10B981' },
+    { type: 'Locales', value: 15, color: '#F59E0B' },
+    { type: 'Oficinas', value: 10, color: '#EF4444' }
+  ];
+
+  const zonePerformanceData = [
+    { zona: 'San Isidro', actual: 520000, prediccion: 562000, confidence: 94 },
+    { zona: 'Miraflores', actual: 480000, prediccion: 518000, confidence: 89 },
+    { zona: 'Surco', actual: 380000, prediccion: 437000, confidence: 96 },
+    { zona: 'La Molina', actual: 420000, prediccion: 445000, confidence: 82 },
+    { zona: 'San Borja', actual: 350000, prediccion: 378000, confidence: 91 }
+  ];
+
   const marketPredictions = [
     { zone: "San Isidro", trend: "+12%", confidence: 94, risk: "Bajo" },
     { zone: "Miraflores", trend: "+8%", confidence: 89, risk: "Medio" },
@@ -67,6 +94,21 @@ const AdvancedLearningEngineSimulator = () => {
     { label: "Datos Procesados", value: 76, max: 100, color: "bg-purple-500" },
     { label: "Confiabilidad", value: 92, max: 100, color: "bg-orange-500" }
   ];
+
+  const chartConfig = {
+    precio: {
+      label: "Precio Actual",
+      color: "#3B82F6",
+    },
+    prediccion: {
+      label: "Predicción IA",
+      color: "#10B981",
+    },
+    volumen: {
+      label: "Volumen",
+      color: "#F59E0B",
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -102,6 +144,118 @@ const AdvancedLearningEngineSimulator = () => {
               {analysisPhases[Math.min(currentPhase, analysisPhases.length - 1)]}
             </p>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Gráficos principales */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Tendencias del mercado con líneas */}
+        <Card className="border border-blue-200 bg-blue-50/30">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-blue-800">
+              <TrendingUp className="w-5 h-5" />
+              Tendencias del Mercado IA
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfig} className="h-[300px]">
+              <LineChart data={marketTrendData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
+                <ChartTooltip 
+                  content={<ChartTooltipContent />}
+                  formatter={(value, name) => [
+                    `$${(value as number).toLocaleString()}`, 
+                    name === 'precio' ? 'Precio Actual' : 'Predicción IA'
+                  ]}
+                />
+                <ChartLegend content={<ChartLegendContent />} />
+                <Line 
+                  type="monotone" 
+                  dataKey="precio" 
+                  stroke="#3B82F6" 
+                  strokeWidth={3}
+                  dot={{ r: 4 }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="prediccion" 
+                  stroke="#10B981" 
+                  strokeWidth={2}
+                  strokeDasharray="5 5"
+                  dot={{ r: 3 }}
+                />
+              </LineChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+
+        {/* Distribución por tipo de propiedad */}
+        <Card className="border border-green-200 bg-green-50/30">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-green-800">
+              <PieChart className="w-5 h-5" />
+              Distribución del Mercado
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <RechartsPieChart>
+                  <RechartsPieChart data={propertyTypeData}>
+                    {propertyTypeData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </RechartsPieChart>
+                  <ChartTooltip 
+                    formatter={(value, name) => [`${value}%`, name]}
+                  />
+                  <ChartLegend />
+                </RechartsPieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              {propertyTypeData.map((item, index) => (
+                <div key={index} className="flex items-center gap-2 text-sm">
+                  <div 
+                    className="w-3 h-3 rounded-full" 
+                    style={{ backgroundColor: item.color }}
+                  ></div>
+                  <span>{item.type}: {item.value}%</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Gráfico de barras - Rendimiento por zona */}
+      <Card className="border border-purple-200 bg-purple-50/30">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-purple-800">
+            <BarChart3 className="w-5 h-5" />
+            Análisis Predictivo por Zonas
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ChartContainer config={chartConfig} className="h-[350px]">
+            <BarChart data={zonePerformanceData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="zona" />
+              <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
+              <ChartTooltip 
+                content={<ChartTooltipContent />}
+                formatter={(value, name) => [
+                  `$${(value as number).toLocaleString()}`, 
+                  name === 'actual' ? 'Precio Actual' : 'Predicción IA'
+                ]}
+              />
+              <ChartLegend content={<ChartLegendContent />} />
+              <Bar dataKey="actual" fill="#3B82F6" name="Precio Actual" />
+              <Bar dataKey="prediccion" fill="#10B981" name="Predicción IA" />
+            </BarChart>
+          </ChartContainer>
         </CardContent>
       </Card>
 

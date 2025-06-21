@@ -25,7 +25,7 @@ const LearningEngine = () => {
           title="Motor de Aprendizaje IA"
           description="Potencia tu estrategia inmobiliaria con inteligencia artificial avanzada"
           icon={<Brain className="w-10 h-10 text-white" />}
-          previewImage="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80"
+          simulatorType="learning-engine"
           features={[
             'Análisis predictivo de mercado inmobiliario en tiempo real',
             'Recomendaciones personalizadas de precios basadas en IA',
