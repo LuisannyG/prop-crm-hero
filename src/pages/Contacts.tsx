@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -68,6 +67,57 @@ const Contacts = () => {
       fetchSalesFunnelData();
     }
   }, [user]);
+
+  // Update Maryuri's sales stage on component mount
+  useEffect(() => {
+    const updateMayuriStage = async () => {
+      if (user && contacts.length > 0) {
+        const mayuriContact = contacts.find(contact => 
+          contact.full_name.toLowerCase().includes('maryuri') || 
+          contact.full_name.toLowerCase().includes('mayuri')
+        );
+        
+        if (mayuriContact) {
+          console.log('Found Maryuri contact:', mayuriContact.id);
+          
+          // Check if Maryuri already has the correct stage
+          const currentStage = salesFunnelData[mayuriContact.id];
+          if (currentStage !== 'primer_contacto_activo') {
+            try {
+              const { error } = await supabase
+                .from('sales_funnel')
+                .insert([{
+                  contact_id: mayuriContact.id,
+                  user_id: user.id,
+                  stage: 'primer_contacto_activo',
+                  stage_date: new Date().toISOString(),
+                  notes: 'Etapa actualizada automáticamente: Primer contacto activo'
+                }]);
+
+              if (error) {
+                console.error('Error updating Maryuri stage:', error);
+              } else {
+                console.log('Successfully updated Maryuri to primer_contacto_activo');
+                // Update local state
+                setSalesFunnelData(prev => ({
+                  ...prev,
+                  [mayuriContact.id]: 'primer_contacto_activo'
+                }));
+                toast({
+                  title: 'Etapa actualizada',
+                  description: 'Maryuri ha sido actualizada a "Primer contacto activo"'
+                });
+              }
+            } catch (error) {
+              console.error('Error updating Maryuri stage:', error);
+            }
+          }
+        }
+      }
+    };
+
+    updateMayuriStage();
+  }, [user, contacts, salesFunnelData]);
 
   const fetchContacts = async () => {
     try {
