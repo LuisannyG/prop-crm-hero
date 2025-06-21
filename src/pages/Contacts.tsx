@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,8 @@ interface Contact {
   district?: string;
   notes?: string;
   status: string;
+  client_type?: string;
+  acquisition_source?: string;
   created_at: string;
 }
 
@@ -40,7 +43,9 @@ const Contacts = () => {
     address: '',
     district: '',
     notes: '',
-    status: 'prospect'
+    status: 'prospect',
+    client_type: '',
+    acquisition_source: ''
   });
 
   useEffect(() => {
@@ -137,7 +142,9 @@ const Contacts = () => {
       address: '',
       district: '',
       notes: '',
-      status: 'prospect'
+      status: 'prospect',
+      client_type: '',
+      acquisition_source: ''
     });
     setIsAddingContact(false);
     setEditingContact(null);
@@ -151,7 +158,9 @@ const Contacts = () => {
       address: contact.address || '',
       district: contact.district || '',
       notes: contact.notes || '',
-      status: contact.status
+      status: contact.status,
+      client_type: contact.client_type || '',
+      acquisition_source: contact.acquisition_source || ''
     });
     setEditingContact(contact);
     setIsAddingContact(true);
@@ -161,7 +170,6 @@ const Contacts = () => {
     switch (status) {
       case 'client': return 'bg-green-500';
       case 'prospect': return 'bg-blue-500';
-      case 'inactive': return 'bg-gray-500';
       default: return 'bg-gray-500';
     }
   };
@@ -192,7 +200,7 @@ const Contacts = () => {
                 Nuevo Contacto
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
                   {editingContact ? 'Editar Contacto' : 'Nuevo Contacto'}
@@ -273,7 +281,41 @@ const Contacts = () => {
                     <SelectContent className="bg-white z-50">
                       <SelectItem value="prospect">Prospecto</SelectItem>
                       <SelectItem value="client">Cliente</SelectItem>
-                      <SelectItem value="inactive">Inactivo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="client_type">Tipo de Cliente</Label>
+                  <Select value={formData.client_type} onValueChange={(value) => setFormData({...formData, client_type: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar tipo" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white z-50">
+                      <SelectItem value="familiar">Familiar</SelectItem>
+                      <SelectItem value="individual">Individual</SelectItem>
+                      <SelectItem value="negocio">Negocio</SelectItem>
+                      <SelectItem value="empresa">Empresa</SelectItem>
+                      <SelectItem value="inversionista">Inversionista</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="acquisition_source">¿Cómo nos conoció?</Label>
+                  <Select value={formData.acquisition_source} onValueChange={(value) => setFormData({...formData, acquisition_source: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar fuente" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white z-50">
+                      <SelectItem value="tiktok">TikTok</SelectItem>
+                      <SelectItem value="instagram">Instagram</SelectItem>
+                      <SelectItem value="facebook">Facebook</SelectItem>
+                      <SelectItem value="referido">Referido</SelectItem>
+                      <SelectItem value="feria-inmobiliaria">Feria Inmobiliaria</SelectItem>
+                      <SelectItem value="google">Google</SelectItem>
+                      <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                      <SelectItem value="llamada-fria">Llamada en frío</SelectItem>
+                      <SelectItem value="sitio-web">Sitio Web</SelectItem>
+                      <SelectItem value="otro">Otro</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -314,7 +356,9 @@ const Contacts = () => {
                   <TableRow>
                     <TableHead>Nombre</TableHead>
                     <TableHead>Contacto</TableHead>
+                    <TableHead>Tipo</TableHead>
                     <TableHead>Estado</TableHead>
+                    <TableHead>Fuente</TableHead>
                     <TableHead>Fecha</TableHead>
                     <TableHead>Acciones</TableHead>
                   </TableRow>
@@ -347,10 +391,38 @@ const Contacts = () => {
                         </div>
                       </TableCell>
                       <TableCell>
+                        {contact.client_type && (
+                          <Badge variant="outline">
+                            {contact.client_type === 'familiar' ? 'Familiar' :
+                             contact.client_type === 'individual' ? 'Individual' :
+                             contact.client_type === 'negocio' ? 'Negocio' :
+                             contact.client_type === 'empresa' ? 'Empresa' :
+                             contact.client_type === 'inversionista' ? 'Inversionista' : 
+                             contact.client_type}
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
                         <Badge className={getStatusColor(contact.status)}>
-                          {contact.status === 'prospect' ? 'Prospecto' : 
-                           contact.status === 'client' ? 'Cliente' : 'Inactivo'}
+                          {contact.status === 'prospect' ? 'Prospecto' : 'Cliente'}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {contact.acquisition_source && (
+                          <span className="text-sm text-gray-600">
+                            {contact.acquisition_source === 'tiktok' ? 'TikTok' :
+                             contact.acquisition_source === 'instagram' ? 'Instagram' :
+                             contact.acquisition_source === 'facebook' ? 'Facebook' :
+                             contact.acquisition_source === 'referido' ? 'Referido' :
+                             contact.acquisition_source === 'feria-inmobiliaria' ? 'Feria Inmobiliaria' :
+                             contact.acquisition_source === 'google' ? 'Google' :
+                             contact.acquisition_source === 'whatsapp' ? 'WhatsApp' :
+                             contact.acquisition_source === 'llamada-fria' ? 'Llamada en frío' :
+                             contact.acquisition_source === 'sitio-web' ? 'Sitio Web' :
+                             contact.acquisition_source === 'otro' ? 'Otro' :
+                             contact.acquisition_source}
+                          </span>
+                        )}
                       </TableCell>
                       <TableCell>
                         {new Date(contact.created_at).toLocaleDateString()}

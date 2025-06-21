@@ -11,7 +11,9 @@ export type Database = {
     Tables: {
       contacts: {
         Row: {
+          acquisition_source: string | null
           address: string | null
+          client_type: string | null
           created_at: string
           email: string | null
           full_name: string
@@ -23,7 +25,9 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          acquisition_source?: string | null
           address?: string | null
+          client_type?: string | null
           created_at?: string
           email?: string | null
           full_name: string
@@ -35,7 +39,9 @@ export type Database = {
           user_id: string
         }
         Update: {
+          acquisition_source?: string | null
           address?: string | null
+          client_type?: string | null
           created_at?: string
           email?: string | null
           full_name?: string
