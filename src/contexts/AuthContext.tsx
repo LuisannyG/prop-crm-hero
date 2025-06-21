@@ -42,6 +42,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
+      // Primero verificar si el usuario ya existe
+      const { data: existingUser } = await supabase.auth.signInWithPassword({
+        email,
+        password: 'dummy-password-check'
+      });
+
+      // Si no hay error en el login, significa que el usuario ya existe
+      if (existingUser?.user) {
+        return { 
+          error: { 
+            message: 'User already registered',
+            code: 'user_already_exists' 
+          } 
+        };
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -57,7 +73,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.error('Sign up error:', error);
         
         // Manejar el caso específico de usuario ya registrado
-        if (error.message?.includes('User already registered')) {
+        if (error.message?.includes('User already registered') || error.message?.includes('already been registered')) {
           return { 
             error: { 
               message: 'User already registered',
@@ -73,6 +89,39 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return { error: null, data };
     } catch (error) {
       console.error('Sign up exception:', error);
+      
+      // Si el error es de credenciales inválidas, continuar con el registro
+      if (error.message?.includes('Invalid login credentials')) {
+        try {
+          const { data, error: signUpError } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              data: {
+                full_name: fullName,
+              },
+              emailRedirectTo: `${window.location.origin}/dashboard`
+            }
+          });
+
+          if (signUpError) {
+            if (signUpError.message?.includes('User already registered') || signUpError.message?.includes('already been registered')) {
+              return { 
+                error: { 
+                  message: 'User already registered',
+                  code: 'user_already_exists' 
+                } 
+              };
+            }
+            return { error: signUpError };
+          }
+
+          return { error: null, data };
+        } catch (innerError) {
+          return { error: innerError };
+        }
+      }
+      
       return { error };
     }
   };

@@ -55,9 +55,14 @@ const AuthForm = () => {
       if (result.error) {
         let errorMessage = 'Ha ocurrido un error';
         
-        // Manejar errores específicos
-        if (result.error.message?.includes('User already registered') || result.error.code === 'user_already_exists') {
-          errorMessage = 'Esta cuenta ya existe. Intenta iniciar sesión.';
+        // Manejar errores específicos con mejor detección de duplicados
+        if (result.error.message?.includes('User already registered') || 
+            result.error.code === 'user_already_exists' ||
+            result.error.message?.includes('already been registered')) {
+          errorMessage = 'Esta cuenta ya existe. Intenta iniciar sesión en su lugar.';
+          // Cambiar automáticamente al modo login
+          setIsLogin(true);
+          setFormData(prev => ({ ...prev, password: '', fullName: '' }));
         } else if (result.error.message?.includes('Invalid login credentials')) {
           errorMessage = 'Email o contraseña incorrectos';
         } else if (result.error.message?.includes('Email not confirmed')) {
