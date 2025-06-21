@@ -10,6 +10,29 @@ export const seedDatabase = async (userId: string) => {
   try {
     console.log('Iniciando inserción de datos de prueba...');
     
+    // Primero eliminar datos existentes del usuario
+    console.log('Eliminando datos existentes...');
+    
+    // Eliminar recordatorios primero (por dependencias)
+    await supabase
+      .from('reminders')
+      .delete()
+      .eq('user_id', userId);
+    
+    // Eliminar contactos
+    await supabase
+      .from('contacts')
+      .delete()
+      .eq('user_id', userId);
+    
+    // Eliminar propiedades
+    await supabase
+      .from('properties')
+      .delete()
+      .eq('user_id', userId);
+    
+    console.log('Datos anteriores eliminados');
+    
     // Insertar contactos
     const contactsData = generateContacts(userId);
     const { data: insertedContacts, error: contactsError } = await supabase
