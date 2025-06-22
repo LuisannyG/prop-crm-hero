@@ -20,7 +20,7 @@ interface Contact {
   acquisition_source: string;
   sales_stage: string;
   created_at: string;
-  updated_at: string; // Added missing property
+  updated_at: string;
 }
 
 interface Property {
@@ -75,15 +75,35 @@ const EnhancedDashboardSimulator = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Función para identificar contactos que necesitan atención (5+ días sin actualizar)
+  // Función mejorada para identificar contactos que necesitan atención (5+ días sin actualizar)
   const getContactsNeedingAttention = () => {
     const fiveDaysAgo = new Date();
     fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
     
-    return contacts.filter(contact => {
+    console.log('Checking contacts needing attention...');
+    console.log('Five days ago threshold:', fiveDaysAgo);
+    console.log('Total contacts:', contacts.length);
+    
+    const needingAttention = contacts.filter(contact => {
+      if (!contact.updated_at) {
+        console.log(`Contact ${contact.full_name} has no updated_at field`);
+        return true; // Si no tiene updated_at, necesita atención
+      }
+      
       const updatedAt = new Date(contact.updated_at);
-      return updatedAt < fiveDaysAgo;
+      const needsAttention = updatedAt < fiveDaysAgo;
+      
+      console.log(`Contact ${contact.full_name}:`, {
+        updated_at: contact.updated_at,
+        updatedAtDate: updatedAt,
+        needsAttention
+      });
+      
+      return needsAttention;
     });
+    
+    console.log('Contacts needing attention:', needingAttention.length);
+    return needingAttention;
   };
 
   useEffect(() => {
@@ -102,16 +122,17 @@ const EnhancedDashboardSimulator = () => {
         
         setUserProfile(profileData);
 
-        // Fetch contacts with sales_stage and updated_at
+        // Fetch contacts with ALL fields including updated_at
         const { data: contactsData, error: contactsError } = await supabase
           .from('contacts')
-          .select('*')
+          .select('id, full_name, email, phone, status, client_type, acquisition_source, sales_stage, created_at, updated_at')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false });
 
         if (contactsError) {
           console.error('Error fetching contacts:', contactsError);
         } else {
+          console.log('Fetched contacts:', contactsData);
           setContacts(contactsData || []);
         }
 
@@ -184,12 +205,9 @@ const EnhancedDashboardSimulator = () => {
     );
   }
 
-  // Calculate statistics
-  const totalContacts = contacts.length;
-  const totalProperties = properties.length;
-  const totalReminders = reminders.length;
-  const highPriorityReminders = reminders.filter(r => r.priority === 'alta' && r.status === 'pendiente').length;
+  // Calculate statistics with debug info
   const contactsNeedingAttention = getContactsNeedingAttention();
+  console.log('Final contacts needing attention count:', contactsNeedingAttention.length);
 
   // Updated sales funnel stages with specific colors - now using sales_stage from contacts
   const funnelStages = [
@@ -336,34 +354,36 @@ const EnhancedDashboardSimulator = () => {
         </Card>
       </div>
 
-      {/* Alerta de contactos que necesitan atención */}
+      {/* Alerta de contactos que necesitan atención - Mejorada */}
       {contactsNeedingAttention.length > 0 && (
-        <Card className="border-red-200 bg-red-50 shadow-lg">
+        <Card className="border-red-200 bg-red-50 shadow-lg animate-pulse">
           <CardHeader className="bg-red-100">
             <CardTitle className="text-red-800 flex items-center">
               <AlertCircle className="mr-2 h-5 w-5 animate-pulse" />
-              ⚠️ Contactos que Necesitan Atención Urgente
+              ⚠️ ATENCIÓN URGENTE: Contactos Desatendidos
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
             <p className="text-red-700 mb-4 font-medium">
-              Los siguientes contactos no han sido actualizados en más de 5 días:
+              {contactsNeedingAttention.length} contacto{contactsNeedingAttention.length > 1 ? 's' : ''} no ha{contactsNeedingAttention.length > 1 ? 'n' : ''} sido actualizado{contactsNeedingAttention.length > 1 ? 's' : ''} en más de 5 días:
             </p>
             <div className="space-y-3 max-h-60 overflow-y-auto">
               {contactsNeedingAttention.map(contact => {
-                const daysSinceUpdate = Math.floor((new Date().getTime() - new Date(contact.updated_at).getTime()) / (1000 * 60 * 60 * 24));
+                const daysSinceUpdate = contact.updated_at 
+                  ? Math.floor((new Date().getTime() - new Date(contact.updated_at).getTime()) / (1000 * 60 * 60 * 24))
+                  : 999; // Si no tiene updated_at, mostrar muchos días
                 
                 return (
                   <div 
                     key={contact.id}
-                    className="flex items-center justify-between p-3 bg-white rounded-lg border border-red-200 shadow-sm"
+                    className="flex items-center justify-between p-3 bg-white rounded-lg border-2 border-red-300 shadow-md hover:shadow-lg transition-shadow"
                   >
                     <div className="flex items-start gap-3">
                       <div className="text-red-600">
                         <User className="h-5 w-5" />
                       </div>
                       <div>
-                        <div className="font-medium text-red-800">{contact.full_name}</div>
+                        <div className="font-bold text-red-800 text-lg">{contact.full_name}</div>
                         <div className="text-sm text-gray-600 flex items-center gap-4">
                           {contact.email && (
                             <span className="flex items-center gap-1">
@@ -378,13 +398,16 @@ const EnhancedDashboardSimulator = () => {
                             </span>
                           )}
                         </div>
-                        <div className="text-xs text-red-600 font-medium mt-1">
-                          Última actualización: hace {daysSinceUpdate} días
+                        <div className="text-xs text-red-700 font-bold mt-1 bg-red-100 px-2 py-1 rounded">
+                          {contact.updated_at 
+                            ? `Sin actualizar hace ${daysSinceUpdate} días` 
+                            : 'NUNCA ACTUALIZADO'
+                          }
                         </div>
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-2">
-                      <Badge variant="destructive" className="animate-pulse">
+                      <Badge variant="destructive" className="animate-pulse font-bold">
                         URGENTE
                       </Badge>
                       <div className="text-xs text-gray-500">
