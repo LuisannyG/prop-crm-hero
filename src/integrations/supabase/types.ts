@@ -67,7 +67,12 @@ export type Database = {
           id: string
           interaction_date: string
           interaction_type: string | null
+          meeting_location: string | null
+          new_stage: string | null
+          next_steps: string | null
           notes: string | null
+          outcome: string | null
+          previous_stage: string | null
           property_id: string | null
           subject: string | null
           user_id: string
@@ -78,7 +83,12 @@ export type Database = {
           id?: string
           interaction_date?: string
           interaction_type?: string | null
+          meeting_location?: string | null
+          new_stage?: string | null
+          next_steps?: string | null
           notes?: string | null
+          outcome?: string | null
+          previous_stage?: string | null
           property_id?: string | null
           subject?: string | null
           user_id: string
@@ -89,7 +99,12 @@ export type Database = {
           id?: string
           interaction_date?: string
           interaction_type?: string | null
+          meeting_location?: string | null
+          new_stage?: string | null
+          next_steps?: string | null
           notes?: string | null
+          outcome?: string | null
+          previous_stage?: string | null
           property_id?: string | null
           subject?: string | null
           user_id?: string

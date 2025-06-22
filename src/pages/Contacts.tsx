@@ -13,6 +13,7 @@ import { toast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, Phone, Mail, MapPin, ArrowLeft } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useNavigate } from 'react-router-dom';
+import ContactHistory from '@/components/ContactHistory';
 
 interface Contact {
   id: string;
@@ -544,6 +545,7 @@ const Contacts = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
+                            <ContactHistory contact={contact} />
                             <Button
                               size="sm"
                               variant="outline"
