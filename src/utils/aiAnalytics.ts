@@ -311,89 +311,163 @@ const generateStageSpecificRecommendations = (
 
   switch (stage) {
     case 'contacto_inicial_recibido':
+      recommendations.push('Registrar los datos completos en el CRM');
+      recommendations.push('Revisar el canal de adquisición (formulario, WhatsApp, referido, portal)');
       if (daysInStage === 0) {
-        recommendations.push('Realizar llamada de bienvenida dentro de las próximas 2 horas');
-        recommendations.push('Enviar mensaje de WhatsApp con información básica');
-      } else if (daysInStage <= 2) {
-        recommendations.push('Agendar reunión presencial o videollamada');
-        recommendations.push('Enviar portafolio digital personalizado');
-      } else if (daysInStage <= 7) {
-        recommendations.push('Realizar seguimiento telefónico urgente');
-        recommendations.push('Enviar propuesta de valor específica por email');
+        recommendations.push('Preparar respuesta rápida y personalizada');
+        recommendations.push('Responder dentro de las primeras 2 horas');
+      } else if (daysInStage <= 1) {
+        recommendations.push('Enviar mensaje o llamar dentro de las próximas 12-24 horas');
+        recommendations.push('Presentarte como asesor de confianza');
       } else {
-        recommendations.push('Contacto en riesgo: llamada de rescate inmediata');
-        recommendations.push('Ofrecer incentivo especial para reactivar interés');
+        recommendations.push('URGENTE: Contacto inicial perdido - llamar inmediatamente');
+        recommendations.push('Enviar mensaje de disculpa por la demora y reagendar');
       }
       break;
 
-    case 'calificacion_necesidades':
+    case 'primer_contacto_activo':
+      recommendations.push('Hacer preguntas básicas para romper el hielo');
+      recommendations.push('Detectar el nivel de interés inicial');
+      if (daysInStage <= 2) {
+        recommendations.push('Programar segunda llamada o reunión');
+        recommendations.push('Enviar mensaje de seguimiento personalizado');
+      } else if (daysInStage <= 5) {
+        recommendations.push('Realizar llamada de seguimiento para mantener el interés');
+        recommendations.push('Compartir contenido útil (guías, tips)');
+      } else {
+        recommendations.push('Cliente en riesgo - contacto inmediato necesario');
+        recommendations.push('Evaluar si mantener en pipeline activo');
+      }
+      break;
+
+    case 'llenado_ficha':
+      recommendations.push('Preguntar: ¿busca comprar o alquilar?');
+      recommendations.push('Definir zona de interés y presupuesto');
+      recommendations.push('Identificar urgencia y motivación de mudanza');
       if (interactionCount < 2) {
         recommendations.push('Completar cuestionario de necesidades detallado');
-        recommendations.push('Agendar visita a propiedades de referencia');
-      } else if (daysInStage <= 5) {
-        recommendations.push('Presentar opciones preseleccionadas de propiedades');
-        recommendations.push('Programar tour virtual o presencial');
-      } else if (daysInStage <= 14) {
-        recommendations.push('Realizar reunión de refinamiento de búsqueda');
-        recommendations.push('Ajustar criterios y presupuesto si es necesario');
+        recommendations.push('Anotar respuestas clave para seguimiento estratégico');
+      } else if (daysInStage <= 3) {
+        recommendations.push('Clasificar por tipo de cliente (inversor, familia, primera vivienda)');
+        recommendations.push('Etiquetar como prospecto frío, tibio o caliente');
       } else {
-        recommendations.push('Revisar si las necesidades han cambiado');
-        recommendations.push('Considerar expandir zona de búsqueda o ajustar presupuesto');
+        recommendations.push('Acelerar proceso de calificación - programar llamada');
+        recommendations.push('Enviar formulario digital para completar datos faltantes');
       }
       break;
 
-    case 'presentacion_propuesta':
-      if (daysInStage <= 3) {
-        recommendations.push('Preparar presentación personalizada con 3-5 opciones');
-        recommendations.push('Incluir análisis comparativo de precios y ubicaciones');
-      } else if (daysInStage <= 7) {
-        recommendations.push('Hacer seguimiento de la propuesta presentada');
-        recommendations.push('Agendar reunión para resolver dudas específicas');
+    case 'seguimiento_inicial':
+      recommendations.push('Enviar propiedades alineadas a su perfil');
+      recommendations.push('Compartir contenido útil sobre financiamiento y proceso');
+      recommendations.push('Mantener comunicación activa sin ser invasivo (1 mensaje útil semanal)');
+      if (daysInStage <= 7) {
+        recommendations.push('Asignar prioridad y recordatorios para seguimiento');
+        recommendations.push('Nutrir con información relevante del mercado');
       } else if (daysInStage <= 14) {
-        recommendations.push('Ajustar propuesta basada en feedback recibido');
-        recommendations.push('Ofrecer visita adicional con experto en financiamiento');
+        recommendations.push('Intensificar seguimiento con propiedades específicas');
+        recommendations.push('Agendar llamada para evaluar cambios en necesidades');
       } else {
-        recommendations.push('Propuesta estancada: revisar objeciones principales');
-        recommendations.push('Considerar nueva propuesta con opciones diferentes');
+        recommendations.push('Reevaluar nivel de interés del prospecto');
+        recommendations.push('Considerar cambio de estrategia o frecuencia de contacto');
+      }
+      break;
+
+    case 'agendamiento_visitas':
+      recommendations.push('Proponer fechas claras y prácticas para visitas');
+      recommendations.push('Ofrecer opciones presenciales y virtuales');
+      if (daysInStage <= 2) {
+        recommendations.push('Confirmar disponibilidad y preferencias de horario');
+        recommendations.push('Preparar información detallada de cada propiedad');
+      } else if (daysInStage <= 5) {
+        recommendations.push('Confirmar asistencia el día anterior a la visita');
+        recommendations.push('Enviar recordatorio con dirección y detalles');
+      } else if (daysInStage <= 10) {
+        recommendations.push('Reagendar visita si fue cancelada');
+        recommendations.push('Ofrecer flexibilidad de horarios incluyendo fines de semana');
+      } else {
+        recommendations.push('Cliente indeciso - evaluar barreras para agendar');
+        recommendations.push('Proponer visita express o virtual como alternativa');
+      }
+      break;
+
+    case 'presentacion_personalizada':
+      recommendations.push('Mostrar propiedades filtradas según necesidad real');
+      recommendations.push('Resolver dudas durante el recorrido');
+      if (daysInStage <= 3) {
+        recommendations.push('Recoger feedback inmediato tras cada visita');
+        recommendations.push('Ajustar búsqueda según comentarios recibidos');
+      } else if (daysInStage <= 7) {
+        recommendations.push('Hacer seguimiento post-visita en 24-48 horas');
+        recommendations.push('Enviar resumen de propiedades vistas con pros/contras');
+      } else if (daysInStage <= 14) {
+        recommendations.push('Proponer nuevas opciones basadas en feedback');
+        recommendations.push('Agendar segunda ronda de visitas si es necesario');
+      } else {
+        recommendations.push('Presentación estancada - revisar fit producto-cliente');
+        recommendations.push('Considerar expandir criterios de búsqueda');
       }
       break;
 
     case 'negociacion':
-      if (daysInStage <= 2) {
-        recommendations.push('Preparar rangos de negociación y límites claros');
-        recommendations.push('Coordinar con propietario/desarrollador términos flexibles');
+      recommendations.push('Aconsejar sobre oferta justa según análisis de mercado');
+      recommendations.push('Actuar como intermediario entre comprador y propietario');
+      if (daysInStage <= 3) {
+        recommendations.push('Preparar estrategia de negociación con rangos claros');
+        recommendations.push('Coordinar con propietario términos de flexibilidad');
       } else if (daysInStage <= 7) {
-        recommendations.push('Facilitar comunicación directa entre partes');
-        recommendations.push('Proponer términos intermedios para cerrar la brecha');
+        recommendations.push('Facilitar comunicación directa entre las partes');
+        recommendations.push('Proponer términos intermedios para cerrar brechas');
       } else if (daysInStage <= 14) {
-        recommendations.push('Traer especialista en financiamiento para opciones');
-        recommendations.push('Considerar incentivos adicionales o bonificaciones');
+        recommendations.push('Asistir con opciones de financiamiento bancario');
+        recommendations.push('Traer especialista en créditos hipotecarios');
       } else {
-        recommendations.push('Negociación prolongada: evaluar viabilidad real');
-        recommendations.push('Definir fecha límite para toma de decisión');
+        recommendations.push('Negociación prolongada - definir fecha límite para decisión');
+        recommendations.push('Evaluar viabilidad real de la operación');
       }
       break;
 
     case 'cierre_firma_contrato':
+      recommendations.push('Coordinar firma de escritura o contrato');
+      recommendations.push('Verificar que todos los documentos estén completos');
       if (daysInStage <= 3) {
-        recommendations.push('Coordinar cita con notario para firma de contrato');
-        recommendations.push('Verificar documentación completa del cliente');
+        recommendations.push('Asegurar que documentación legal esté en orden');
+        recommendations.push('Programar cita con notaría o escribanía');
       } else if (daysInStage <= 7) {
-        recommendations.push('Confirmar disponibilidad de financiamiento aprobado');
-        recommendations.push('Programar inspección final de la propiedad');
+        recommendations.push('Acompañar en trámites finales con bancos');
+        recommendations.push('Coordinar inspección final de la propiedad');
+      } else if (daysInStage <= 14) {
+        recommendations.push('Resolver pendientes legales o documentarios');
+        recommendations.push('Facilitar comunicación con todas las partes involucradas');
       } else {
-        recommendations.push('Resolver pendientes legales o documentarios urgentes');
+        recommendations.push('Cierre demorado - identificar obstáculos específicos');
         recommendations.push('Coordinar entrega de llaves y documentos finales');
       }
       break;
 
+    case 'postventa_fidelizacion':
+      recommendations.push('Enviar mensaje de agradecimiento o detalle especial');
+      recommendations.push('Hacer seguimiento a los 15-30 días post-entrega');
+      recommendations.push('Solicitar testimonio para marketing');
+      if (daysInStage <= 30) {
+        recommendations.push('Pedir referidos de familiares y amigos');
+        recommendations.push('Verificar satisfacción con la nueva propiedad');
+      } else if (daysInStage <= 90) {
+        recommendations.push('Ofrecer asesoría para futuras operaciones');
+        recommendations.push('Invitar a eventos exclusivos o webinars');
+      } else {
+        recommendations.push('Mantener contacto trimestral con contenido de valor');
+        recommendations.push('Ofrecer servicios de inversión inmobiliaria');
+      }
+      break;
+
     default:
-      recommendations.push('Clasificar correctamente la etapa del cliente');
+      recommendations.push('Clasificar correctamente la etapa del prospecto');
       recommendations.push('Actualizar información de contacto y estado');
+      recommendations.push('Revisar proceso de seguimiento estándar');
   }
 
-  // Recomendaciones adicionales basadas en datos específicos
-  if (contact.client_type === 'inversionista' && stage === 'calificacion_necesidades') {
+  // Recomendaciones adicionales contextualles
+  if (contact.client_type === 'inversionista') {
     recommendations.push('Presentar análisis de ROI y rentabilidad proyectada');
     recommendations.push('Mostrar comparativo con otras oportunidades de inversión');
   }
@@ -403,12 +477,12 @@ const generateStageSpecificRecommendations = (
     recommendations.push('Aprovechar la confianza del referido para acelerar proceso');
   }
 
-  if (daysInStage > 21 && stage !== 'cierre_firma_contrato') {
-    recommendations.push('Cliente estancado: considerar asignar a otro asesor');
-    recommendations.push('Implementar estrategia de re-engagement personalizada');
+  if (daysInStage > 30 && !['postventa_fidelizacion', 'cierre_firma_contrato'].includes(stage)) {
+    recommendations.push('Prospecto estancado por más de 30 días - reevaluar estrategia');
+    recommendations.push('Considerar reasignación o cambio de enfoque comercial');
   }
 
-  return recommendations;
+  return recommendations.slice(0, 4); // Limitar a 4 recomendaciones principales
 };
 
 // Análisis individual de propiedades
