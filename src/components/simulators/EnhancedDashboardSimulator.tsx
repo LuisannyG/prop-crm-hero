@@ -20,6 +20,7 @@ interface Contact {
   acquisition_source: string;
   sales_stage: string;
   created_at: string;
+  updated_at: string; // Added missing property
 }
 
 interface Property {
@@ -101,7 +102,7 @@ const EnhancedDashboardSimulator = () => {
         
         setUserProfile(profileData);
 
-        // Fetch contacts with sales_stage
+        // Fetch contacts with sales_stage and updated_at
         const { data: contactsData, error: contactsError } = await supabase
           .from('contacts')
           .select('*')
