@@ -209,6 +209,12 @@ const EnhancedDashboardSimulator = () => {
   const contactsNeedingAttention = getContactsNeedingAttention();
   console.log('Final contacts needing attention count:', contactsNeedingAttention.length);
 
+  // Calculate totals from the state arrays
+  const totalContacts = contacts.length;
+  const totalProperties = properties.length;
+  const totalReminders = reminders.length;
+  const highPriorityReminders = reminders.filter(reminder => reminder.priority === 'alta' && reminder.status === 'pendiente').length;
+
   // Updated sales funnel stages with specific colors - now using sales_stage from contacts
   const funnelStages = [
     { key: 'contacto_inicial_recibido', name: 'Contacto inicial recibido', color: '#FF6B6B' },
