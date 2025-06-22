@@ -100,11 +100,11 @@ export const analyzeProperties = async (userId: string): Promise<PropertyAnalysi
     priceByType[type] = typeGroups[type].reduce((sum, price) => sum + price, 0) / typeGroups[type].length;
   });
 
-  // Tendencias por ubicación
+  // Tendencias por ubicación (usando district en lugar de location)
   const locationTrends: Record<string, number> = {};
   properties.forEach(property => {
-    const location = property.location || 'Sin especificar';
-    locationTrends[location] = (locationTrends[location] || 0) + 1;
+    const district = property.district || 'Sin especificar';
+    locationTrends[district] = (locationTrends[district] || 0) + 1;
   });
 
   return {
