@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,14 +10,29 @@ import {
   Target, 
   BarChart3, 
   Users, 
-  DollarSign, 
-  Calendar,
+  DollarSign,
   AlertTriangle,
   Lightbulb,
-  RefreshCw
+  RefreshCw,
+  User,
+  Home,
+  Activity
 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
-import { analyzeContacts, analyzeProperties, generatePredictiveInsights, ContactAnalysis, PropertyAnalysis, PredictiveInsights } from "@/utils/aiAnalytics";
+import { 
+  analyzeContacts, 
+  analyzeProperties, 
+  generatePredictiveInsights, 
+  analyzeIndividualContacts,
+  analyzeIndividualProperties,
+  analyzeCombined,
+  ContactAnalysis, 
+  PropertyAnalysis, 
+  PredictiveInsights,
+  IndividualContactAnalysis,
+  IndividualPropertyAnalysis,
+  CombinedAnalysis
+} from "@/utils/aiAnalytics";
 import { useAuth } from "@/contexts/AuthContext";
 
 const RealLearningEngineSimulator = () => {
@@ -27,6 +41,9 @@ const RealLearningEngineSimulator = () => {
   const [contactAnalysis, setContactAnalysis] = useState<ContactAnalysis | null>(null);
   const [propertyAnalysis, setPropertyAnalysis] = useState<PropertyAnalysis | null>(null);
   const [insights, setInsights] = useState<PredictiveInsights | null>(null);
+  const [individualContacts, setIndividualContacts] = useState<IndividualContactAnalysis[]>([]);
+  const [individualProperties, setIndividualProperties] = useState<IndividualPropertyAnalysis[]>([]);
+  const [combinedAnalysis, setCombinedAnalysis] = useState<CombinedAnalysis | null>(null);
   const [activeTab, setActiveTab] = useState("analytics");
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
@@ -36,7 +53,7 @@ const RealLearningEngineSimulator = () => {
     
     setLoading(true);
     try {
-      console.log('Cargando análisis de datos...');
+      console.log('Cargando análisis completo de datos...');
       
       const [contactData, propertyData] = await Promise.all([
         analyzeContacts(user.id),
@@ -46,10 +63,19 @@ const RealLearningEngineSimulator = () => {
       setContactAnalysis(contactData);
       setPropertyAnalysis(propertyData);
       
-      const insightsData = await generatePredictiveInsights(user.id, contactData, propertyData);
-      setInsights(insightsData);
+      const [insightsData, individualContactsData, individualPropertiesData, combinedData] = await Promise.all([
+        generatePredictiveInsights(user.id, contactData, propertyData),
+        analyzeIndividualContacts(user.id),
+        analyzeIndividualProperties(user.id),
+        analyzeCombined(user.id)
+      ]);
       
-      console.log('Análisis completado:', { contactData, propertyData, insightsData });
+      setInsights(insightsData);
+      setIndividualContacts(individualContactsData);
+      setIndividualProperties(individualPropertiesData);
+      setCombinedAnalysis(combinedData);
+      
+      console.log('Análisis completo:', { contactData, propertyData, insightsData, individualContactsData, individualPropertiesData, combinedData });
     } catch (error) {
       console.error('Error al cargar analytics:', error);
     } finally {
@@ -95,6 +121,16 @@ const RealLearningEngineSimulator = () => {
   const priceByTypeData = Object.entries(propertyAnalysis.priceByType).map(([type, price]) => ({
     type: type.charAt(0).toUpperCase() + type.slice(1),
     price: Math.round(price)
+  }));
+
+  const sourceData = Object.entries(contactAnalysis.contactsBySource).map(([source, count]) => ({
+    name: source,
+    value: count
+  }));
+
+  const priceRangeData = Object.entries(propertyAnalysis.priceRangeDistribution).map(([range, count]) => ({
+    range,
+    count
   }));
 
   return (
@@ -152,18 +188,26 @@ const RealLearningEngineSimulator = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="analytics">
             <BarChart3 className="w-4 h-4 mr-2" />
-            Analytics
+            Analytics General
+          </TabsTrigger>
+          <TabsTrigger value="individual-contacts">
+            <User className="w-4 h-4 mr-2" />
+            Por Contacto
+          </TabsTrigger>
+          <TabsTrigger value="individual-properties">
+            <Home className="w-4 h-4 mr-2" />
+            Por Propiedad
+          </TabsTrigger>
+          <TabsTrigger value="combined">
+            <Activity className="w-4 h-4 mr-2" />
+            Análisis Combinado
           </TabsTrigger>
           <TabsTrigger value="predictions">
             <TrendingUp className="w-4 h-4 mr-2" />
             Predicciones
-          </TabsTrigger>
-          <TabsTrigger value="insights">
-            <Brain className="w-4 h-4 mr-2" />
-            Insights IA
           </TabsTrigger>
           <TabsTrigger value="recommendations">
             <Target className="w-4 h-4 mr-2" />
@@ -177,7 +221,7 @@ const RealLearningEngineSimulator = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="w-5 h-5" />
-                  Distribución por Etapas de Venta
+                  Fuentes de Contactos
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -185,7 +229,7 @@ const RealLearningEngineSimulator = () => {
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        data={stageData}
+                        data={sourceData}
                         cx="50%"
                         cy="50%"
                         labelLine={false}
@@ -194,7 +238,7 @@ const RealLearningEngineSimulator = () => {
                         dataKey="value"
                         label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                       >
-                        {stageData.map((entry, index) => (
+                        {sourceData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
@@ -209,18 +253,18 @@ const RealLearningEngineSimulator = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <DollarSign className="w-5 h-5" />
-                  Precios Promedio por Tipo
+                  Distribución de Precios
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={priceByTypeData}>
+                    <BarChart data={priceRangeData}>
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="type" />
+                      <XAxis dataKey="range" angle={-45} textAnchor="end" height={100} fontSize={12} />
                       <YAxis />
-                      <Tooltip formatter={(value) => [`S/${value.toLocaleString()}`, 'Precio']} />
-                      <Bar dataKey="price" fill="#8884d8" />
+                      <Tooltip />
+                      <Bar dataKey="count" fill="#8884d8" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -252,8 +296,192 @@ const RealLearningEngineSimulator = () => {
           </Card>
         </TabsContent>
 
+        <TabsContent value="individual-contacts" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="w-5 h-5" />
+                Análisis Individual de Contactos
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4 max-h-96 overflow-y-auto">
+                {individualContacts.map((contact) => (
+                  <div key={contact.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h4 className="font-medium">{contact.name}</h4>
+                        <p className="text-sm text-gray-600">Etapa: {contact.stage.replace(/_/g, ' ')}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Badge variant={contact.riskLevel === 'Alto' ? 'destructive' : contact.riskLevel === 'Medio' ? 'default' : 'outline'}>
+                          Riesgo: {contact.riskLevel}
+                        </Badge>
+                        <Badge variant="secondary">
+                          {contact.conversionProbability}% conversión
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-4 text-sm mb-3">
+                      <div>
+                        <span className="font-medium">Días en etapa:</span> {contact.daysInCurrentStage}
+                      </div>
+                      <div>
+                        <span className="font-medium">Interacciones:</span> {contact.totalInteractions}
+                      </div>
+                      <div>
+                        <span className="font-medium">Última interacción:</span> {new Date(contact.lastInteractionDate).toLocaleDateString()}
+                      </div>
+                    </div>
+
+                    {contact.recommendedActions.length > 0 && (
+                      <div className="bg-blue-50 p-3 rounded">
+                        <p className="text-sm font-medium text-blue-800 mb-2">Acciones recomendadas:</p>
+                        <ul className="text-sm text-blue-700 space-y-1">
+                          {contact.recommendedActions.map((action, index) => (
+                            <li key={index}>• {action}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="individual-properties" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Home className="w-5 h-5" />
+                Análisis Individual de Propiedades
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4 max-h-96 overflow-y-auto">
+                {individualProperties.map((property) => (
+                  <div key={property.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h4 className="font-medium">{property.title}</h4>
+                        <p className="text-sm text-gray-600">Posición: {property.pricePosition}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Badge variant={property.pricePosition === 'Por encima del mercado' ? 'destructive' : 'outline'}>
+                          {property.marketComparison > 0 ? '+' : ''}{property.marketComparison.toFixed(1)}% vs mercado
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-4 text-sm mb-3">
+                      <div>
+                        <span className="font-medium">Días en mercado:</span> {property.daysOnMarket}
+                      </div>
+                      <div>
+                        <span className="font-medium">Nivel de interés:</span> {property.interestLevel}
+                      </div>
+                      <div>
+                        <span className="font-medium">Precio recomendado:</span> S/{property.recommendedPrice.toLocaleString()}
+                      </div>
+                    </div>
+
+                    <div className="bg-green-50 p-3 rounded">
+                      <p className="text-sm font-medium text-green-800 mb-1">Sugerencia de precios:</p>
+                      <p className="text-sm text-green-700">{property.priceAdjustmentSuggestion}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="combined" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="w-5 h-5" />
+                  Matching Contactos-Propiedades
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4 max-h-80 overflow-y-auto">
+                  {combinedAnalysis?.contactPropertyMatching.map((match) => (
+                    <div key={match.contactId} className="border rounded-lg p-3">
+                      <p className="font-medium mb-2">{match.contactName}</p>
+                      <div className="space-y-2">
+                        {match.bestMatchProperties.map((prop) => (
+                          <div key={prop.propertyId} className="bg-gray-50 p-2 rounded text-sm">
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="font-medium">{prop.propertyTitle}</span>
+                              <Badge variant="outline">{prop.matchScore}% match</Badge>
+                            </div>
+                            <p className="text-gray-600">{prop.reasons.join(', ')}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )) || <p className="text-gray-500">No hay matches disponibles</p>}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Lightbulb className="w-5 h-5" />
+                  Oportunidades de Mercado
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {combinedAnalysis?.marketOpportunities.map((opportunity, index) => (
+                    <div key={index} className="border rounded-lg p-3">
+                      <p className="font-medium mb-2">{opportunity.description}</p>
+                      <p className="text-sm text-gray-600 mb-2">Valor: S/{opportunity.value.toLocaleString()}</p>
+                      <ul className="text-sm space-y-1">
+                        {opportunity.actionItems.map((action, actionIndex) => (
+                          <li key={actionIndex} className="text-blue-600">• {action}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )) || <p className="text-gray-500">No hay oportunidades identificadas</p>}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Brain className="w-5 h-5" />
+                Insights de Análisis Cruzado
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {combinedAnalysis?.crossAnalysisInsights.map((insight, index) => (
+                  <div key={index} className="bg-blue-50 p-4 rounded-lg">
+                    <div className="flex justify-between items-start mb-2">
+                      <p className="font-medium text-blue-800">{insight.insight}</p>
+                      <Badge variant={insight.impact === 'Alto' ? 'destructive' : insight.impact === 'Medio' ? 'default' : 'outline'}>
+                        {insight.impact}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-blue-600">Datos: {insight.dataPoints.join(', ')}</p>
+                  </div>
+                )) || <p className="text-gray-500">No hay insights disponibles</p>}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="predictions" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <Card className="bg-green-50 border-green-200">
               <CardContent className="p-6 text-center">
                 <Users className="w-12 h-12 mx-auto mb-4 text-green-600" />
@@ -280,36 +508,19 @@ const RealLearningEngineSimulator = () => {
                 <div className="text-xs text-purple-700 mt-2">Proyección mensual</div>
               </CardContent>
             </Card>
-          </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Brain className="w-5 h-5" />
-                Análisis Predictivo Detallado
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h4 className="font-medium text-blue-800 mb-2">Tendencia de Crecimiento</h4>
-                  <p className="text-sm text-blue-700">
-                    Basado en el análisis de tus últimos meses, se proyecta un crecimiento sostenido en contactos y conversiones.
-                  </p>
-                </div>
-                
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <h4 className="font-medium text-green-800 mb-2">Oportunidades de Mercado</h4>
-                  <p className="text-sm text-green-700">
-                    El análisis identifica {propertyAnalysis.totalProperties} propiedades activas con potencial de optimización de precios.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            <Card className="bg-orange-50 border-orange-200">
+              <CardContent className="p-6 text-center">
+                <TrendingUp className="w-12 h-12 mx-auto mb-4 text-orange-600" />
+                <div className="text-2xl font-bold text-orange-600">{insights.nextMonthPrediction.marketGrowth.toFixed(1)}%</div>
+                <div className="text-sm text-gray-600">Crecimiento de Mercado</div>
+                <div className="text-xs text-orange-700 mt-2">Tendencia mensual</div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
-        <TabsContent value="insights" className="space-y-6">
+        <TabsContent value="recommendations" className="space-y-6">
           {insights.riskAlerts.length > 0 && (
             <Card className="border-orange-200 bg-orange-50">
               <CardHeader>
@@ -345,49 +556,13 @@ const RealLearningEngineSimulator = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Lightbulb className="w-5 h-5" />
-                Patrones Detectados por IA
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h4 className="font-medium text-blue-800 mb-2">Patrón de Conversión</h4>
-                  <p className="text-sm text-blue-700">
-                    Tu tasa de conversión actual es {contactAnalysis.conversionRate.toFixed(1)}%, 
-                    {contactAnalysis.conversionRate > 25 ? ' lo cual está por encima del promedio del mercado' : ' hay oportunidad de mejora implementando seguimiento más sistemático'}.
-                  </p>
-                </div>
-
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <h4 className="font-medium text-green-800 mb-2">Análisis de Cartera</h4>
-                  <p className="text-sm text-green-700">
-                    Tienes {propertyAnalysis.totalProperties} propiedades en cartera con un precio promedio de S/{propertyAnalysis.avgPrice.toLocaleString()}.
-                  </p>
-                </div>
-
-                <div className="bg-purple-50 p-4 rounded-lg">
-                  <h4 className="font-medium text-purple-800 mb-2">Tiempo de Respuesta</h4>
-                  <p className="text-sm text-purple-700">
-                    Tiempo promedio de respuesta estimado: {contactAnalysis.avgResponseTime.toFixed(1)} horas.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="recommendations" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
                 <Target className="w-5 h-5" />
                 Recomendaciones Personalizadas IA
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {insights.recommendations.map((rec, index) =>  (
+                {insights.recommendations.map((rec, index) => (
                   <div key={index} className="border rounded-lg p-4 hover:bg-gray-50">
                     <div className="flex justify-between items-start mb-2">
                       <h4 className="font-medium">{rec.title}</h4>
