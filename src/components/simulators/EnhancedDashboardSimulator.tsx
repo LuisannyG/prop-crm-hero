@@ -74,6 +74,17 @@ const EnhancedDashboardSimulator = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Función para identificar contactos que necesitan atención (5+ días sin actualizar)
+  const getContactsNeedingAttention = () => {
+    const fiveDaysAgo = new Date();
+    fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+    
+    return contacts.filter(contact => {
+      const updatedAt = new Date(contact.updated_at);
+      return updatedAt < fiveDaysAgo;
+    });
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       if (!user) return;
@@ -177,6 +188,7 @@ const EnhancedDashboardSimulator = () => {
   const totalProperties = properties.length;
   const totalReminders = reminders.length;
   const highPriorityReminders = reminders.filter(r => r.priority === 'alta' && r.status === 'pendiente').length;
+  const contactsNeedingAttention = getContactsNeedingAttention();
 
   // Updated sales funnel stages with specific colors - now using sales_stage from contacts
   const funnelStages = [
@@ -282,8 +294,8 @@ const EnhancedDashboardSimulator = () => {
 
   return (
     <div className="space-y-6">
-      {/* Estadísticas generales */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Estadísticas generales - Actualizada con contactos que necesitan atención */}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
             <Users className="w-8 h-8 mx-auto mb-2 text-blue-600" />
@@ -312,7 +324,79 @@ const EnhancedDashboardSimulator = () => {
             <div className="text-sm text-gray-600">Alta Prioridad</div>
           </CardContent>
         </Card>
+        <Card className={`${contactsNeedingAttention.length > 0 ? 'bg-red-50 border-red-200' : ''}`}>
+          <CardContent className="p-4 text-center">
+            <AlertCircle className={`w-8 h-8 mx-auto mb-2 ${contactsNeedingAttention.length > 0 ? 'text-red-600 animate-pulse' : 'text-gray-400'}`} />
+            <div className={`text-2xl font-bold ${contactsNeedingAttention.length > 0 ? 'text-red-600' : 'text-gray-600'}`}>
+              {contactsNeedingAttention.length}
+            </div>
+            <div className="text-sm text-gray-600">Necesitan Atención</div>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Alerta de contactos que necesitan atención */}
+      {contactsNeedingAttention.length > 0 && (
+        <Card className="border-red-200 bg-red-50 shadow-lg">
+          <CardHeader className="bg-red-100">
+            <CardTitle className="text-red-800 flex items-center">
+              <AlertCircle className="mr-2 h-5 w-5 animate-pulse" />
+              ⚠️ Contactos que Necesitan Atención Urgente
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <p className="text-red-700 mb-4 font-medium">
+              Los siguientes contactos no han sido actualizados en más de 5 días:
+            </p>
+            <div className="space-y-3 max-h-60 overflow-y-auto">
+              {contactsNeedingAttention.map(contact => {
+                const daysSinceUpdate = Math.floor((new Date().getTime() - new Date(contact.updated_at).getTime()) / (1000 * 60 * 60 * 24));
+                
+                return (
+                  <div 
+                    key={contact.id}
+                    className="flex items-center justify-between p-3 bg-white rounded-lg border border-red-200 shadow-sm"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="text-red-600">
+                        <User className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-red-800">{contact.full_name}</div>
+                        <div className="text-sm text-gray-600 flex items-center gap-4">
+                          {contact.email && (
+                            <span className="flex items-center gap-1">
+                              <Mail className="w-3 h-3" />
+                              {contact.email}
+                            </span>
+                          )}
+                          {contact.phone && (
+                            <span className="flex items-center gap-1">
+                              <Phone className="w-3 h-3" />
+                              {contact.phone}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs text-red-600 font-medium mt-1">
+                          Última actualización: hace {daysSinceUpdate} días
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
+                      <Badge variant="destructive" className="animate-pulse">
+                        URGENTE
+                      </Badge>
+                      <div className="text-xs text-gray-500">
+                        Etapa: {contact.sales_stage?.replace(/_/g, ' ') || 'Sin etapa'}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Recordatorios Inteligentes Priorizados */}
       <Card className="shadow-md">
