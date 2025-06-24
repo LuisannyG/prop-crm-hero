@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Toggle } from '@/components/ui/toggle';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -62,6 +64,11 @@ const Reminders = () => {
     reminderDate: null,
     priority: 'media',
   });
+
+  // Estados para el selector de tiempo AM/PM
+  const [selectedHour, setSelectedHour] = useState(9);
+  const [selectedMinute, setSelectedMinute] = useState(0);
+  const [selectedPeriod, setSelectedPeriod] = useState<'AM' | 'PM'>('AM');
 
   const fetchReminders = async () => {
     if (!user) return;
@@ -135,6 +142,58 @@ const Reminders = () => {
     fetchContacts();
     fetchReminders();
   }, [user, toast]);
+
+  // Función para actualizar la fecha con la hora seleccionada
+  const updateReminderDateTime = () => {
+    if (!newReminder.reminderDate) return;
+    
+    const newDate = new Date(newReminder.reminderDate);
+    let hour24 = selectedHour;
+    
+    if (selectedPeriod === 'PM' && selectedHour !== 12) {
+      hour24 += 12;
+    } else if (selectedPeriod === 'AM' && selectedHour === 12) {
+      hour24 = 0;
+    }
+    
+    newDate.setHours(hour24, selectedMinute);
+    setNewReminder({...newReminder, reminderDate: newDate});
+  };
+
+  // Efecto para sincronizar los selectores cuando cambia reminderDate
+  useEffect(() => {
+    if (newReminder.reminderDate) {
+      const date = new Date(newReminder.reminderDate);
+      const hours24 = date.getHours();
+      const minutes = date.getMinutes();
+      
+      let hours12 = hours24;
+      let period: 'AM' | 'PM' = 'AM';
+      
+      if (hours24 === 0) {
+        hours12 = 12;
+        period = 'AM';
+      } else if (hours24 < 12) {
+        hours12 = hours24;
+        period = 'AM';
+      } else if (hours24 === 12) {
+        hours12 = 12;
+        period = 'PM';
+      } else {
+        hours12 = hours24 - 12;
+        period = 'PM';
+      }
+      
+      setSelectedHour(hours12);
+      setSelectedMinute(minutes);
+      setSelectedPeriod(period);
+    }
+  }, [newReminder.reminderDate]);
+
+  // Actualizar fecha cuando cambian los selectores
+  useEffect(() => {
+    updateReminderDateTime();
+  }, [selectedHour, selectedMinute, selectedPeriod]);
 
   const handleCreateReminder = async () => {
     if (!user || !newReminder.contactId || !newReminder.title || !newReminder.reminderDate) {
@@ -347,22 +406,6 @@ const Reminders = () => {
     return `${displayHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${ampm}`;
   };
 
-  const parseTimeWithAMPM = (timeString: string, currentDate: Date) => {
-    const [time, ampm] = timeString.split(' ');
-    const [hours, minutes] = time.split(':').map(Number);
-    const newDate = new Date(currentDate);
-    
-    let adjustedHours = hours;
-    if (ampm === 'PM' && hours !== 12) {
-      adjustedHours += 12;
-    } else if (ampm === 'AM' && hours === 12) {
-      adjustedHours = 0;
-    }
-    
-    newDate.setHours(adjustedHours, minutes);
-    return newDate;
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       <main className="container mx-auto px-4 py-8">
@@ -447,33 +490,77 @@ const Reminders = () => {
                         onSelect={(date) => {
                           if (date) {
                             const newDate = new Date(date);
-                            if (newReminder.reminderDate) {
-                              newDate.setHours(newReminder.reminderDate.getHours(), newReminder.reminderDate.getMinutes());
-                            } else {
-                              newDate.setHours(9, 0); // Default to 9:00 AM
-                            }
+                            newDate.setHours(selectedHour === 12 && selectedPeriod === 'AM' ? 0 : 
+                                           selectedHour === 12 && selectedPeriod === 'PM' ? 12 :
+                                           selectedPeriod === 'PM' ? selectedHour + 12 : selectedHour, 
+                                           selectedMinute);
                             setNewReminder({...newReminder, reminderDate: newDate});
                           }
                         }}
                         initialFocus
                       />
-                      <div className="p-3 border-t">
-                        <Label className="text-sm font-medium mb-2 block">Hora</Label>
-                        <Input
-                          type="time"
-                          value={newReminder.reminderDate ? format(newReminder.reminderDate, 'HH:mm') : '09:00'}
-                          onChange={(e) => {
-                            if (newReminder.reminderDate && e.target.value) {
-                              const [hours, minutes] = e.target.value.split(':');
-                              const newDate = new Date(newReminder.reminderDate);
-                              newDate.setHours(parseInt(hours), parseInt(minutes));
-                              setNewReminder({...newReminder, reminderDate: newDate});
-                            }
-                          }}
-                          className="mb-2"
-                        />
-                        <div className="text-xs text-gray-500">
-                          {newReminder.reminderDate && `Hora seleccionada: ${formatTimeWithAMPM(newReminder.reminderDate)}`}
+                      <div className="p-4 border-t">
+                        <Label className="text-sm font-medium mb-3 block">Seleccionar Hora</Label>
+                        <div className="grid grid-cols-4 gap-2 items-center">
+                          {/* Selector de Hora */}
+                          <div>
+                            <Label className="text-xs text-gray-500 mb-1 block">Hora</Label>
+                            <Select value={selectedHour.toString()} onValueChange={(value) => setSelectedHour(parseInt(value))}>
+                              <SelectTrigger className="h-9">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {[...Array(12)].map((_, i) => (
+                                  <SelectItem key={i + 1} value={(i + 1).toString()}>
+                                    {i + 1}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          {/* Selector de Minutos */}
+                          <div>
+                            <Label className="text-xs text-gray-500 mb-1 block">Min</Label>
+                            <Select value={selectedMinute.toString()} onValueChange={(value) => setSelectedMinute(parseInt(value))}>
+                              <SelectTrigger className="h-9">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {[0, 15, 30, 45].map((minute) => (
+                                  <SelectItem key={minute} value={minute.toString()}>
+                                    {minute.toString().padStart(2, '0')}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          {/* Selector AM/PM */}
+                          <div className="col-span-2">
+                            <Label className="text-xs text-gray-500 mb-1 block">Período</Label>
+                            <div className="flex gap-1">
+                              <Toggle
+                                pressed={selectedPeriod === 'AM'}
+                                onPressedChange={() => setSelectedPeriod('AM')}
+                                className="flex-1 h-9 text-xs"
+                                variant="outline"
+                              >
+                                AM
+                              </Toggle>
+                              <Toggle
+                                pressed={selectedPeriod === 'PM'}
+                                onPressedChange={() => setSelectedPeriod('PM')}
+                                className="flex-1 h-9 text-xs"
+                                variant="outline"
+                              >
+                                PM
+                              </Toggle>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-xs text-gray-500 mt-2">
+                          Hora seleccionada: {selectedHour}:{selectedMinute.toString().padStart(2, '0')} {selectedPeriod}
                         </div>
                       </div>
                     </PopoverContent>
