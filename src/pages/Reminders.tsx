@@ -545,7 +545,6 @@ const Reminders = () => {
                                 </span>
                                 {reminder.email_sent && (
                                   <span className="flex items-center gap-1 text-blue-600">
-                                    <Mail className="w-3 h-3" />
                                     Email enviado
                                   </span>
                                 )}
