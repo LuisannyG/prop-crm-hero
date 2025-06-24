@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Home, ArrowLeft, Upload } from 'lucide-react';
+import { Plus, Edit, Trash2, Home, ArrowLeft, Upload, ImageIcon } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useNavigate } from 'react-router-dom';
 
@@ -469,6 +469,7 @@ const Properties = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-20">Foto</TableHead>
                     <TableHead>Propiedad</TableHead>
                     <TableHead>Precio</TableHead>
                     <TableHead>Tipo</TableHead>
@@ -480,22 +481,26 @@ const Properties = () => {
                 <TableBody>
                   {properties.map((property) => (
                     <TableRow key={property.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          {property.photo_url && (
+                      <TableCell className="w-20">
+                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center border">
+                          {property.photo_url ? (
                             <img
                               src={property.photo_url}
                               alt={property.title}
-                              className="w-12 h-12 object-cover rounded"
+                              className="w-full h-full object-cover"
                             />
+                          ) : (
+                            <ImageIcon className="w-6 h-6 text-gray-400" />
                           )}
-                          <div>
-                            <div className="font-medium">{property.title}</div>
-                            <div className="text-sm text-gray-500">{property.address}</div>
-                            {property.district && (
-                              <div className="text-sm text-gray-400">{property.district}</div>
-                            )}
-                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{property.title}</div>
+                          <div className="text-sm text-gray-500">{property.address}</div>
+                          {property.district && (
+                            <div className="text-sm text-gray-400">{property.district}</div>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>{formatPrice(property.price)}</TableCell>
