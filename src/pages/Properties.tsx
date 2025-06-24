@@ -89,11 +89,14 @@ const Properties = () => {
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
       
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from('property-photos')
         .upload(fileName, file);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Storage error:', error);
+        throw error;
+      }
 
       const { data: { publicUrl } } = supabase.storage
         .from('property-photos')
@@ -104,7 +107,7 @@ const Properties = () => {
       console.error('Error uploading photo:', error);
       toast({
         title: 'Error',
-        description: 'No se pudo subir la foto',
+        description: 'No se pudo subir la foto. Continuando sin foto.',
         variant: 'destructive',
       });
       return null;
@@ -123,12 +126,18 @@ const Properties = () => {
         photoUrl = await uploadPhoto(photoFile);
       }
 
+      // Prepare data without is_studio field since it doesn't exist in the database
       const propertyData = {
-        ...formData,
+        title: formData.title,
+        description: formData.description || null,
+        address: formData.address,
+        district: formData.district || null,
         price: formData.price ? parseFloat(formData.price) : null,
+        property_type: formData.property_type,
         bedrooms: formData.is_studio ? null : (formData.bedrooms ? parseInt(formData.bedrooms) : null),
         bathrooms: formData.is_studio ? null : (formData.bathrooms ? parseInt(formData.bathrooms) : null),
         area_m2: formData.area_m2 ? parseFloat(formData.area_m2) : null,
+        status: formData.status,
         photo_url: photoUrl || (editingProperty?.photo_url || null),
         user_id: user.id
       };
@@ -156,7 +165,7 @@ const Properties = () => {
       console.error('Error saving property:', error);
       toast({
         title: 'Error',
-        description: 'No se pudo guardar la propiedad',
+        description: `No se pudo guardar la propiedad: ${error.message || 'Error desconocido'}`,
         variant: 'destructive',
       });
     }
@@ -290,8 +299,8 @@ const Properties = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="district">Distrito *</Label>
-                    <Select value={formData.district} onValueChange={(value) => setFormData({...formData, district: value})} required>
+                    <Label htmlFor="district">Distrito</Label>
+                    <Select value={formData.district} onValueChange={(value) => setFormData({...formData, district: value})}>
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccionar distrito" />
                       </SelectTrigger>
@@ -360,25 +369,23 @@ const Properties = () => {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="price">Precio (S/) *</Label>
+                    <Label htmlFor="price">Precio (S/)</Label>
                     <Input
                       id="price"
                       type="number"
                       step="0.01"
                       value={formData.price}
                       onChange={(e) => setFormData({...formData, price: e.target.value})}
-                      required
                     />
                   </div>
                   <div>
-                    <Label htmlFor="area_m2">Área (m²) *</Label>
+                    <Label htmlFor="area_m2">Área (m²)</Label>
                     <Input
                       id="area_m2"
                       type="number"
                       step="0.01"
                       value={formData.area_m2}
                       onChange={(e) => setFormData({...formData, area_m2: e.target.value})}
-                      required
                     />
                   </div>
                   <div className="col-span-2">
@@ -394,23 +401,21 @@ const Properties = () => {
                   {!formData.is_studio && (
                     <>
                       <div>
-                        <Label htmlFor="bedrooms">Dormitorios *</Label>
+                        <Label htmlFor="bedrooms">Dormitorios</Label>
                         <Input
                           id="bedrooms"
                           type="number"
                           value={formData.bedrooms}
                           onChange={(e) => setFormData({...formData, bedrooms: e.target.value})}
-                          required
                         />
                       </div>
                       <div>
-                        <Label htmlFor="bathrooms">Baños *</Label>
+                        <Label htmlFor="bathrooms">Baños</Label>
                         <Input
                           id="bathrooms"
                           type="number"
                           value={formData.bathrooms}
                           onChange={(e) => setFormData({...formData, bathrooms: e.target.value})}
-                          required
                         />
                       </div>
                     </>
