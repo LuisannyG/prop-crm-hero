@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -49,6 +48,14 @@ interface RiskAlert {
   created_at: string;
 }
 
+// Helper function to safely convert Json to string array
+const jsonToStringArray = (json: any): string[] => {
+  if (Array.isArray(json)) {
+    return json.filter(item => typeof item === 'string');
+  }
+  return [];
+};
+
 const RiskDetection = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -93,8 +100,8 @@ const RiskDetection = () => {
       // Transform metrics data to ensure proper types
       const transformedMetrics = (metricsData || []).map(item => ({
         ...item,
-        risk_factors: Array.isArray(item.risk_factors) ? item.risk_factors : [],
-        recommendations: Array.isArray(item.recommendations) ? item.recommendations : []
+        risk_factors: jsonToStringArray(item.risk_factors),
+        recommendations: jsonToStringArray(item.recommendations)
       }));
 
       // Obtener alertas de riesgo

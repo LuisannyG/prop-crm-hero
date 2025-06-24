@@ -19,6 +19,14 @@ interface RecoveryAction {
   outcome?: 'successful' | 'failed' | 'pending';
 }
 
+// Helper function to safely convert Json to string array
+const jsonToStringArray = (json: any): string[] => {
+  if (Array.isArray(json)) {
+    return json.filter(item => typeof item === 'string');
+  }
+  return [];
+};
+
 export const useRiskDetection = (userId: string | undefined) => {
   const { toast } = useToast();
   const [calculating, setCalculating] = useState(false);
@@ -39,8 +47,8 @@ export const useRiskDetection = (userId: string | undefined) => {
         const result = data[0];
         return {
           risk_score: result.risk_score,
-          risk_factors: Array.isArray(result.risk_factors) ? result.risk_factors : [],
-          recommendations: Array.isArray(result.recommendations) ? result.recommendations : [],
+          risk_factors: jsonToStringArray(result.risk_factors),
+          recommendations: jsonToStringArray(result.recommendations),
           last_contact_days: result.last_contact_days,
           interaction_frequency: result.interaction_frequency,
           engagement_score: result.engagement_score
@@ -212,8 +220,8 @@ export const useRiskDetection = (userId: string | undefined) => {
       // Transform the data to ensure proper types
       const transformedData = (data || []).map(item => ({
         ...item,
-        risk_factors: Array.isArray(item.risk_factors) ? item.risk_factors : [],
-        recommendations: Array.isArray(item.recommendations) ? item.recommendations : []
+        risk_factors: jsonToStringArray(item.risk_factors),
+        recommendations: jsonToStringArray(item.recommendations)
       }));
       
       return transformedData;
