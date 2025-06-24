@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardNav from '@/components/DashboardNav';
-import { CalendarIcon, Plus, Clock, AlertCircle, CheckCircle2, X, Mail, ArrowLeft } from 'lucide-react';
+import { CalendarIcon, Plus, Clock, AlertCircle, CheckCircle2, X, ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
@@ -366,59 +366,6 @@ const Reminders = () => {
     }
   };
 
-  const handleSendTestEmail = async () => {
-    if (!user) {
-      toast({
-        title: "Error",
-        description: "User not authenticated.",
-        variant: "destructive",
-      });
-      return;
-    }
-  
-    try {
-      const { data, error } = await supabase.functions.invoke('send-reminder-email', {
-        body: {
-          user_id: user.id,
-          reminder: {
-            title: 'Test Reminder',
-            description: 'This is a test reminder email.',
-            reminder_date: new Date().toISOString(),
-            priority: 'media',
-          },
-          contact: {
-            email: user.email,
-            full_name: user.user_metadata?.full_name || user.email,
-          },
-        },
-      });
-  
-      if (error) {
-        console.error("Error sending test email:", error);
-        toast({
-          title: "Error",
-          description: `Failed to send test email: ${error.message}`,
-          variant: "destructive",
-        });
-        return;
-      }
-  
-      console.log("Test email sent successfully:", data);
-      toast({
-        title: "Success",
-        description: "Test email sent successfully. Check your inbox.",
-      });
-  
-    } catch (error) {
-      console.error("Unexpected error sending test email:", error);
-      toast({
-        title: "Error",
-        description: `Failed to send test email due to an unexpected error: ${error}`,
-        variant: "destructive",
-      });
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       <main className="container mx-auto px-4 py-8">
@@ -544,15 +491,6 @@ const Reminders = () => {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold">Próximos Recordatorios</h2>
-                <Button 
-                  onClick={handleSendTestEmail}
-                  variant="outline" 
-                  size="sm"
-                  className="text-blue-600 hover:text-blue-700"
-                >
-                  <Mail className="w-4 h-4 mr-2" />
-                  Enviar Email de Prueba
-                </Button>
               </div>
 
               {reminders.length === 0 ? (
