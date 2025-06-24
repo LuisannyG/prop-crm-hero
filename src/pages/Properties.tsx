@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -69,12 +70,6 @@ const Properties = () => {
 
       if (error) throw error;
       console.log('Properties loaded:', data);
-      // Log photo URLs to debug
-      data?.forEach(property => {
-        if (property.photo_url) {
-          console.log(`Property ${property.title} photo URL:`, property.photo_url);
-        }
-      });
       setProperties(data || []);
     } catch (error) {
       console.error('Error fetching properties:', error);
@@ -98,20 +93,36 @@ const Properties = () => {
       
       console.log('Uploading file:', fileName);
       
-      const { error } = await supabase.storage
+      // Upload the file
+      const { error: uploadError } = await supabase.storage
         .from('property-photos')
-        .upload(fileName, file);
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
-      if (error) {
-        console.error('Storage error:', error);
-        throw error;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
       }
 
+      // Get the public URL
       const { data: { publicUrl } } = supabase.storage
         .from('property-photos')
         .getPublicUrl(fileName);
 
       console.log('Generated public URL:', publicUrl);
+      
+      // Test if the URL is accessible
+      try {
+        const response = await fetch(publicUrl, { method: 'HEAD' });
+        if (!response.ok) {
+          console.error('Photo URL not accessible:', response.status, response.statusText);
+        }
+      } catch (testError) {
+        console.error('Error testing photo URL:', testError);
+      }
+
       return publicUrl;
     } catch (error) {
       console.error('Error uploading photo:', error);
@@ -501,7 +512,14 @@ const Properties = () => {
                               onLoad={() => console.log(`Image loaded successfully: ${property.title}`)}
                               onError={(e) => {
                                 console.error(`Failed to load image for ${property.title}:`, property.photo_url);
-                                console.error('Image error details:', e);
+                                // Show placeholder icon when image fails to load
+                                e.currentTarget.style.display = 'none';
+                                const parent = e.currentTarget.parentElement;
+                                if (parent && !parent.querySelector('.fallback-icon')) {
+                                  const icon = document.createElement('div');
+                                  icon.innerHTML = '<svg class="w-6 h-6 text-gray-400 fallback-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>';
+                                  parent.appendChild(icon);
+                                }
                               }}
                             />
                           ) : (
