@@ -9,6 +9,65 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      client_risk_metrics: {
+        Row: {
+          contact_id: string
+          created_at: string
+          engagement_score: number | null
+          id: string
+          interaction_frequency: number | null
+          last_calculated: string
+          last_contact_days: number
+          price_sensitivity_score: number | null
+          recommendations: Json | null
+          risk_factors: Json | null
+          risk_score: number
+          stage_progression_score: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string
+          engagement_score?: number | null
+          id?: string
+          interaction_frequency?: number | null
+          last_calculated?: string
+          last_contact_days?: number
+          price_sensitivity_score?: number | null
+          recommendations?: Json | null
+          risk_factors?: Json | null
+          risk_score?: number
+          stage_progression_score?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string
+          engagement_score?: number | null
+          id?: string
+          interaction_frequency?: number | null
+          last_calculated?: string
+          last_contact_days?: number
+          price_sensitivity_score?: number | null
+          recommendations?: Json | null
+          risk_factors?: Json | null
+          risk_score?: number
+          stage_progression_score?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_risk_metrics_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contacts: {
         Row: {
           acquisition_source: string | null
@@ -285,6 +344,50 @@ export type Database = {
         }
         Relationships: []
       }
+      recovery_actions: {
+        Row: {
+          action_description: string
+          action_type: string
+          applied_at: string
+          contact_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          outcome: string | null
+          user_id: string
+        }
+        Insert: {
+          action_description: string
+          action_type: string
+          applied_at?: string
+          contact_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          outcome?: string | null
+          user_id: string
+        }
+        Update: {
+          action_description?: string
+          action_type?: string
+          applied_at?: string
+          contact_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          outcome?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recovery_actions_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reminders: {
         Row: {
           contact_id: string | null
@@ -335,6 +438,53 @@ export type Database = {
           },
         ]
       }
+      risk_alerts: {
+        Row: {
+          alert_message: string
+          alert_type: string
+          contact_id: string
+          created_at: string
+          id: string
+          is_read: boolean | null
+          is_resolved: boolean | null
+          resolved_at: string | null
+          risk_score: number
+          user_id: string
+        }
+        Insert: {
+          alert_message: string
+          alert_type: string
+          contact_id: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          is_resolved?: boolean | null
+          resolved_at?: string | null
+          risk_score: number
+          user_id: string
+        }
+        Update: {
+          alert_message?: string
+          alert_type?: string
+          contact_id?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          is_resolved?: boolean | null
+          resolved_at?: string | null
+          risk_score?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risk_alerts_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sales_funnel: {
         Row: {
           contact_id: string
@@ -373,7 +523,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_client_risk_score: {
+        Args: { contact_uuid: string; user_uuid: string }
+        Returns: {
+          risk_score: number
+          risk_factors: Json
+          recommendations: Json
+          last_contact_days: number
+          interaction_frequency: number
+          engagement_score: number
+        }[]
+      }
     }
     Enums: {
       user_type: "independent_agent" | "small_company"
