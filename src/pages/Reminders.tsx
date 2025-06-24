@@ -63,6 +63,43 @@ const Reminders = () => {
     priority: 'media',
   });
 
+  const fetchReminders = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('reminders')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('reminder_date', { ascending: true });
+
+      if (error) {
+        console.error("Error fetching reminders:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load reminders.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const typedReminders: Reminder[] = (data || []).map(reminder => ({
+        ...reminder,
+        priority: reminder.priority as 'alta' | 'media' | 'baja',
+        status: reminder.status as 'pendiente' | 'completado'
+      }));
+
+      setReminders(typedReminders);
+    } catch (error) {
+      console.error("Unexpected error fetching reminders:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load reminders due to an unexpected error.",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     if (!user) return;
 
@@ -90,43 +127,6 @@ const Reminders = () => {
         toast({
           title: "Error",
           description: "Failed to load contacts due to an unexpected error.",
-          variant: "destructive",
-        });
-      }
-    };
-
-    const fetchReminders = async () => {
-      if (!user) return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('reminders')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('reminder_date', { ascending: true });
-
-        if (error) {
-          console.error("Error fetching reminders:", error);
-          toast({
-            title: "Error",
-            description: "Failed to load reminders.",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        const typedReminders: Reminder[] = (data || []).map(reminder => ({
-          ...reminder,
-          priority: reminder.priority as 'alta' | 'media' | 'baja',
-          status: reminder.status as 'pendiente' | 'completado'
-        }));
-
-        setReminders(typedReminders);
-      } catch (error) {
-        console.error("Unexpected error fetching reminders:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load reminders due to an unexpected error.",
           variant: "destructive",
         });
       }
