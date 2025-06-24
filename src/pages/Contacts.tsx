@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -8,9 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Phone, Mail, MapPin, ArrowLeft, Clock, Calendar } from 'lucide-react';
+import { Plus, Edit, Trash2, Phone, Mail, MapPin, ArrowLeft, Clock, Calendar, Info } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useNavigate } from 'react-router-dom';
 import ContactHistory from '@/components/ContactHistory';
@@ -298,6 +300,13 @@ const Contacts = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
+        <Alert className="mb-6 border-blue-200 bg-blue-50">
+          <Info className="h-4 w-4 text-blue-600" />
+          <AlertDescription className="text-blue-800">
+            💡 <strong>Recordatorio:</strong> Recuerda actualizar el historial de tus contactos para mantener un mejor seguimiento de tus clientes y prospectos.
+          </AlertDescription>
+        </Alert>
+
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <Button
