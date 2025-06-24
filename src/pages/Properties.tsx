@@ -1,5 +1,4 @@
 
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -257,8 +256,8 @@ const Properties = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="district">Distrito</Label>
-                    <Select value={formData.district} onValueChange={(value) => setFormData({...formData, district: value})}>
+                    <Label htmlFor="district">Distrito *</Label>
+                    <Select value={formData.district} onValueChange={(value) => setFormData({...formData, district: value})} required>
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccionar distrito" />
                       </SelectTrigger>
@@ -327,23 +326,25 @@ const Properties = () => {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="price">Precio (S/)</Label>
+                    <Label htmlFor="price">Precio (S/) *</Label>
                     <Input
                       id="price"
                       type="number"
                       step="0.01"
                       value={formData.price}
                       onChange={(e) => setFormData({...formData, price: e.target.value})}
+                      required
                     />
                   </div>
                   <div>
-                    <Label htmlFor="area_m2">Área (m²)</Label>
+                    <Label htmlFor="area_m2">Área (m²) *</Label>
                     <Input
                       id="area_m2"
                       type="number"
                       step="0.01"
                       value={formData.area_m2}
                       onChange={(e) => setFormData({...formData, area_m2: e.target.value})}
+                      required
                     />
                   </div>
                   <div className="col-span-2">
@@ -359,21 +360,23 @@ const Properties = () => {
                   {!formData.is_studio && (
                     <>
                       <div>
-                        <Label htmlFor="bedrooms">Dormitorios</Label>
+                        <Label htmlFor="bedrooms">Dormitorios *</Label>
                         <Input
                           id="bedrooms"
                           type="number"
                           value={formData.bedrooms}
                           onChange={(e) => setFormData({...formData, bedrooms: e.target.value})}
+                          required
                         />
                       </div>
                       <div>
-                        <Label htmlFor="bathrooms">Baños</Label>
+                        <Label htmlFor="bathrooms">Baños *</Label>
                         <Input
                           id="bathrooms"
                           type="number"
                           value={formData.bathrooms}
                           onChange={(e) => setFormData({...formData, bathrooms: e.target.value})}
+                          required
                         />
                       </div>
                     </>
@@ -486,4 +489,3 @@ const Properties = () => {
 };
 
 export default Properties;
-
