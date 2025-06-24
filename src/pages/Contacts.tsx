@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -12,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Phone, Mail, MapPin, ArrowLeft, Clock, Calendar, Info } from 'lucide-react';
+import { Plus, Edit, Trash2, Phone, Mail, MapPin, ArrowLeft, Clock, Calendar, Info, RefreshCw } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useNavigate } from 'react-router-dom';
 import ContactHistory from '@/components/ContactHistory';
@@ -293,6 +292,10 @@ const Contacts = () => {
     return `Hace ${Math.floor(diffDays / 365)} año${Math.floor(diffDays / 365) > 1 ? 's' : ''}`;
   };
 
+  const handleRefresh = () => {
+    window.location.reload();
+  };
+
   if (loading) {
     return <div className="p-8">Cargando contactos...</div>;
   }
@@ -319,193 +322,203 @@ const Contacts = () => {
             </Button>
             <h1 className="text-3xl font-bold text-gray-900">Gestión de Contactos</h1>
           </div>
-          <Dialog open={isAddingContact} onOpenChange={setIsAddingContact}>
-            <DialogTrigger asChild>
-              <Button onClick={() => setIsAddingContact(true)}>
-                <Plus className="w-4 h-4 mr-2" />
-                Nuevo Contacto
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>
-                  {editingContact ? 'Editar Contacto' : 'Nuevo Contacto'}
-                </DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="full_name">Nombre completo *</Label>
-                  <Input
-                    id="full_name"
-                    value={formData.full_name}
-                    onChange={(e) => setFormData({...formData, full_name: e.target.value})}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="email">Email *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="phone">Teléfono *</Label>
-                  <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="address">Dirección *</Label>
-                  <Input
-                    id="address"
-                    value={formData.address}
-                    onChange={(e) => setFormData({...formData, address: e.target.value})}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="district">Distrito *</Label>
-                  <Select value={formData.district} onValueChange={(value) => setFormData({...formData, district: value})} required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar distrito" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white z-50">
-                      <SelectItem value="Ate">Ate</SelectItem>
-                      <SelectItem value="Barranco">Barranco</SelectItem>
-                      <SelectItem value="Bellavista">Bellavista</SelectItem>
-                      <SelectItem value="Breña">Breña</SelectItem>
-                      <SelectItem value="Callao">Callao</SelectItem>
-                      <SelectItem value="Cercado de Lima">Cercado de Lima</SelectItem>
-                      <SelectItem value="Chorrillos">Chorrillos</SelectItem>
-                      <SelectItem value="Comas">Comas</SelectItem>
-                      <SelectItem value="El Agustino">El Agustino</SelectItem>
-                      <SelectItem value="Independencia">Independencia</SelectItem>
-                      <SelectItem value="Jesús María">Jesús María</SelectItem>
-                      <SelectItem value="La Molina">La Molina</SelectItem>
-                      <SelectItem value="La Perla">La Perla</SelectItem>
-                      <SelectItem value="La Punta">La Punta</SelectItem>
-                      <SelectItem value="La Victoria">La Victoria</SelectItem>
-                      <SelectItem value="Lince">Lince</SelectItem>
-                      <SelectItem value="Los Olivos">Los Olivos</SelectItem>
-                      <SelectItem value="Magdalena">Magdalena</SelectItem>
-                      <SelectItem value="Miraflores">Miraflores</SelectItem>
-                      <SelectItem value="Pueblo Libre">Pueblo Libre</SelectItem>
-                      <SelectItem value="San Borja">San Borja</SelectItem>
-                      <SelectItem value="San Isidro">San Isidro</SelectItem>
-                      <SelectItem value="San Juan de Miraflores">San Juan de Miraflores</SelectItem>
-                      <SelectItem value="San Luis">San Luis</SelectItem>
-                      <SelectItem value="San Martín de Porres">San Martín de Porres</SelectItem>
-                      <SelectItem value="San Miguel">San Miguel</SelectItem>
-                      <SelectItem value="Santa Anita">Santa Anita</SelectItem>
-                      <SelectItem value="Surco">Surco</SelectItem>
-                      <SelectItem value="Ventanilla">Ventanilla</SelectItem>
-                      <SelectItem value="Villa El Salvador">Villa El Salvador</SelectItem>
-                      <SelectItem value="Villa María del Triunfo">Villa María del Triunfo</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="status">Estado *</Label>
-                  <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})} required>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white z-50">
-                      <SelectItem value="prospect">Prospecto</SelectItem>
-                      <SelectItem value="client">Cliente</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="client_type">Tipo de Cliente *</Label>
-                  <Select value={formData.client_type} onValueChange={(value) => setFormData({...formData, client_type: value})} required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar tipo" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white z-50">
-                      <SelectItem value="familiar">Familiar</SelectItem>
-                      <SelectItem value="individual">Individual</SelectItem>
-                      <SelectItem value="negocio">Negocio</SelectItem>
-                      <SelectItem value="empresa">Empresa</SelectItem>
-                      <SelectItem value="inversionista">Inversionista</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="acquisition_source">¿Cómo nos conoció? *</Label>
-                  <Select value={formData.acquisition_source} onValueChange={(value) => setFormData({...formData, acquisition_source: value})} required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar fuente" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white z-50">
-                      <SelectItem value="tiktok">TikTok</SelectItem>
-                      <SelectItem value="instagram">Instagram</SelectItem>
-                      <SelectItem value="facebook">Facebook</SelectItem>
-                      <SelectItem value="referido">Referido</SelectItem>
-                      <SelectItem value="feria-inmobiliaria">Feria Inmobiliaria</SelectItem>
-                      <SelectItem value="google">Google</SelectItem>
-                      <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                      <SelectItem value="llamada-fria">Llamada en frío</SelectItem>
-                      <SelectItem value="sitio-web">Sitio Web</SelectItem>
-                      <SelectItem value="otro">Otro</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="sales_stage">Etapa de Venta *</Label>
-                  <Select 
-                    value={formData.sales_stage} 
-                    onValueChange={(value) => {
-                      console.log('Sales stage changed to:', value);
-                      setFormData({...formData, sales_stage: value});
-                    }} 
-                    required
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar etapa" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white z-50">
-                      {salesStages.map((stage) => (
-                        <SelectItem key={stage.key} value={stage.key}>
-                          <div className="flex items-center gap-2">
-                            <div 
-                              className="w-3 h-3 rounded-full" 
-                              style={{ backgroundColor: stage.color }}
-                            ></div>
-                            {stage.name}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="notes">Notas</Label>
-                  <Textarea
-                    id="notes"
-                    value={formData.notes}
-                    onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                    rows={3}
-                  />
-                </div>
-                <div className="flex space-x-2">
-                  <Button type="submit">
-                    {editingContact ? 'Actualizar' : 'Guardar'}
-                  </Button>
-                  <Button type="button" variant="outline" onClick={resetForm}>
-                    Cancelar
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={handleRefresh}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Recargar
+            </Button>
+            <Dialog open={isAddingContact} onOpenChange={setIsAddingContact}>
+              <DialogTrigger asChild>
+                <Button onClick={() => setIsAddingContact(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Nuevo Contacto
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>
+                    {editingContact ? 'Editar Contacto' : 'Nuevo Contacto'}
+                  </DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <Label htmlFor="full_name">Nombre completo *</Label>
+                    <Input
+                      id="full_name"
+                      value={formData.full_name}
+                      onChange={(e) => setFormData({...formData, full_name: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="email">Email *</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="phone">Teléfono *</Label>
+                    <Input
+                      id="phone"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="address">Dirección *</Label>
+                    <Input
+                      id="address"
+                      value={formData.address}
+                      onChange={(e) => setFormData({...formData, address: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="district">Distrito *</Label>
+                    <Select value={formData.district} onValueChange={(value) => setFormData({...formData, district: value})} required>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar distrito" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white z-50">
+                        <SelectItem value="Ate">Ate</SelectItem>
+                        <SelectItem value="Barranco">Barranco</SelectItem>
+                        <SelectItem value="Bellavista">Bellavista</SelectItem>
+                        <SelectItem value="Breña">Breña</SelectItem>
+                        <SelectItem value="Callao">Callao</SelectItem>
+                        <SelectItem value="Cercado de Lima">Cercado de Lima</SelectItem>
+                        <SelectItem value="Chorrillos">Chorrillos</SelectItem>
+                        <SelectItem value="Comas">Comas</SelectItem>
+                        <SelectItem value="El Agustino">El Agustino</SelectItem>
+                        <SelectItem value="Independencia">Independencia</SelectItem>
+                        <SelectItem value="Jesús María">Jesús María</SelectItem>
+                        <SelectItem value="La Molina">La Molina</SelectItem>
+                        <SelectItem value="La Perla">La Perla</SelectItem>
+                        <SelectItem value="La Punta">La Punta</SelectItem>
+                        <SelectItem value="La Victoria">La Victoria</SelectItem>
+                        <SelectItem value="Lince">Lince</SelectItem>
+                        <SelectItem value="Los Olivos">Los Olivos</SelectItem>
+                        <SelectItem value="Magdalena">Magdalena</SelectItem>
+                        <SelectItem value="Miraflores">Miraflores</SelectItem>
+                        <SelectItem value="Pueblo Libre">Pueblo Libre</SelectItem>
+                        <SelectItem value="San Borja">San Borja</SelectItem>
+                        <SelectItem value="San Isidro">San Isidro</SelectItem>
+                        <SelectItem value="San Juan de Miraflores">San Juan de Miraflores</SelectItem>
+                        <SelectItem value="San Luis">San Luis</SelectItem>
+                        <SelectItem value="San Martín de Porres">San Martín de Porres</SelectItem>
+                        <SelectItem value="San Miguel">San Miguel</SelectItem>
+                        <SelectItem value="Santa Anita">Santa Anita</SelectItem>
+                        <SelectItem value="Surco">Surco</SelectItem>
+                        <SelectItem value="Ventanilla">Ventanilla</SelectItem>
+                        <SelectItem value="Villa El Salvador">Villa El Salvador</SelectItem>
+                        <SelectItem value="Villa María del Triunfo">Villa María del Triunfo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="status">Estado *</Label>
+                    <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})} required>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white z-50">
+                        <SelectItem value="prospect">Prospecto</SelectItem>
+                        <SelectItem value="client">Cliente</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="client_type">Tipo de Cliente *</Label>
+                    <Select value={formData.client_type} onValueChange={(value) => setFormData({...formData, client_type: value})} required>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar tipo" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white z-50">
+                        <SelectItem value="familiar">Familiar</SelectItem>
+                        <SelectItem value="individual">Individual</SelectItem>
+                        <SelectItem value="negocio">Negocio</SelectItem>
+                        <SelectItem value="empresa">Empresa</SelectItem>
+                        <SelectItem value="inversionista">Inversionista</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="acquisition_source">¿Cómo nos conoció? *</Label>
+                    <Select value={formData.acquisition_source} onValueChange={(value) => setFormData({...formData, acquisition_source: value})} required>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar fuente" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white z-50">
+                        <SelectItem value="tiktok">TikTok</SelectItem>
+                        <SelectItem value="instagram">Instagram</SelectItem>
+                        <SelectItem value="facebook">Facebook</SelectItem>
+                        <SelectItem value="referido">Referido</SelectItem>
+                        <SelectItem value="feria-inmobiliaria">Feria Inmobiliaria</SelectItem>
+                        <SelectItem value="google">Google</SelectItem>
+                        <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                        <SelectItem value="llamada-fria">Llamada en frío</SelectItem>
+                        <SelectItem value="sitio-web">Sitio Web</SelectItem>
+                        <SelectItem value="otro">Otro</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="sales_stage">Etapa de Venta *</Label>
+                    <Select 
+                      value={formData.sales_stage} 
+                      onValueChange={(value) => {
+                        console.log('Sales stage changed to:', value);
+                        setFormData({...formData, sales_stage: value});
+                      }} 
+                      required
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar etapa" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white z-50">
+                        {salesStages.map((stage) => (
+                          <SelectItem key={stage.key} value={stage.key}>
+                            <div className="flex items-center gap-2">
+                              <div 
+                                className="w-3 h-3 rounded-full" 
+                                style={{ backgroundColor: stage.color }}
+                              ></div>
+                              {stage.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="notes">Notas</Label>
+                    <Textarea
+                      id="notes"
+                      value={formData.notes}
+                      onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                      rows={3}
+                    />
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button type="submit">
+                      {editingContact ? 'Actualizar' : 'Guardar'}
+                    </Button>
+                    <Button type="button" variant="outline" onClick={resetForm}>
+                      Cancelar
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         <Card>
