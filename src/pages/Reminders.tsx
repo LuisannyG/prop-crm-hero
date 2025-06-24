@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardNav from '@/components/DashboardNav';
-import { CalendarIcon, Plus, Clock, AlertCircle, CheckCircle2, X, ArrowLeft } from 'lucide-react';
+import { CalendarIcon, Plus, Clock, AlertCircle, CheckCircle2, X, ArrowLeft, Edit } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
@@ -54,6 +54,7 @@ const Reminders = () => {
   const navigate = useNavigate();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [editingReminder, setEditingReminder] = useState<Reminder | null>(null);
   const [newReminder, setNewReminder] = useState<NewReminder>({
     contactId: undefined,
     title: '',
@@ -95,6 +96,8 @@ const Reminders = () => {
     };
 
     const fetchReminders = async () => {
+      if (!user) return;
+      
       try {
         const { data, error } = await supabase
           .from('reminders')
@@ -112,7 +115,6 @@ const Reminders = () => {
           return;
         }
 
-        // Cast the data to match our Reminder interface
         const typedReminders: Reminder[] = (data || []).map(reminder => ({
           ...reminder,
           priority: reminder.priority as 'alta' | 'media' | 'baja',
@@ -181,43 +183,7 @@ const Reminders = () => {
         description: "Reminder created successfully.",
       });
 
-      // Refresh reminders
-      const fetchReminders = async () => {
-        try {
-          const { data, error } = await supabase
-            .from('reminders')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('reminder_date', { ascending: true });
-  
-          if (error) {
-            console.error("Error fetching reminders:", error);
-            toast({
-              title: "Error",
-              description: "Failed to load reminders.",
-              variant: "destructive",
-            });
-            return;
-          }
-  
-          const typedReminders: Reminder[] = (data || []).map(reminder => ({
-            ...reminder,
-            priority: reminder.priority as 'alta' | 'media' | 'baja',
-            status: reminder.status as 'pendiente' | 'completado'
-          }));
-
-          setReminders(typedReminders);
-        } catch (error) {
-          console.error("Unexpected error fetching reminders:", error);
-          toast({
-            title: "Error",
-            description: "Failed to load reminders due to an unexpected error.",
-            variant: "destructive",
-          });
-        }
-      };
       fetchReminders();
-
     } catch (error) {
       console.error("Unexpected error creating reminder:", error);
       toast({
@@ -226,6 +192,85 @@ const Reminders = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleEditReminder = (reminder: Reminder) => {
+    setEditingReminder(reminder);
+    setNewReminder({
+      contactId: reminder.contact_id,
+      title: reminder.title,
+      description: reminder.description,
+      reminderDate: new Date(reminder.reminder_date),
+      priority: reminder.priority,
+    });
+  };
+
+  const handleUpdateReminder = async () => {
+    if (!editingReminder || !user || !newReminder.contactId || !newReminder.title || !newReminder.reminderDate) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('reminders')
+        .update({
+          contact_id: newReminder.contactId,
+          title: newReminder.title,
+          description: newReminder.description,
+          reminder_date: newReminder.reminderDate.toISOString(),
+          priority: newReminder.priority,
+        })
+        .eq('id', editingReminder.id);
+
+      if (error) {
+        console.error("Error updating reminder:", error);
+        toast({
+          title: "Error",
+          description: "Failed to update reminder.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setEditingReminder(null);
+      setNewReminder({
+        contactId: undefined,
+        title: '',
+        description: '',
+        reminderDate: null,
+        priority: 'media',
+      });
+
+      toast({
+        title: "Success",
+        description: "Reminder updated successfully.",
+      });
+
+      fetchReminders();
+    } catch (error) {
+      console.error("Unexpected error updating reminder:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update reminder due to an unexpected error.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingReminder(null);
+    setNewReminder({
+      contactId: undefined,
+      title: '',
+      description: '',
+      reminderDate: null,
+      priority: 'media',
+    });
   };
 
   const handleCompleteReminder = async (reminderId: string) => {
@@ -250,43 +295,7 @@ const Reminders = () => {
         description: "Reminder completed successfully.",
       });
 
-      // Refresh reminders
-      const fetchReminders = async () => {
-        try {
-          const { data, error } = await supabase
-            .from('reminders')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('reminder_date', { ascending: true });
-  
-          if (error) {
-            console.error("Error fetching reminders:", error);
-            toast({
-              title: "Error",
-              description: "Failed to load reminders.",
-              variant: "destructive",
-            });
-            return;
-          }
-  
-          const typedReminders: Reminder[] = (data || []).map(reminder => ({
-            ...reminder,
-            priority: reminder.priority as 'alta' | 'media' | 'baja',
-            status: reminder.status as 'pendiente' | 'completado'
-          }));
-
-          setReminders(typedReminders);
-        } catch (error) {
-          console.error("Unexpected error fetching reminders:", error);
-          toast({
-            title: "Error",
-            description: "Failed to load reminders due to an unexpected error.",
-            variant: "destructive",
-          });
-        }
-      };
       fetchReminders();
-
     } catch (error) {
       console.error("Unexpected error completing reminder:", error);
       toast({
@@ -319,43 +328,7 @@ const Reminders = () => {
         description: "Reminder deleted successfully.",
       });
 
-      // Refresh reminders
-      const fetchReminders = async () => {
-        try {
-          const { data, error } = await supabase
-            .from('reminders')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('reminder_date', { ascending: true });
-  
-          if (error) {
-            console.error("Error fetching reminders:", error);
-            toast({
-              title: "Error",
-              description: "Failed to load reminders.",
-              variant: "destructive",
-            });
-            return;
-          }
-  
-          const typedReminders: Reminder[] = (data || []).map(reminder => ({
-            ...reminder,
-            priority: reminder.priority as 'alta' | 'media' | 'baja',
-            status: reminder.status as 'pendiente' | 'completado'
-          }));
-
-          setReminders(typedReminders);
-        } catch (error) {
-          console.error("Unexpected error fetching reminders:", error);
-          toast({
-            title: "Error",
-            description: "Failed to load reminders due to an unexpected error.",
-            variant: "destructive",
-          });
-        }
-      };
       fetchReminders();
-
     } catch (error) {
       console.error("Unexpected error deleting reminder:", error);
       toast({
@@ -364,6 +337,30 @@ const Reminders = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const formatTimeWithAMPM = (date: Date) => {
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
+    return `${displayHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+  };
+
+  const parseTimeWithAMPM = (timeString: string, currentDate: Date) => {
+    const [time, ampm] = timeString.split(' ');
+    const [hours, minutes] = time.split(':').map(Number);
+    const newDate = new Date(currentDate);
+    
+    let adjustedHours = hours;
+    if (ampm === 'PM' && hours !== 12) {
+      adjustedHours += 12;
+    } else if (ampm === 'AM' && hours === 12) {
+      adjustedHours = 0;
+    }
+    
+    newDate.setHours(adjustedHours, minutes);
+    return newDate;
   };
 
   return (
@@ -385,13 +382,13 @@ const Reminders = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Formulario para crear recordatorio */}
+          {/* Formulario para crear/editar recordatorio */}
           <div className="lg:col-span-1">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Plus className="w-5 h-5" />
-                  Nuevo Recordatorio
+                  {editingReminder ? <Edit className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+                  {editingReminder ? 'Editar Recordatorio' : 'Nuevo Recordatorio'}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -437,20 +434,34 @@ const Reminders = () => {
                     <PopoverTrigger asChild>
                       <Button variant="outline" className="w-full justify-start text-left font-normal">
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {newReminder.reminderDate ? format(newReminder.reminderDate, "PPP 'a las' HH:mm", { locale: es }) : "Seleccionar fecha"}
+                        {newReminder.reminderDate ? 
+                          `${format(newReminder.reminderDate, "dd/MM/yyyy", { locale: es })} a las ${formatTimeWithAMPM(newReminder.reminderDate)}` 
+                          : "Seleccionar fecha y hora"
+                        }
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
                         selected={newReminder.reminderDate}
-                        onSelect={(date) => setNewReminder({...newReminder, reminderDate: date})}
+                        onSelect={(date) => {
+                          if (date) {
+                            const newDate = new Date(date);
+                            if (newReminder.reminderDate) {
+                              newDate.setHours(newReminder.reminderDate.getHours(), newReminder.reminderDate.getMinutes());
+                            } else {
+                              newDate.setHours(9, 0); // Default to 9:00 AM
+                            }
+                            setNewReminder({...newReminder, reminderDate: newDate});
+                          }
+                        }}
                         initialFocus
                       />
                       <div className="p-3 border-t">
+                        <Label className="text-sm font-medium mb-2 block">Hora</Label>
                         <Input
                           type="time"
-                          value={newReminder.reminderDate ? format(newReminder.reminderDate, 'HH:mm') : ''}
+                          value={newReminder.reminderDate ? format(newReminder.reminderDate, 'HH:mm') : '09:00'}
                           onChange={(e) => {
                             if (newReminder.reminderDate && e.target.value) {
                               const [hours, minutes] = e.target.value.split(':');
@@ -459,7 +470,11 @@ const Reminders = () => {
                               setNewReminder({...newReminder, reminderDate: newDate});
                             }
                           }}
+                          className="mb-2"
                         />
+                        <div className="text-xs text-gray-500">
+                          {newReminder.reminderDate && `Hora seleccionada: ${formatTimeWithAMPM(newReminder.reminderDate)}`}
+                        </div>
                       </div>
                     </PopoverContent>
                   </Popover>
@@ -479,9 +494,22 @@ const Reminders = () => {
                   </Select>
                 </div>
 
-                <Button onClick={handleCreateReminder} className="w-full">
-                  Crear Recordatorio
-                </Button>
+                <div className="flex gap-2">
+                  {editingReminder ? (
+                    <>
+                      <Button onClick={handleUpdateReminder} className="flex-1">
+                        Actualizar Recordatorio
+                      </Button>
+                      <Button onClick={handleCancelEdit} variant="outline">
+                        Cancelar
+                      </Button>
+                    </>
+                  ) : (
+                    <Button onClick={handleCreateReminder} className="w-full">
+                      Crear Recordatorio
+                    </Button>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -511,6 +539,7 @@ const Reminders = () => {
                       media: 'border-l-yellow-500 bg-yellow-50',
                       baja: 'border-l-green-500 bg-green-50'
                     };
+                    const reminderDateTime = new Date(reminder.reminder_date);
 
                     return (
                       <Card key={reminder.id} className={`border-l-4 ${priorityColors[reminder.priority]} ${isOverdue ? 'ring-2 ring-red-200' : ''}`}>
@@ -534,7 +563,7 @@ const Reminders = () => {
                               <div className="flex items-center gap-4 text-xs text-gray-500">
                                 <span className="flex items-center gap-1">
                                   <Clock className="w-3 h-3" />
-                                  {format(new Date(reminder.reminder_date), "dd/MM/yyyy 'a las' HH:mm", { locale: es })}
+                                  {format(reminderDateTime, "dd/MM/yyyy", { locale: es })} a las {formatTimeWithAMPM(reminderDateTime)}
                                 </span>
                                 <span className={`px-2 py-1 rounded-full ${
                                   reminder.priority === 'alta' ? 'bg-red-100 text-red-700' :
@@ -552,6 +581,14 @@ const Reminders = () => {
                             </div>
                             
                             <div className="flex gap-2 ml-4">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleEditReminder(reminder)}
+                                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
                               {reminder.status === 'pendiente' && (
                                 <Button
                                   size="sm"
