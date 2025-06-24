@@ -68,6 +68,13 @@ const Properties = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      console.log('Properties loaded:', data);
+      // Log photo URLs to debug
+      data?.forEach(property => {
+        if (property.photo_url) {
+          console.log(`Property ${property.title} photo URL:`, property.photo_url);
+        }
+      });
       setProperties(data || []);
     } catch (error) {
       console.error('Error fetching properties:', error);
@@ -89,6 +96,8 @@ const Properties = () => {
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
       
+      console.log('Uploading file:', fileName);
+      
       const { error } = await supabase.storage
         .from('property-photos')
         .upload(fileName, file);
@@ -102,6 +111,7 @@ const Properties = () => {
         .from('property-photos')
         .getPublicUrl(fileName);
 
+      console.log('Generated public URL:', publicUrl);
       return publicUrl;
     } catch (error) {
       console.error('Error uploading photo:', error);
@@ -488,6 +498,11 @@ const Properties = () => {
                               src={property.photo_url}
                               alt={property.title}
                               className="w-full h-full object-cover"
+                              onLoad={() => console.log(`Image loaded successfully: ${property.title}`)}
+                              onError={(e) => {
+                                console.error(`Failed to load image for ${property.title}:`, property.photo_url);
+                                console.error('Image error details:', e);
+                              }}
                             />
                           ) : (
                             <ImageIcon className="w-6 h-6 text-gray-400" />
