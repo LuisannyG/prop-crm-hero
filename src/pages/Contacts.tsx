@@ -97,26 +97,40 @@ const Contacts = () => {
       
       console.log('Contacts fetched:', data);
       
-      // Obtener la última interacción para cada contacto
+      // Obtener la última interacción para cada contacto desde la tabla interactions
       const contactsWithLastInteraction = await Promise.all(
         (data || []).map(async (contact) => {
-          const { data: lastInteraction } = await supabase
-            .from('interactions')
-            .select('interaction_type, interaction_date, subject')
-            .eq('contact_id', contact.id)
-            .eq('user_id', user?.id)
-            .order('interaction_date', { ascending: false })
-            .limit(1)
-            .single();
+          try {
+            const { data: lastInteraction, error: interactionError } = await supabase
+              .from('interactions')
+              .select('interaction_type, interaction_date, subject')
+              .eq('contact_id', contact.id)
+              .eq('user_id', user?.id)
+              .order('interaction_date', { ascending: false })
+              .limit(1);
 
-          return {
-            ...contact,
-            last_interaction: lastInteraction ? {
-              type: lastInteraction.interaction_type,
-              date: lastInteraction.interaction_date,
-              subject: lastInteraction.subject
-            } : undefined
-          };
+            if (interactionError) {
+              console.error('Error fetching interaction for contact:', contact.id, interactionError);
+            }
+
+            // Si hay interacciones, tomar la primera (más reciente)
+            const mostRecentInteraction = lastInteraction && lastInteraction.length > 0 ? lastInteraction[0] : null;
+
+            return {
+              ...contact,
+              last_interaction: mostRecentInteraction ? {
+                type: mostRecentInteraction.interaction_type,
+                date: mostRecentInteraction.interaction_date,
+                subject: mostRecentInteraction.subject
+              } : undefined
+            };
+          } catch (error) {
+            console.error('Error processing contact:', contact.id, error);
+            return {
+              ...contact,
+              last_interaction: undefined
+            };
+          }
         })
       );
       
