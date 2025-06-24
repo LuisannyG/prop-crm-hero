@@ -90,6 +90,13 @@ const RiskDetection = () => {
 
       if (metricsError) throw metricsError;
 
+      // Transform metrics data to ensure proper types
+      const transformedMetrics = (metricsData || []).map(item => ({
+        ...item,
+        risk_factors: Array.isArray(item.risk_factors) ? item.risk_factors : [],
+        recommendations: Array.isArray(item.recommendations) ? item.recommendations : []
+      }));
+
       // Obtener alertas de riesgo
       const { data: alertsData, error: alertsError } = await supabase
         .from('risk_alerts')
@@ -101,7 +108,7 @@ const RiskDetection = () => {
       if (alertsError) throw alertsError;
 
       setContacts(contactsData || []);
-      setRiskMetrics(metricsData || []);
+      setRiskMetrics(transformedMetrics);
       setRiskAlerts(alertsData || []);
     } catch (error) {
       console.error('Error fetching data:', error);

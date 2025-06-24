@@ -35,7 +35,19 @@ export const useRiskDetection = (userId: string | undefined) => {
 
       if (error) throw error;
       
-      return data?.[0] || null;
+      if (data && data.length > 0) {
+        const result = data[0];
+        return {
+          risk_score: result.risk_score,
+          risk_factors: Array.isArray(result.risk_factors) ? result.risk_factors : [],
+          recommendations: Array.isArray(result.recommendations) ? result.recommendations : [],
+          last_contact_days: result.last_contact_days,
+          interaction_frequency: result.interaction_frequency,
+          engagement_score: result.engagement_score
+        };
+      }
+      
+      return null;
     } catch (error) {
       console.error('Error calculating risk score:', error);
       return null;
@@ -196,7 +208,15 @@ export const useRiskDetection = (userId: string | undefined) => {
         .order('risk_score', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      
+      // Transform the data to ensure proper types
+      const transformedData = (data || []).map(item => ({
+        ...item,
+        risk_factors: Array.isArray(item.risk_factors) ? item.risk_factors : [],
+        recommendations: Array.isArray(item.recommendations) ? item.recommendations : []
+      }));
+      
+      return transformedData;
     } catch (error) {
       console.error('Error fetching risk metrics:', error);
       return [];
