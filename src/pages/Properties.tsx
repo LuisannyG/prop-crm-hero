@@ -1,4 +1,5 @@
 
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Home, ArrowLeft, Upload, ImageIcon } from 'lucide-react';
+import { Plus, Edit, Trash2, ArrowLeft } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useNavigate } from 'react-router-dom';
 
@@ -28,7 +29,6 @@ interface Property {
   bathrooms?: number;
   area_m2?: number;
   status: string;
-  photo_url?: string;
   created_at: string;
 }
 
@@ -39,8 +39,6 @@ const Properties = () => {
   const [loading, setLoading] = useState(true);
   const [isAddingProperty, setIsAddingProperty] = useState(false);
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -83,71 +81,12 @@ const Properties = () => {
     }
   };
 
-  const uploadPhoto = async (file: File): Promise<string | null> => {
-    if (!user) return null;
-
-    try {
-      setUploading(true);
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-      
-      console.log('Uploading file:', fileName);
-      
-      // Upload the file
-      const { error: uploadError } = await supabase.storage
-        .from('property-photos')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
-
-      if (uploadError) {
-        console.error('Upload error:', uploadError);
-        throw uploadError;
-      }
-
-      // Get the public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('property-photos')
-        .getPublicUrl(fileName);
-
-      console.log('Generated public URL:', publicUrl);
-      
-      // Test if the URL is accessible
-      try {
-        const response = await fetch(publicUrl, { method: 'HEAD' });
-        if (!response.ok) {
-          console.error('Photo URL not accessible:', response.status, response.statusText);
-        }
-      } catch (testError) {
-        console.error('Error testing photo URL:', testError);
-      }
-
-      return publicUrl;
-    } catch (error) {
-      console.error('Error uploading photo:', error);
-      toast({
-        title: 'Error',
-        description: 'No se pudo subir la foto. Continuando sin foto.',
-        variant: 'destructive',
-      });
-      return null;
-    } finally {
-      setUploading(false);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
     try {
-      let photoUrl = null;
-      if (photoFile) {
-        photoUrl = await uploadPhoto(photoFile);
-      }
-
-      // Prepare data without is_studio field since it doesn't exist in the database
+      // Prepare data without photo fields
       const propertyData = {
         title: formData.title,
         description: formData.description || null,
@@ -159,7 +98,6 @@ const Properties = () => {
         bathrooms: formData.is_studio ? null : (formData.bathrooms ? parseInt(formData.bathrooms) : null),
         area_m2: formData.area_m2 ? parseFloat(formData.area_m2) : null,
         status: formData.status,
-        photo_url: photoUrl || (editingProperty?.photo_url || null),
         user_id: user.id
       };
 
@@ -226,7 +164,6 @@ const Properties = () => {
       status: 'available',
       is_studio: false
     });
-    setPhotoFile(null);
     setIsAddingProperty(false);
     setEditingProperty(null);
   };
@@ -442,19 +379,6 @@ const Properties = () => {
                     </>
                   )}
                   <div className="col-span-2">
-                    <Label htmlFor="photo">Foto de la Propiedad</Label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        id="photo"
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => setPhotoFile(e.target.files?.[0] || null)}
-                        className="flex-1"
-                      />
-                      {uploading && <span className="text-sm text-gray-500">Subiendo...</span>}
-                    </div>
-                  </div>
-                  <div className="col-span-2">
                     <Label htmlFor="description">Descripción</Label>
                     <Textarea
                       id="description"
@@ -465,7 +389,7 @@ const Properties = () => {
                   </div>
                 </div>
                 <div className="flex space-x-2">
-                  <Button type="submit" disabled={uploading}>
+                  <Button type="submit">
                     {editingProperty ? 'Actualizar' : 'Guardar'}
                   </Button>
                   <Button type="button" variant="outline" onClick={resetForm}>
@@ -490,7 +414,6 @@ const Properties = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-20">Foto</TableHead>
                     <TableHead>Propiedad</TableHead>
                     <TableHead>Precio</TableHead>
                     <TableHead>Tipo</TableHead>
@@ -502,31 +425,6 @@ const Properties = () => {
                 <TableBody>
                   {properties.map((property) => (
                     <TableRow key={property.id}>
-                      <TableCell className="w-20">
-                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center border">
-                          {property.photo_url ? (
-                            <img
-                              src={property.photo_url}
-                              alt={property.title}
-                              className="w-full h-full object-cover"
-                              onLoad={() => console.log(`Image loaded successfully: ${property.title}`)}
-                              onError={(e) => {
-                                console.error(`Failed to load image for ${property.title}:`, property.photo_url);
-                                // Show placeholder icon when image fails to load
-                                e.currentTarget.style.display = 'none';
-                                const parent = e.currentTarget.parentElement;
-                                if (parent && !parent.querySelector('.fallback-icon')) {
-                                  const icon = document.createElement('div');
-                                  icon.innerHTML = '<svg class="w-6 h-6 text-gray-400 fallback-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>';
-                                  parent.appendChild(icon);
-                                }
-                              }}
-                            />
-                          ) : (
-                            <ImageIcon className="w-6 h-6 text-gray-400" />
-                          )}
-                        </div>
-                      </TableCell>
                       <TableCell>
                         <div>
                           <div className="font-medium">{property.title}</div>
@@ -588,3 +486,4 @@ const Properties = () => {
 };
 
 export default Properties;
+
