@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Phone, Mail, MapPin, ArrowLeft } from 'lucide-react';
+import { Plus, Edit, Trash2, Phone, Mail, MapPin, ArrowLeft, Clock, Calendar } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useNavigate } from 'react-router-dom';
 import ContactHistory from '@/components/ContactHistory';
@@ -28,6 +28,11 @@ interface Contact {
   acquisition_source?: string;
   sales_stage?: string;
   created_at: string;
+  last_interaction?: {
+    type: string;
+    date: string;
+    subject?: string;
+  };
 }
 
 const Contacts = () => {
@@ -62,6 +67,14 @@ const Contacts = () => {
     { key: 'postventa_fidelizacion', name: 'Postventa y fidelización', color: '#10b981' }
   ];
 
+  const interactionTypes = [
+    { key: 'call', name: 'Llamada', icon: Phone },
+    { key: 'email', name: 'Email', icon: Mail },
+    { key: 'visit', name: 'Visita', icon: MapPin },
+    { key: 'message', name: 'Mensaje', icon: Mail },
+    { key: 'meeting', name: 'Reunión', icon: Calendar }
+  ];
+
   useEffect(() => {
     if (user) {
       fetchContacts();
@@ -83,7 +96,31 @@ const Contacts = () => {
       }
       
       console.log('Contacts fetched:', data);
-      setContacts(data || []);
+      
+      // Obtener la última interacción para cada contacto
+      const contactsWithLastInteraction = await Promise.all(
+        (data || []).map(async (contact) => {
+          const { data: lastInteraction } = await supabase
+            .from('interactions')
+            .select('interaction_type, interaction_date, subject')
+            .eq('contact_id', contact.id)
+            .eq('user_id', user?.id)
+            .order('interaction_date', { ascending: false })
+            .limit(1)
+            .single();
+
+          return {
+            ...contact,
+            last_interaction: lastInteraction ? {
+              type: lastInteraction.interaction_type,
+              date: lastInteraction.interaction_date,
+              subject: lastInteraction.subject
+            } : undefined
+          };
+        })
+      );
+      
+      setContacts(contactsWithLastInteraction);
     } catch (error) {
       console.error('Error fetching contacts:', error);
       toast({
@@ -221,6 +258,23 @@ const Contacts = () => {
 
   const getSalesStageInfo = (stageKey: string) => {
     return salesStages.find(s => s.key === stageKey);
+  };
+
+  const getInteractionTypeInfo = (type: string) => {
+    return interactionTypes.find(t => t.key === type);
+  };
+
+  const formatLastContactDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 1) return 'Hace 1 día';
+    if (diffDays < 7) return `Hace ${diffDays} días`;
+    if (diffDays < 30) return `Hace ${Math.floor(diffDays / 7)} semana${Math.floor(diffDays / 7) > 1 ? 's' : ''}`;
+    if (diffDays < 365) return `Hace ${Math.floor(diffDays / 30)} mes${Math.floor(diffDays / 30) > 1 ? 'es' : ''}`;
+    return `Hace ${Math.floor(diffDays / 365)} año${Math.floor(diffDays / 365) > 1 ? 's' : ''}`;
   };
 
   if (loading) {
@@ -449,6 +503,7 @@ const Contacts = () => {
                     <TableHead>Tipo</TableHead>
                     <TableHead>Estado</TableHead>
                     <TableHead>Etapa de Venta</TableHead>
+                    <TableHead>Último Contacto</TableHead>
                     <TableHead>Fuente</TableHead>
                     <TableHead>Fecha</TableHead>
                     <TableHead>Acciones</TableHead>
@@ -457,7 +512,7 @@ const Contacts = () => {
                 <TableBody>
                   {contacts.map((contact) => {
                     const stageInfo = getSalesStageInfo(contact.sales_stage || '');
-                    console.log('Rendering contact:', contact.id, 'Stage:', contact.sales_stage, 'Stage info:', stageInfo);
+                    const interactionInfo = contact.last_interaction ? getInteractionTypeInfo(contact.last_interaction.type) : null;
                     
                     return (
                       <TableRow key={contact.id}>
@@ -521,6 +576,34 @@ const Contacts = () => {
                             </Badge>
                           ) : (
                             <span className="text-gray-400 text-xs">Sin etapa</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {contact.last_interaction ? (
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-1 text-sm">
+                                {interactionInfo && (
+                                  <interactionInfo.icon className="w-3 h-3 text-blue-500" />
+                                )}
+                                <span className="font-medium">
+                                  {interactionInfo?.name || contact.last_interaction.type}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1 text-xs text-gray-500">
+                                <Clock className="w-3 h-3" />
+                                {formatLastContactDate(contact.last_interaction.date)}
+                              </div>
+                              {contact.last_interaction.subject && (
+                                <div className="text-xs text-gray-600 truncate max-w-32" title={contact.last_interaction.subject}>
+                                  {contact.last_interaction.subject}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-gray-400 text-xs flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              Sin contacto
+                            </span>
                           )}
                         </TableCell>
                         <TableCell>
