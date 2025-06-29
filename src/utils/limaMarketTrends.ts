@@ -51,11 +51,8 @@ export const limaMarketTrends = {
 };
 
 export const getCurrentQuarter = () => {
-  const month = new Date().getMonth() + 1;
-  if (month <= 3) return "Q1";
-  if (month <= 6) return "Q2";
-  if (month <= 9) return "Q3";
-  return "Q4";
+  // Forzar Q3 para reflejar temporada actual
+  return "Q3";
 };
 
 export const getSeasonalAdjustment = () => {
