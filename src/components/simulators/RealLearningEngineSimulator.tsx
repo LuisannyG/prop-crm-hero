@@ -643,7 +643,7 @@ const RealLearningEngineSimulator = () => {
                             {stageRecommendations.slice(0, 3).map((rec, index) => (
                               <div key={index} className="flex items-start gap-2">
                                 <Badge 
-                                  variant={rec.priority === 'Alta' ? 'destructive' : rec.priority === 'Media' ? 'default' : 'outline'}
+                                  variant={rec.priority === 'alta' ? 'destructive' : rec.priority === 'media' ? 'default' : 'outline'}
                                   className="text-xs"
                                 >
                                   {rec.priority}
@@ -651,9 +651,7 @@ const RealLearningEngineSimulator = () => {
                                 <div className="flex-1">
                                   <p className="text-sm text-blue-700 font-medium">{rec.action}</p>
                                   <p className="text-xs text-blue-600">⏱️ {rec.timeframe}</p>
-                                  {rec.description && (
-                                    <p className="text-xs text-blue-500 mt-1 italic">{rec.description}</p>
-                                  )}
+                                  <p className="text-xs text-blue-500 mt-1 italic">{rec.reason}</p>
                                 </div>
                               </div>
                             ))}
