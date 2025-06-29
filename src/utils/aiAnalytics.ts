@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { limaMarketTrends, getCurrentQuarter, getSeasonalAdjustment } from './limaMarketTrends';
 
@@ -202,12 +203,9 @@ export const analyzeProperties = async (userId: string): Promise<PropertyAnalysi
     const districtDistribution: Record<string, number> = {};
     const statusDistribution: Record<string, number> = {};
 
-    // Usar datos reales como base
-    Object.assign(priceByType, {
-      "Departamento": 325000,
-      "Casa": 485000,
-      "Oficina": 265000,
-      "Local comercial": 195000
+    // Usar datos reales como base - extraer solo los precios promedio
+    Object.entries(limaMarketTrends.propertyTypeTrends).forEach(([type, data]) => {
+      priceByType[type] = data.avgPrice;
     });
 
     properties?.forEach(property => {
@@ -256,7 +254,12 @@ export const analyzeProperties = async (userId: string): Promise<PropertyAnalysi
     return {
       totalProperties: 0,
       avgPrice: 320000,
-      priceByType: limaMarketTrends.propertyTypeTrends,
+      priceByType: {
+        "Departamento": 325000,
+        "Casa": 485000,
+        "Oficina": 265000,
+        "Local comercial": 195000
+      },
       priceRangeDistribution: {},
       districtDistribution: {},
       statusDistribution: {},
@@ -374,9 +377,9 @@ export const analyzeIndividualContacts = async (userId: string): Promise<Individ
 
     if (error) throw error;
 
-    const individualAnalysis = contacts?.map(contact => {
+    const individualAnalysis: IndividualContactAnalysis[] = contacts?.map(contact => {
       const riskScore = Math.floor(Math.random() * 100);
-      const riskLevel = riskScore > 70 ? 'Alto' : riskScore > 40 ? 'Medio' : 'Bajo';
+      const riskLevel: 'Alto' | 'Medio' | 'Bajo' = riskScore > 70 ? 'Alto' : riskScore > 40 ? 'Medio' : 'Bajo';
       const conversionProbability = Math.floor(Math.random() * (100 - riskScore));
       const daysInCurrentStage = Math.floor(Math.random() * 60);
       const totalInteractions = Math.floor(Math.random() * 20);
@@ -412,11 +415,13 @@ export const analyzeIndividualProperties = async (userId: string): Promise<Indiv
 
     if (error) throw error;
 
-    const individualAnalysis = properties?.map(property => {
+    const individualAnalysis: IndividualPropertyAnalysis[] = properties?.map(property => {
       const marketComparison = (Math.random() - 0.5) * 20;
-      const pricePosition = marketComparison > 5 ? 'Por encima del mercado' : marketComparison < -5 ? 'Por debajo del mercado' : 'En el mercado';
+      const pricePosition: 'Por encima del mercado' | 'En el mercado' | 'Por debajo del mercado' = 
+        marketComparison > 5 ? 'Por encima del mercado' : 
+        marketComparison < -5 ? 'Por debajo del mercado' : 'En el mercado';
       const daysOnMarket = Math.floor(Math.random() * 120);
-      const interestLevel = ['Alto', 'Medio', 'Bajo'][Math.floor(Math.random() * 3)] as 'Alto' | 'Medio' | 'Bajo';
+      const interestLevel: 'Alto' | 'Medio' | 'Bajo' = ['Alto', 'Medio', 'Bajo'][Math.floor(Math.random() * 3)] as 'Alto' | 'Medio' | 'Bajo';
       const recommendedPrice = property.price * (1 + marketComparison / 100);
       const priceAdjustmentSuggestion = marketComparison > 10 ? 'Reducir precio para atraer más interesados' : marketComparison < -10 ? 'Aumentar precio si hay alta demanda' : 'Mantener precio actual';
 
