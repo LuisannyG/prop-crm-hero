@@ -19,7 +19,8 @@ import {
   MapPin,
   Calendar,
   Clock,
-  CheckCircle
+  CheckCircle,
+  XCircle
 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
 import { 
@@ -39,7 +40,8 @@ import {
 import { limaMarketTrends, getCurrentQuarter } from "@/utils/limaMarketTrends";
 import { useAuth } from "@/contexts/AuthContext";
 import RiskExplanationDialog from "@/components/RiskExplanationDialog";
-import { getStageSpecificRecommendations } from "@/utils/stageRecommendations";
+import { getStageSpecificRecommendations, SALES_STAGES } from "@/utils/stageRecommendations";
+import { supabase } from "@/integrations/supabase/client";
 
 const RealLearningEngineSimulator = () => {
   const { user } = useAuth();
@@ -51,8 +53,21 @@ const RealLearningEngineSimulator = () => {
   const [individualProperties, setIndividualProperties] = useState<IndividualPropertyAnalysis[]>([]);
   const [combinedAnalysis, setCombinedAnalysis] = useState<CombinedAnalysis | null>(null);
   const [activeTab, setActiveTab] = useState("analytics");
+  const [noPurchaseContacts, setNoPurchaseContacts] = useState<string[]>([]);
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+
+  const loadNoPurchaseContacts = async () => {
+    if (!user?.id) return;
+    
+    const { data } = await supabase
+      .from('no_purchase_reasons')
+      .select('contact_id')
+      .eq('user_id', user.id);
+    
+    const contactIds = data?.map(item => item.contact_id) || [];
+    setNoPurchaseContacts(contactIds);
+  };
 
   const loadAnalytics = async () => {
     if (!user?.id) return;
@@ -60,6 +75,9 @@ const RealLearningEngineSimulator = () => {
     setLoading(true);
     try {
       console.log('Cargando análisis completo de datos...');
+      
+      // Cargar contactos que no compraron
+      await loadNoPurchaseContacts();
       
       const [contactData, propertyData] = await Promise.all([
         analyzeContacts(user.id),
@@ -134,61 +152,38 @@ const RealLearningEngineSimulator = () => {
   const getRiskReasonsByStage = (stage: string, daysInStage: number, lastContactDays: number) => {
     const reasons = [];
     
-    // Razones específicas por etapa del proceso de venta CRM
-    switch (stage) {
-      case 'Contacto inicial recibido':
-        if (lastContactDays > 1) reasons.push('Contacto inicial requiere respuesta inmediata');
-        if (daysInStage > 2) reasons.push('Datos básicos no obtenidos oportunamente');
-        break;
-        
-      case 'Primer contacto activo':
-        if (lastContactDays > 2) reasons.push('Mensaje personalizado no enviado');
-        if (daysInStage > 3) reasons.push('Interés inicial no generado en tiempo óptimo');
-        break;
-        
-      case 'Calificación del prospecto':
-        if (lastContactDays > 3) reasons.push('Calificación pendiente por mucho tiempo');
-        if (daysInStage > 5) reasons.push('Lead no calificado adecuadamente');
-        break;
-        
-      case 'Registro y segmentación':
-        if (daysInStage > 3) reasons.push('Segmentación no completada');
-        if (lastContactDays > 2) reasons.push('Clasificación de perfil pendiente');
-        break;
-        
-      case 'Nutrición / Seguimiento inicial':
-        if (lastContactDays > 7) reasons.push('Nutrición interrumpida, interés puede perderse');
-        if (daysInStage > 21) reasons.push('Proceso de nutrición muy extenso');
-        break;
-        
-      case 'Agendamiento de reunión / demo':
-        if (lastContactDays > 5) reasons.push('Demo no agendada después de nutrición');
-        if (daysInStage > 7) reasons.push('Falta insistencia en mostrar valor directo');
-        break;
-        
-      case 'Presentación personalizada':
-        if (lastContactDays > 3) reasons.push('Sin seguimiento post-agendamiento');
-        if (daysInStage > 5) reasons.push('Presentación no realizada oportunamente');
-        break;
-        
-      case 'Negociación':
-        if (lastContactDays > 7) reasons.push('Negociación estancada sin comunicación');
-        if (daysInStage > 14) reasons.push('Objeciones no resueltas, necesita incentivos');
-        break;
-        
-      case 'Cierre / Firma':
-        if (lastContactDays > 2) reasons.push('Proceso de pago no facilitado');
-        if (daysInStage > 3) reasons.push('Cierre no completado rápidamente');
-        break;
-        
-      case 'Postventa y fidelización':
-        if (lastContactDays > 30) reasons.push('Falta seguimiento para retención');
-        if (daysInStage > 60) reasons.push('Oportunidad de transformar en embajador');
-        break;
-        
-      default:
-        if (lastContactDays > 7) reasons.push('Comunicación irregular');
-        if (daysInStage > 30) reasons.push('Proceso muy lento');
+    // Buscar etapa en SALES_STAGES
+    const stageInfo = SALES_STAGES.find(s => s.name === stage || s.id === stage);
+    const stageOrder = stageInfo?.order || 0;
+    
+    // Razones específicas por etapa del proceso de venta
+    if (stage === 'Prospecto' || stageOrder === 1) {
+      if (lastContactDays > 1) reasons.push('Contacto inicial requiere respuesta inmediata');
+      if (daysInStage > 2) reasons.push('Datos básicos no obtenidos oportunamente');
+    } else if (stage === 'Contacto Inicial' || stageOrder === 2) {
+      if (lastContactDays > 2) reasons.push('Mensaje personalizado no enviado');
+      if (daysInStage > 3) reasons.push('Interés inicial no generado en tiempo óptimo');
+    } else if (stage === 'Necesidades Descubiertas' || stageOrder === 3) {
+      if (lastContactDays > 3) reasons.push('Descubrimiento de necesidades pendiente');
+      if (daysInStage > 5) reasons.push('Necesidades no identificadas correctamente');
+    } else if (stage === 'Presentación de Propuesta' || stageOrder === 4) {
+      if (lastContactDays > 3) reasons.push('Propuesta no presentada oportunamente');
+      if (daysInStage > 7) reasons.push('Demora en mostrar valor de la propuesta');
+    } else if (stage === 'Gestión de Objeciones' || stageOrder === 5) {
+      if (lastContactDays > 5) reasons.push('Objeciones no resueltas');
+      if (daysInStage > 10) reasons.push('Proceso de objeciones muy extenso');
+    } else if (stage === 'Negociación' || stageOrder === 6) {
+      if (lastContactDays > 7) reasons.push('Negociación estancada sin comunicación');
+      if (daysInStage > 14) reasons.push('Términos no acordados, necesita incentivos');
+    } else if (stage === 'Cierre' || stageOrder === 7) {
+      if (lastContactDays > 2) reasons.push('Proceso de cierre no facilitado');
+      if (daysInStage > 3) reasons.push('Cierre no completado rápidamente');
+    } else if (stage === 'Seguimiento Postventa' || stageOrder === 8) {
+      if (lastContactDays > 30) reasons.push('Falta seguimiento para retención');
+      if (daysInStage > 60) reasons.push('Oportunidad de transformar en embajador');
+    } else {
+      if (lastContactDays > 7) reasons.push('Comunicación irregular');
+      if (daysInStage > 30) reasons.push('Proceso muy lento');
     }
     
     return reasons;
@@ -203,58 +198,36 @@ const RealLearningEngineSimulator = () => {
     else if (lastContactDays > 7) riskScore += 25;
     else if (lastContactDays > 3) riskScore += 10;
     
-    // Factores de riesgo específicos por etapa del proceso de venta CRM
-    switch (stage) {
-      case 'Contacto inicial recibido':
-        if (daysInStage > 2) riskScore += 35; // Muy crítico responder rápido
-        else if (daysInStage > 1) riskScore += 20;
-        break;
-        
-      case 'Primer contacto activo':
-        if (daysInStage > 3) riskScore += 30;
-        else if (daysInStage > 2) riskScore += 15;
-        break;
-        
-      case 'Calificación del prospecto':
-        if (daysInStage > 5) riskScore += 25;
-        else if (daysInStage > 3) riskScore += 10;
-        break;
-        
-      case 'Registro y segmentación':
-        if (daysInStage > 3) riskScore += 20;
-        break;
-        
-      case 'Nutrición / Seguimiento inicial':
-        if (daysInStage > 21) riskScore += 20;
-        else if (daysInStage > 14) riskScore += 10;
-        break;
-        
-      case 'Agendamiento de reunión / demo':
-        if (daysInStage > 7) riskScore += 35; // Crítico agendar demo
-        else if (daysInStage > 5) riskScore += 20;
-        break;
-        
-      case 'Presentación personalizada':
-        if (daysInStage > 5) riskScore += 40; // Muy crítico hacer la demo
-        else if (daysInStage > 3) riskScore += 25;
-        break;
-        
-      case 'Negociación':
-        if (daysInStage > 14) riskScore += 25;
-        else if (daysInStage > 10) riskScore += 15;
-        break;
-        
-      case 'Cierre / Firma':
-        if (daysInStage > 3) riskScore += 45; // Crítico cerrar rápido
-        else if (daysInStage > 2) riskScore += 30;
-        break;
-        
-      case 'Postventa y fidelización':
-        if (daysInStage > 60) riskScore += 15;
-        break;
-        
-      default:
-        if (daysInStage > 30) riskScore += 20;
+    // Buscar etapa en SALES_STAGES
+    const stageInfo = SALES_STAGES.find(s => s.name === stage || s.id === stage);
+    const stageOrder = stageInfo?.order || 0;
+    
+    // Factores de riesgo específicos por etapa
+    if (stageOrder === 1) { // Prospecto
+      if (daysInStage > 2) riskScore += 35;
+      else if (daysInStage > 1) riskScore += 20;
+    } else if (stageOrder === 2) { // Contacto Inicial
+      if (daysInStage > 3) riskScore += 30;
+      else if (daysInStage > 2) riskScore += 15;
+    } else if (stageOrder === 3) { // Necesidades Descubiertas
+      if (daysInStage > 5) riskScore += 25;
+      else if (daysInStage > 3) riskScore += 10;
+    } else if (stageOrder === 4) { // Presentación de Propuesta
+      if (daysInStage > 7) riskScore += 35;
+      else if (daysInStage > 5) riskScore += 20;
+    } else if (stageOrder === 5) { // Gestión de Objeciones
+      if (daysInStage > 10) riskScore += 40;
+      else if (daysInStage > 7) riskScore += 25;
+    } else if (stageOrder === 6) { // Negociación
+      if (daysInStage > 14) riskScore += 25;
+      else if (daysInStage > 10) riskScore += 15;
+    } else if (stageOrder === 7) { // Cierre
+      if (daysInStage > 3) riskScore += 45;
+      else if (daysInStage > 2) riskScore += 30;
+    } else if (stageOrder === 8) { // Seguimiento Postventa
+      if (daysInStage > 60) riskScore += 15;
+    } else {
+      if (daysInStage > 30) riskScore += 20;
     }
     
     // Determinar nivel de riesgo
@@ -538,7 +511,56 @@ const RealLearningEngineSimulator = () => {
             <CardContent>
               <div className="space-y-4 max-h-96 overflow-y-auto">
                 {individualContacts.map((contact) => {
+                  const isNoPurchase = noPurchaseContacts.includes(contact.id);
                   const lastContactDays = Math.floor((Date.now() - new Date(contact.lastInteractionDate).getTime()) / (1000 * 60 * 60 * 24));
+                  
+                  if (isNoPurchase) {
+                    return (
+                      <div key={contact.id} className="border rounded-lg p-4 bg-gray-100 border-gray-300">
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <h4 className="font-medium text-gray-700">{contact.name}</h4>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge variant="outline" className="bg-gray-200 text-gray-700 border-gray-400">
+                                <XCircle className="w-3 h-3 mr-1" />
+                                No Compró
+                              </Badge>
+                              <span className="text-xs text-gray-500">
+                                Cliente decidió no comprar
+                              </span>
+                            </div>
+                          </div>
+                          <Badge variant="secondary" className="bg-gray-300 text-gray-700">
+                            Proceso Finalizado
+                          </Badge>
+                        </div>
+                        
+                        <div className="grid grid-cols-3 gap-4 text-sm mb-3">
+                          <div>
+                            <span className="font-medium">Interacciones:</span> {contact.totalInteractions}
+                          </div>
+                          <div>
+                            <span className="font-medium">Última interacción:</span> {new Date(contact.lastInteractionDate).toLocaleDateString()}
+                          </div>
+                          <div>
+                            <span className="font-medium">Estado:</span> No Compra
+                          </div>
+                        </div>
+
+                        <div className="bg-gray-50 p-3 rounded border">
+                          <p className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                            <XCircle className="w-4 h-4" />
+                            Cliente que no compró
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Este contacto fue registrado como "No Compra" con motivos específicos. 
+                            Revisa la sección de "Motivos de No Compra" para más detalles y posibles estrategias de recuperación.
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  }
+
                   const riskAnalysis = calculateStageSpecificRisk(contact.stage, contact.daysInCurrentStage, lastContactDays);
                   
                   const stageRecommendations = getStageSpecificRecommendations(
@@ -550,31 +572,24 @@ const RealLearningEngineSimulator = () => {
 
                   // Obtener información específica de la etapa
                   const getStageInfo = (stage: string) => {
-                    const stageMap = {
-                      'Contacto inicial recibido': { objective: 'Obtener datos básicos del prospecto', color: 'bg-blue-50 border-blue-200' },
-                      'Primer contacto activo': { objective: 'Generar interés inicial', color: 'bg-green-50 border-green-200' },
-                      'Calificación del prospecto': { objective: 'Determinar si es un lead calificado', color: 'bg-yellow-50 border-yellow-200' },
-                      'Registro y segmentación': { objective: 'Clasificar según interés y perfil', color: 'bg-purple-50 border-purple-200' },
-                      'Nutrición / Seguimiento inicial': { objective: 'Mantener interés hasta decisión', color: 'bg-orange-50 border-orange-200' },
-                      'Agendamiento de reunión / demo': { objective: 'Obtener una cita para mostrar valor directo', color: 'bg-indigo-50 border-indigo-200' },
-                      'Presentación personalizada': { objective: 'Mostrar solución adaptada a su flujo de trabajo', color: 'bg-pink-50 border-pink-200' },
-                      'Negociación': { objective: 'Confirmar interés y resolver dudas', color: 'bg-red-50 border-red-200' },
-                      'Cierre / Firma': { objective: 'Conseguir que pague o confirme suscripción', color: 'bg-emerald-50 border-emerald-200' },
-                      'Postventa y fidelización': { objective: 'Retener y transformar en embajador de marca', color: 'bg-teal-50 border-teal-200' }
+                    const stageData = SALES_STAGES.find(s => s.name === stage || s.id === stage);
+                    return {
+                      objective: stageData?.description || 'Seguimiento general',
+                      color: stageData?.bgColor || 'bg-gray-50',
+                      borderColor: stageData?.color || 'border-gray-200'
                     };
-                    return stageMap[stage] || { objective: 'Seguimiento general', color: 'bg-gray-50 border-gray-200' };
                   };
 
                   const stageInfo = getStageInfo(contact.stage);
 
                   return (
-                    <div key={contact.id} className={`border rounded-lg p-4 hover:bg-gray-50 ${stageInfo.color}`}>
+                    <div key={contact.id} className={`border rounded-lg p-4 hover:bg-gray-50 ${stageInfo.color} border-2`} style={{borderColor: stageInfo.borderColor}}>
                       <div className="flex justify-between items-start mb-3">
                         <div>
                           <h4 className="font-medium">{contact.name}</h4>
                           <div className="flex items-center gap-2 mt-1">
                             <Badge variant="outline" className="text-xs">
-                              Etapa {contact.stage.match(/^\d+/) ? contact.stage.split('.')[0] : ''}: {contact.stage.replace(/^\d+\.\s*/, '')}
+                              {contact.stage}
                             </Badge>
                             <span className="text-xs text-gray-500">
                               {contact.daysInCurrentStage} días en esta etapa
