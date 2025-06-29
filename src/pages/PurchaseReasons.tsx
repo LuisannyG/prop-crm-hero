@@ -1,34 +1,111 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Save, FileText, BarChart3 } from "lucide-react";
+import { BarChart3, Users, TrendingDown, AlertTriangle } from "lucide-react";
 import DashboardNav from "@/components/DashboardNav";
+import NoPurchaseReasonModal from "@/components/NoPurchaseReasonModal";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
+
+interface Contact {
+  id: string;
+  full_name: string;
+}
+
+interface Property {
+  id: string;
+  title: string;
+}
+
+interface NoPurchaseReason {
+  id: string;
+  contact_id: string;
+  reason_category: string;
+  reason_details?: string;
+  created_at: string;
+  contact?: Contact;
+}
 
 const PurchaseReasons = () => {
-  const [selectedReason, setSelectedReason] = useState<string>("");
-  const [selectedClient, setSelectedClient] = useState<string>("");
-  const [priceReason, setPriceReason] = useState<string>("");
-  const [anotherProperty, setAnotherProperty] = useState<boolean>(false);
-  const [customNotes, setCustomNotes] = useState<string>("");
-  const [submitted, setSubmitted] = useState<boolean>(false);
+  const { user } = useAuth();
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [noPurchaseReasons, setNoPurchaseReasons] = useState<NoPurchaseReason[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleSubmit = () => {
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      // Reiniciar formulario
-      setSelectedReason("");
-      setSelectedClient("");
-      setPriceReason("");
-      setAnotherProperty(false);
-      setCustomNotes("");
-    }, 2000);
+  useEffect(() => {
+    if (user) {
+      fetchData();
+    }
+  }, [user]);
+
+  const fetchData = async () => {
+    if (!user) return;
+    
+    try {
+      setLoading(true);
+      
+      // Fetch contacts
+      const { data: contactsData, error: contactsError } = await supabase
+        .from('contacts')
+        .select('id, full_name')
+        .eq('user_id', user.id)
+        .order('full_name');
+
+      if (contactsError) throw contactsError;
+
+      // Fetch properties
+      const { data: propertiesData, error: propertiesError } = await supabase
+        .from('properties')
+        .select('id, title')
+        .eq('user_id', user.id)
+        .order('title');
+
+      if (propertiesError) throw propertiesError;
+
+      // Fetch no purchase reasons with contact info
+      const { data: reasonsData, error: reasonsError } = await supabase
+        .from('no_purchase_reasons')
+        .select(`
+          *,
+          contacts!no_purchase_reasons_contact_id_fkey(id, full_name)
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (reasonsError) throw reasonsError;
+
+      setContacts(contactsData || []);
+      setProperties(propertiesData || []);
+      setNoPurchaseReasons(reasonsData || []);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Calculate statistics
+  const totalReasons = noPurchaseReasons.length;
+  const uniqueClients = new Set(noPurchaseReasons.map(reason => reason.contact_id)).size;
+  const reasonStats = noPurchaseReasons.reduce((acc, reason) => {
+    acc[reason.reason_category] = (acc[reason.reason_category] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const topReason = Object.entries(reasonStats).sort(([,a], [,b]) => b - a)[0];
+
+  const reasonLabels: Record<string, string> = {
+    precio: "Precio muy alto",
+    ubicacion: "Ubicación no deseada", 
+    tamano: "Tamaño inadecuado",
+    financiacion: "Problemas de financiación",
+    otra_propiedad: "Encontró otra propiedad",
+    timing: "No es el momento adecuado",
+    competencia: "Eligió la competencia"
   };
 
   return (
@@ -37,151 +114,178 @@ const PurchaseReasons = () => {
       
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Registro de Motivos de No Compra</h1>
-          <p className="text-gray-600">Registra y analiza las razones por las que los clientes no compran</p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Registro de Motivos de No Compra</h1>
+              <p className="text-gray-600">Registra y analiza las razones por las que los clientes no compran</p>
+            </div>
+            <NoPurchaseReasonModal 
+              contacts={contacts}
+              properties={properties}
+              onReasonAdded={fetchData}
+            />
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="shadow-md">
-            <CardHeader className="bg-blue-50">
-              <CardTitle className="flex items-center text-blue-800">
-                <FileText className="mr-2 h-5 w-5" />
-                Registro de Motivos de No Compra
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <form className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="client">Cliente y propiedad</Label>
-                  <Select value={selectedClient} onValueChange={setSelectedClient}>
-                    <SelectTrigger id="client">
-                      <SelectValue placeholder="Selecciona un cliente" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="no-clients" disabled>
-                        No hay clientes registrados
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total Motivos</p>
+                  <p className="text-2xl font-bold text-gray-900">{totalReasons}</p>
                 </div>
-
-                <div className="space-y-3">
-                  <Label>Razón principal de no compra</Label>
-                  <RadioGroup value={selectedReason} onValueChange={setSelectedReason}>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="precio" id="precio" />
-                      <Label htmlFor="precio" className="cursor-pointer">Precio</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="ubicacion" id="ubicacion" />
-                      <Label htmlFor="ubicacion" className="cursor-pointer">Ubicación</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="tamano" id="tamano" />
-                      <Label htmlFor="tamano" className="cursor-pointer">Tamaño/Distribución</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="financiacion" id="financiacion" />
-                      <Label htmlFor="financiacion" className="cursor-pointer">Problemas de financiación</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="otra" id="otra" />
-                      <Label htmlFor="otra" className="cursor-pointer">Otra propiedad</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="tiempo" id="tiempo" />
-                      <Label htmlFor="tiempo" className="cursor-pointer">Cambio de planes/Timing</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-
-                {selectedReason === "precio" && (
-                  <div className="space-y-2">
-                    <Label>Detalles sobre el precio</Label>
-                    <RadioGroup value={priceReason} onValueChange={setPriceReason}>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="alto" id="alto" />
-                        <Label htmlFor="alto" className="cursor-pointer">Precio demasiado alto</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="negociacion" id="negociacion" />
-                        <Label htmlFor="negociacion" className="cursor-pointer">No acuerdo en negociación</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="competencia" id="competencia" />
-                        <Label htmlFor="competencia" className="cursor-pointer">Mejor precio en competencia</Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
-                )}
-
-                {selectedReason === "otra" && (
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="anotherProperty"
-                      checked={anotherProperty}
-                      onCheckedChange={(checked) => 
-                        setAnotherProperty(checked === true)
-                      }
-                    />
-                    <Label htmlFor="anotherProperty" className="cursor-pointer">
-                      ¿Compró otra propiedad con nosotros?
-                    </Label>
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <Label htmlFor="notes">Notas adicionales</Label>
-                  <Textarea
-                    id="notes"
-                    value={customNotes}
-                    onChange={(e) => setCustomNotes(e.target.value)}
-                    placeholder="Añade información adicional sobre la decisión del cliente..."
-                    className="min-h-[100px]"
-                  />
-                </div>
-
-                <Button
-                  type="button"
-                  className="w-full"
-                  onClick={handleSubmit}
-                  disabled={!selectedReason || submitted}
-                >
-                  {submitted ? (
-                    "Guardando..."
-                  ) : (
-                    <>
-                      <Save className="mr-2 h-4 w-4" /> 
-                      Guardar registro
-                    </>
-                  )}
-                </Button>
-              </form>
+                <TrendingDown className="w-8 h-8 text-red-600" />
+              </div>
             </CardContent>
           </Card>
 
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Clientes Únicos</p>
+                  <p className="text-2xl font-bold text-gray-900">{uniqueClients}</p>
+                </div>
+                <Users className="w-8 h-8 text-orange-600" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Principal Motivo</p>
+                  <p className="text-lg font-bold text-gray-900 truncate">
+                    {topReason ? reasonLabels[topReason[0]] || topReason[0] : 'N/A'}
+                  </p>
+                  {topReason && (
+                    <p className="text-sm text-gray-500">{topReason[1]} casos</p>
+                  )}
+                </div>
+                <AlertTriangle className="w-8 h-8 text-yellow-600" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Tasa de Rechazo</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {contacts.length > 0 ? Math.round((uniqueClients / contacts.length) * 100) : 0}%
+                  </p>
+                </div>
+                <BarChart3 className="w-8 h-8 text-purple-600" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Recent No Purchase Reasons */}
+          <Card className="shadow-md">
+            <CardHeader className="bg-red-50">
+              <CardTitle className="flex items-center text-red-800">
+                <TrendingDown className="mr-2 h-5 w-5" />
+                Motivos Recientes de No Compra
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
+              {loading ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">Cargando motivos...</p>
+                </div>
+              ) : noPurchaseReasons.length === 0 ? (
+                <div className="text-center py-12">
+                  <TrendingDown className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Sin motivos registrados</h3>
+                  <p className="text-gray-500 mb-4">
+                    No hay motivos de no compra registrados aún
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {noPurchaseReasons.slice(0, 10).map((reason) => (
+                    <div key={reason.id} className="border-l-4 border-red-300 pl-4 py-2">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-medium text-gray-900">
+                            {reason.contact?.full_name || 'Cliente no encontrado'}
+                          </h4>
+                          <Badge variant="outline" className="mt-1">
+                            {reasonLabels[reason.reason_category] || reason.reason_category}
+                          </Badge>
+                          {reason.reason_details && (
+                            <p className="text-sm text-gray-600 mt-1">{reason.reason_details}</p>
+                          )}
+                        </div>
+                        <span className="text-xs text-gray-400">
+                          {format(new Date(reason.created_at), "dd/MM/yyyy")}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Statistics by Reason */}
           <Card className="shadow-md">
             <CardHeader className="bg-blue-50">
               <CardTitle className="flex items-center text-blue-800">
                 <BarChart3 className="mr-2 h-5 w-5" />
-                Estadísticas de Motivos de No Compra
+                Estadísticas por Motivo
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
-              <div className="text-center py-12">
-                <BarChart3 className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Sin datos suficientes</h3>
-                <p className="text-gray-500 mb-4">
-                  Registra algunos motivos de no compra para ver estadísticas detalladas
-                </p>
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h4 className="text-md font-medium text-blue-800 mb-2">Tip de Proptor:</h4>
-                  <p className="text-sm text-blue-700">
-                    Los clientes que rechazan por precio suelen reconsiderar su decisión después de 3-4 meses. 
-                    Programa un recordatorio de seguimiento automático para estos casos.
+              {totalReasons === 0 ? (
+                <div className="text-center py-12">
+                  <BarChart3 className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Sin datos suficientes</h3>
+                  <p className="text-gray-500 mb-4">
+                    Registra algunos motivos de no compra para ver estadísticas detalladas
                   </p>
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <h4 className="text-md font-medium text-blue-800 mb-2">Tip de Proptor:</h4>
+                    <p className="text-sm text-blue-700">
+                      Los clientes que rechazan por precio suelen reconsiderar su decisión después de 3-4 meses. 
+                      Programa un recordatorio de seguimiento automático para estos casos.
+                    </p>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="space-y-4">
+                  {Object.entries(reasonStats)
+                    .sort(([,a], [,b]) => b - a)
+                    .map(([reason, count]) => {
+                      const percentage = Math.round((count / totalReasons) * 100);
+                      return (
+                        <div key={reason} className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm font-medium text-gray-700">
+                              {reasonLabels[reason] || reason}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm text-gray-500">{count} casos</span>
+                              <Badge variant="secondary">{percentage}%</Badge>
+                            </div>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-blue-600 h-2 rounded-full"
+                              style={{ width: `${percentage}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

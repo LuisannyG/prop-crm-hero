@@ -1,424 +1,599 @@
+import { SALES_STAGES } from "@/constants";
 
 export interface StageRecommendation {
+  priority: 'alta' | 'media' | 'baja';
   action: string;
-  priority: 'Alta' | 'Media' | 'Baja';
+  reason: string;
   timeframe: string;
-  description?: string;
 }
 
-export const getStageSpecificRecommendations = (
-  stage: string, 
-  riskLevel: 'Alto' | 'Medio' | 'Bajo',
-  daysInStage: number,
-  lastContactDays: number,
-  noPurchaseReasons?: string[]
-): StageRecommendation[] => {
-  const recommendations: StageRecommendation[] = [];
-  const hasNoPurchaseHistory = noPurchaseReasons && noPurchaseReasons.length > 0;
-  const hasPriceObjection = noPurchaseReasons?.some(reason => 
-    reason.toLowerCase().includes('precio') || reason.toLowerCase().includes('price')
-  );
-  const hasTimingIssues = noPurchaseReasons?.some(reason => 
-    reason.toLowerCase().includes('timing') || reason.toLowerCase().includes('momento')
-  );
-  const hasLocationConcerns = noPurchaseReasons?.some(reason => 
-    reason.toLowerCase().includes('ubicacion') || reason.toLowerCase().includes('location')
-  );
+export interface StageRiskFactor {
+  factor: string;
+  weight: number;
+}
 
-  switch (stage) {
-    case 'Contacto inicial recibido':
-      if (riskLevel === 'Alto') {
-        recommendations.push({
-          action: 'Contacto inmediato para obtener datos básicos',
-          priority: 'Alta',
-          timeframe: 'Hoy',
-          description: 'El contacto inicial requiere respuesta rápida para no perder el interés'
-        });
-      }
-      recommendations.push({
-        action: 'Completar formulario de datos básicos',
-        priority: 'Alta',
-        timeframe: '24 horas'
-      });
-      recommendations.push({
-        action: 'Verificar fuente del contacto (landing page/referido)',
-        priority: 'Media',
-        timeframe: '24 horas'
-      });
-      break;
+export const SALES_STAGES_OLD = [
+  {
+    id: 'prospecto',
+    name: 'Prospecto',
+    description: 'Cliente potencial que ha mostrado interés inicial',
+    order: 1,
+    color: '#1E3A8A',
+    bgColor: '#EFF2F7'
+  },
+  {
+    id: 'contacto_inicial',
+    name: 'Contacto Inicial',
+    description: 'Primer acercamiento y recolección de información básica',
+    order: 2,
+    color: '#3B82F6',
+    bgColor: '#DBEAFE'
+  },
+  {
+    id: 'necesidades_descubiertas',
+    name: 'Necesidades Descubiertas',
+    description: 'Comprensión detallada de las necesidades del cliente',
+    order: 3,
+    color: '#0EA5E9',
+    bgColor: '#CFFAFE'
+  },
+  {
+    id: 'presentacion_propuesta',
+    name: 'Presentación de Propuesta',
+    description: 'Presentación formal de la propuesta de valor',
+    order: 4,
+    color: '#10B981',
+    bgColor: '#D1FAE5'
+  },
+  {
+    id: 'gestion_objeciones',
+    name: 'Gestión de Objeciones',
+    description: 'Manejo de inquietudes y objeciones del cliente',
+    order: 5,
+    color: '#84CC16',
+    bgColor: '#ECFCCB'
+  },
+  {
+    id: 'negociacion',
+    name: 'Negociación',
+    description: 'Ajuste de términos y condiciones para cerrar el acuerdo',
+    order: 6,
+    color: '#F59E0B',
+    bgColor: '#FEF3C7'
+  },
+  {
+    id: 'cierre',
+    name: 'Cierre',
+    description: 'Acuerdo final y firma del contrato',
+    order: 7,
+    color: '#6D28D9',
+    bgColor: '#EDE9FE'
+  },
+  {
+    id: 'seguimiento_postventa',
+    name: 'Seguimiento Postventa',
+    description: 'Asegurar la satisfacción del cliente después de la venta',
+    order: 8,
+    color: '#9CA3AF',
+    bgColor: '#F3F4F6'
+  },
+  {
+    id: 'cliente',
+    name: 'Cliente',
+    description: 'Cliente recurrente',
+    order: 9,
+    color: '#059669',
+    bgColor: '#D1FAE5'
+  },
+   {
+    id: 'no_compra_registrada',
+    name: 'No Compra Registrada',
+    description: 'Cliente que decidio no comprar y se registro el motivo',
+    order: 10,
+    color: '#DC2626',
+    bgColor: '#FEE2E2'
+  },
+  {
+    id: 'seguimiento_futuro',
+    name: 'Seguimiento Futuro',
+    description: 'Cliente que posiblemente compre en el futuro',
+    order: 10,
+    color: '#06B6D4',
+    bgColor: '#E0F2FE'
+  }
+];
 
-    case 'Primer contacto activo':
-      if (daysInStage > 3) {
-        recommendations.push({
-          action: 'Envío urgente de mensaje personalizado',
-          priority: 'Alta',
-          timeframe: 'Hoy',
-          description: 'El primer contacto activo debe realizarse dentro de los primeros 3 días'
-        });
-      }
-      if (hasNoPurchaseHistory) {
-        recommendations.push({
-          action: 'Abordar objeciones previas en primer mensaje',
-          priority: 'Alta',
-          timeframe: '24 horas',
-          description: 'Cliente tiene historial de objeciones que deben ser consideradas'
-        });
-      }
-      recommendations.push({
-        action: 'Enviar mensaje personalizado con demo',
-        priority: 'Alta',
-        timeframe: '24 horas'
-      });
-      break;
+export const SALES_STAGES_OLD_2 = [
+  {
+    id: 'prospecto',
+    name: 'Prospecto',
+    description: 'Cliente potencial que ha mostrado interés inicial',
+    order: 1,
+    color: '#1E3A8A',
+    bgColor: '#EFF2F7'
+  },
+  {
+    id: 'contacto_inicial',
+    name: 'Contacto Inicial',
+    description: 'Primer acercamiento y recolección de información básica',
+    order: 2,
+    color: '#3B82F6',
+    bgColor: '#DBEAFE'
+  },
+  {
+    id: 'necesidades_descubiertas',
+    name: 'Necesidades Descubiertas',
+    description: 'Comprensión detallada de las necesidades del cliente',
+    order: 3,
+    color: '#0EA5E9',
+    bgColor: '#CFFAFE'
+  },
+  {
+    id: 'presentacion_propuesta',
+    name: 'Presentación de Propuesta',
+    description: 'Presentación formal de la propuesta de valor',
+    order: 4,
+    color: '#10B981',
+    bgColor: '#D1FAE5'
+  },
+  {
+    id: 'gestion_objeciones',
+    name: 'Gestión de Objeciones',
+    description: 'Manejo de inquietudes y objeciones del cliente',
+    order: 5,
+    color: '#84CC16',
+    bgColor: '#ECFCCB'
+  },
+  {
+    id: 'negociacion',
+    name: 'Negociación',
+    description: 'Ajuste de términos y condiciones para cerrar el acuerdo',
+    order: 6,
+    color: '#F59E0B',
+    bgColor: '#FEF3C7'
+  },
+  {
+    id: 'cierre',
+    name: 'Cierre',
+    description: 'Acuerdo final y firma del contrato',
+    order: 7,
+    color: '#6D28D9',
+    bgColor: '#EDE9FE'
+  },
+  {
+    id: 'seguimiento_postventa',
+    name: 'Seguimiento Postventa',
+    description: 'Asegurar la satisfacción del cliente después de la venta',
+    order: 8,
+    color: '#9CA3AF',
+    bgColor: '#F3F4F6'
+  },
+  {
+    id: 'cliente',
+    name: 'Cliente',
+    description: 'Cliente recurrente',
+    order: 9,
+    color: '#059669',
+    bgColor: '#D1FAE5'
+  },
+   {
+    id: 'no_compra_registrada',
+    name: 'No Compra Registrada',
+    description: 'Cliente que decidio no comprar y se registro el motivo',
+    order: 10,
+    color: '#DC2626',
+    bgColor: '#FEE2E2'
+  },
+  {
+    id: 'seguimiento_futuro',
+    name: 'Seguimiento Futuro',
+    description: 'Cliente que posiblemente compre en el futuro',
+    order: 10,
+    color: '#06B6D4',
+    bgColor: '#E0F2FE'
+  }
+];
 
-    case 'Calificación del prospecto':
-      if (daysInStage > 5) {
-        recommendations.push({
-          action: 'Completar calificación inmediata',
-          priority: 'Alta',
-          timeframe: 'Hoy',
-          description: 'La calificación debe completarse para avanzar en el proceso'
-        });
-      }
-      if (hasPriceObjection) {
-        recommendations.push({
-          action: 'Explorar presupuesto y opciones de financiamiento',
-          priority: 'Alta',
-          timeframe: '24 horas',
-          description: 'Cliente ha tenido objeciones de precio anteriormente'
-        });
-      }
-      recommendations.push({
-        action: 'Preguntar sobre cantidad de propiedades gestionadas',
-        priority: 'Alta',
-        timeframe: '24 horas'
-      });
-      break;
+export const SALES_STAGES = [
+  {
+    id: 'prospecto',
+    name: 'Prospecto',
+    description: 'Cliente potencial que ha mostrado interés inicial',
+    order: 1,
+    color: '#1E3A8A',
+    bgColor: '#EFF2F7'
+  },
+  {
+    id: 'contacto_inicial',
+    name: 'Contacto Inicial',
+    description: 'Primer acercamiento y recolección de información básica',
+    order: 2,
+    color: '#3B82F6',
+    bgColor: '#DBEAFE'
+  },
+  {
+    id: 'necesidades_descubiertas',
+    name: 'Necesidades Descubiertas',
+    description: 'Comprensión detallada de las necesidades del cliente',
+    order: 3,
+    color: '#0EA5E9',
+    bgColor: '#CFFAFE'
+  },
+  {
+    id: 'presentacion_propuesta',
+    name: 'Presentación de Propuesta',
+    description: 'Presentación formal de la propuesta de valor',
+    order: 4,
+    color: '#10B981',
+    bgColor: '#D1FAE5'
+  },
+  {
+    id: 'gestion_objeciones',
+    name: 'Gestión de Objeciones',
+    description: 'Manejo de inquietudes y objeciones del cliente',
+    order: 5,
+    color: '#84CC16',
+    bgColor: '#ECFCCB'
+  },
+  {
+    id: 'negociacion',
+    name: 'Negociación',
+    description: 'Ajuste de términos y condiciones para cerrar el acuerdo',
+    order: 6,
+    color: '#F59E0B',
+    bgColor: '#FEF3C7'
+  },
+  {
+    id: 'cierre',
+    name: 'Cierre',
+    description: 'Acuerdo final y firma del contrato',
+    order: 7,
+    color: '#6D28D9',
+    bgColor: '#EDE9FE'
+  },
+  {
+    id: 'seguimiento_postventa',
+    name: 'Seguimiento Postventa',
+    description: 'Asegurar la satisfacción del cliente después de la venta',
+    order: 8,
+    color: '#9CA3AF',
+    bgColor: '#F3F4F6'
+  },
+  {
+    id: 'cliente',
+    name: 'Cliente',
+    description: 'Cliente recurrente',
+    order: 9,
+    color: '#059669',
+    bgColor: '#D1FAE5'
+  },
+   {
+    id: 'no_compra',
+    name: 'No Compra',
+    description: 'Cliente que decidió no comprar por motivos específicos',
+    order: 11,
+    color: '#6B7280',
+    bgColor: '#F3F4F6'
+  }
+];
 
-    case 'Registro y segmentación':
-      if (hasLocationConcerns) {
-        recommendations.push({
-          action: 'Segmentar por preferencias de ubicación específicas',
-          priority: 'Alta',
-          timeframe: '24 horas',
-          description: 'Cliente ha mostrado sensibilidad a ubicación'
-        });
-      }
-      recommendations.push({
-        action: 'Clasificar perfil: independiente vs agencia',
-        priority: 'Alta',
-        timeframe: '24 horas'
-      });
-      recommendations.push({
-        action: 'Segmentar por tipo de gestión inmobiliaria',
-        priority: 'Media',
-        timeframe: '48 horas'
-      });
-      break;
-
-    case 'Nutrición / Seguimiento inicial':
-      if (lastContactDays > 7) {
-        recommendations.push({
-          action: 'Envío inmediato de contenido útil',
-          priority: 'Alta',
-          timeframe: 'Hoy',
-          description: 'La nutrición requiere contacto regular para mantener interés'
-        });
-      }
-      if (hasTimingIssues) {
-        recommendations.push({
-          action: 'Contenido sobre timing óptimo de compra inmobiliaria',
-          priority: 'Media',
-          timeframe: '3 días',
-          description: 'Cliente ha mostrado dudas sobre el momento de compra'
-        });
-      }
-      recommendations.push({
-        action: 'Enviar tips de gestión inmobiliaria',
-        priority: 'Media',
-        timeframe: '3 días'
-      });
-      break;
-
-    case 'Agendamiento de reunión / demo':
-      if (daysInStage > 7) {
-        recommendations.push({
-          action: 'Insistir en agendamiento de demo',
-          priority: 'Alta',
-          timeframe: 'Hoy',
-          description: 'El agendamiento es crítico para avanzar en el proceso de venta'
-        });
-      }
-      if (hasPriceObjection) {
-        recommendations.push({
-          action: 'Preparar demo con enfoque en ROI y value proposition',
-          priority: 'Alta',
-          timeframe: '48 horas',
-          description: 'Demostrar valor económico por objeciones previas de precio'
-        });
-      }
-      recommendations.push({
-        action: 'Proponer demo semi-funcional',
-        priority: 'Alta',
-        timeframe: '48 horas'
-      });
-      break;
-
-    case 'Presentación personalizada':
-      if (daysInStage > 5) {
-        recommendations.push({
-          action: 'Reagendar presentación inmediata',
-          priority: 'Alta',
-          timeframe: 'Hoy',
-          description: 'La presentación debe realizarse pronto después del agendamiento'
-        });
-      }
-      if (hasNoPurchaseHistory) {
-        recommendations.push({
-          action: 'Adaptar presentación para abordar objeciones conocidas',
-          priority: 'Alta',
-          timeframe: '24 horas',
-          description: 'Personalizar demo basado en objeciones históricas'
-        });
-      }
-      recommendations.push({
-        action: 'Preparar demo con leads del prospecto',
-        priority: 'Alta',
-        timeframe: '24 horas'
-      });
-      break;
-
-    case 'Negociación':
-      if (riskLevel === 'Alto') {
-        recommendations.push({
-          action: 'Ofrecer periodo de prueba gratis inmediato',
-          priority: 'Alta',
-          timeframe: 'Hoy',
-          description: 'La negociación prolongada requiere incentivos especiales'
-        });
-      }
-      if (hasPriceObjection) {
-        recommendations.push({
-          action: 'Presentar opciones de pricing flexibles',
-          priority: 'Alta',
-          timeframe: '24 horas',
-          description: 'Cliente tiene historial de sensibilidad al precio'
-        });
-      }
-      recommendations.push({
-        action: 'Proponer plan beta con descuento',
-        priority: 'Alta',
-        timeframe: '24 horas'
-      });
-      break;
-
-    case 'Cierre / Firma':
-      if (daysInStage > 3) {
-        recommendations.push({
-          action: 'Facilitar proceso de pago inmediato',
-          priority: 'Alta',
-          timeframe: 'Hoy',
-          description: 'El cierre debe completarse rápidamente para evitar pérdida'
-        });
-      }
-      if (hasNoPurchaseHistory) {
-        recommendations.push({
-          action: 'Reforzar garantías y política de devolución',
-          priority: 'Alta',
-          timeframe: '24 horas',
-          description: 'Cliente necesita seguridad adicional por historial de dudas'
-        });
-      }
-      recommendations.push({
-        action: 'Enviar enlace de pago directo',
-        priority: 'Alta',
-        timeframe: '24 horas'
-      });
-      break;
-
-    case 'Postventa y fidelización':
-      recommendations.push({
-        action: 'Enviar encuesta de satisfacción',
-        priority: 'Media',
-        timeframe: '1 semana'
-      });
-      recommendations.push({
-        action: 'Solicitar referidos y testimonios',
-        priority: 'Media',
-        timeframe: '1 mes'
-      });
-      break;
-
+export const getStageRiskFactors = (salesStage: string): StageRiskFactor[] => {
+  switch (salesStage) {
+    case 'prospecto':
+      return [
+        { factor: 'Falta de información de contacto', weight: 0.6 },
+        { factor: 'Interacción inicial no concluyente', weight: 0.4 },
+      ];
+    case 'contacto_inicial':
+      return [
+        { factor: 'Dificultad para establecer comunicación', weight: 0.5 },
+        { factor: 'Información de necesidades incompleta', weight: 0.5 },
+      ];
+    case 'necesidades_descubiertas':
+      return [
+        { factor: 'Necesidades no alineadas con la oferta', weight: 0.7 },
+        { factor: 'Falta de urgencia en las necesidades', weight: 0.3 },
+      ];
+    case 'presentacion_propuesta':
+      return [
+        { factor: 'Propuesta no adaptada a las necesidades', weight: 0.6 },
+        { factor: 'Falta de claridad en el valor ofrecido', weight: 0.4 },
+      ];
+    case 'gestion_objeciones':
+      return [
+        { factor: 'Objeciones no resueltas satisfactoriamente', weight: 0.8 },
+        { factor: 'Aparición de nuevas objeciones', weight: 0.2 },
+      ];
+    case 'negociacion':
+      return [
+        { factor: 'Desacuerdo en términos clave (precio, plazos)', weight: 0.7 },
+        { factor: 'Falta de flexibilidad en la negociación', weight: 0.3 },
+      ];
+    case 'cierre':
+      return [
+        { factor: 'Retraso en la firma del contrato', weight: 0.6 },
+        { factor: 'Dudas de último momento', weight: 0.4 },
+      ];
+    case 'seguimiento_postventa':
+      return [
+        { factor: 'Falta de comunicación proactiva', weight: 0.5 },
+        { factor: 'Problemas no resueltos post-venta', weight: 0.5 },
+      ];
     default:
-      recommendations.push({
-        action: 'Contacto de seguimiento general',
-        priority: 'Media',
-        timeframe: '2-3 días'
-      });
-      break;
+      return [];
   }
-
-  // Recomendaciones adicionales basadas en riesgo general y motivos de no compra
-  if (riskLevel === 'Alto' && lastContactDays > 5) {
-    recommendations.unshift({
-      action: 'Contacto prioritario por riesgo alto de pérdida',
-      priority: 'Alta',
-      timeframe: 'Inmediato',
-      description: 'Cliente en riesgo alto de pérdida del proceso de venta'
-    });
-  }
-
-  if (hasNoPurchaseHistory && riskLevel !== 'Alto') {
-    recommendations.push({
-      action: 'Revisar y abordar objeciones históricas',
-      priority: 'Media',
-      timeframe: '48 horas',
-      description: 'Cliente tiene historial de objeciones que requieren atención'
-    });
-  }
-
-  return recommendations;
 };
 
-export const getStageRiskFactors = (
-  stage: string, 
-  daysInStage: number, 
-  lastContactDays: number,
-  noPurchaseReasons?: string[]
-): string[] => {
-  const factors = [];
-  const hasNoPurchaseHistory = noPurchaseReasons && noPurchaseReasons.length > 0;
-  
-  // Factores basados en motivos de no compra
-  if (hasNoPurchaseHistory) {
-    factors.push(`Historial de ${noPurchaseReasons!.length} objeción(es) previa(s)`);
-    
-    const hasPriceObjection = noPurchaseReasons!.some(reason => 
-      reason.toLowerCase().includes('precio') || reason.toLowerCase().includes('price')
-    );
-    if (hasPriceObjection) {
-      factors.push('Sensibilidad demostrada al precio');
-    }
-
-    const hasTimingIssues = noPurchaseReasons!.some(reason => 
-      reason.toLowerCase().includes('timing') || reason.toLowerCase().includes('momento')
-    );
-    if (hasTimingIssues) {
-      factors.push('Dudas sobre timing de compra');
-    }
-  }
-  
-  switch (stage) {
-    case 'Contacto inicial recibido':
-      if (daysInStage > 2) factors.push('Contacto inicial sin respuesta rápida');
-      if (lastContactDays > 1) factors.push('Falta de seguimiento inmediato');
-      break;
-      
-    case 'Primer contacto activo':
-      if (daysInStage > 3) factors.push('Primer contacto no realizado en tiempo óptimo');
-      if (lastContactDays > 2) factors.push('Sin envío de mensaje personalizado');
-      break;
-      
-    case 'Calificación del prospecto':
-      if (daysInStage > 5) factors.push('Calificación del prospecto pendiente');
-      if (lastContactDays > 3) factors.push('Falta información sobre perfil del cliente');
-      break;
-      
-    case 'Registro y segmentación':
-      if (daysInStage > 3) factors.push('Segmentación no completada');
-      break;
-      
-    case 'Nutrición / Seguimiento inicial':
-      if (lastContactDays > 7) factors.push('Nutrición interrumpida por mucho tiempo');
-      if (daysInStage > 21) factors.push('Proceso de nutrición muy extenso');
-      break;
-      
-    case 'Agendamiento de reunión / demo':
-      if (daysInStage > 7) factors.push('Demo no agendada después de nutrición');
-      if (lastContactDays > 5) factors.push('Falta insistencia en agendamiento');
-      break;
-      
-    case 'Presentación personalizada':
-      if (daysInStage > 5) factors.push('Presentación no realizada oportunamente');
-      if (lastContactDays > 3) factors.push('Sin seguimiento post-agendamiento');
-      break;
-      
-    case 'Negociación':
-      if (daysInStage > 14) factors.push('Negociación prolongada indica objeciones no resueltas');
-      if (lastContactDays > 7) factors.push('Negociación estancada sin comunicación');
-      break;
-      
-    case 'Cierre / Firma':
-      if (daysInStage > 3) factors.push('Cierre no completado rápidamente');
-      if (lastContactDays > 2) factors.push('Falta facilitar proceso de pago');
-      break;
-      
-    case 'Postventa y fidelización':
-      if (lastContactDays > 30) factors.push('Falta de seguimiento post-venta');
-      break;
-  }
-  
-  return factors;
-};
-
-export const getNoPurchaseRiskAssessment = (noPurchaseReasons: string[]): {
-  riskMultiplier: number;
-  specificConcerns: string[];
-  recoveryStrategy: string;
-} => {
-  let riskMultiplier = 1.0;
+export const getNoPurchaseRiskAssessment = (noPurchaseReasons: string[]) => {
+  let riskMultiplier = 1;
   const specificConcerns: string[] = [];
-  let recoveryStrategy = 'Seguimiento estándar';
+  let recoveryStrategy = 'Sin estrategia de recuperación definida';
 
-  if (noPurchaseReasons.length === 0) {
-    return { riskMultiplier, specificConcerns, recoveryStrategy };
-  }
-
-  // Aumentar riesgo base por tener historial de objeciones
-  riskMultiplier += (noPurchaseReasons.length * 0.15);
-
-  const reasonsText = noPurchaseReasons.join(' ').toLowerCase();
-
-  // Análisis de tipos de objeciones
-  if (reasonsText.includes('precio') || reasonsText.includes('price')) {
-    specificConcerns.push('Sensibilidad al precio');
-    riskMultiplier += 0.2;
-    recoveryStrategy = 'Enfoque en valor y ROI';
-  }
-
-  if (reasonsText.includes('ubicacion') || reasonsText.includes('location')) {
-    specificConcerns.push('Preocupaciones de ubicación');
-    riskMultiplier += 0.15;
-    recoveryStrategy = 'Mostrar opciones alternativas de ubicación';
-  }
-
-  if (reasonsText.includes('timing') || reasonsText.includes('momento')) {
-    specificConcerns.push('Dudas sobre el momento');
-    riskMultiplier += 0.1;
-    recoveryStrategy = 'Nutrición prolongada con seguimiento periódico';
-  }
-
-  if (reasonsText.includes('financiacion') || reasonsText.includes('financing')) {
-    specificConcerns.push('Problemas de financiamiento');
-    riskMultiplier += 0.25;
-    recoveryStrategy = 'Presentar opciones de financiamiento flexibles';
-  }
-
-  if (reasonsText.includes('competencia') || reasonsText.includes('competition')) {
-    specificConcerns.push('Considerando competencia');
-    riskMultiplier += 0.3;
-    recoveryStrategy = 'Diferenciación urgente y propuesta única de valor';
-  }
-
-  // Múltiples objeciones aumentan significativamente el riesgo
-  if (noPurchaseReasons.length > 2) {
-    riskMultiplier += 0.2;
-    recoveryStrategy = 'Intervención personalizada urgente';
+  if (noPurchaseReasons.length > 0) {
+    if (noPurchaseReasons.some(reason => reason.toLowerCase().includes('precio'))) {
+      riskMultiplier *= 1.2;
+      specificConcerns.push('Sensibilidad al precio');
+      recoveryStrategy = 'Ofrecer alternativas de menor costo o planes de financiamiento';
+    }
+    if (noPurchaseReasons.some(reason => reason.toLowerCase().includes('ubicación'))) {
+      riskMultiplier *= 1.1;
+      specificConcerns.push('Problemas de ubicación');
+      recoveryStrategy = 'Presentar propiedades con mejor ubicación o destacar ventajas de la ubicación actual';
+    }
+    if (noPurchaseReasons.some(reason => reason.toLowerCase().includes('tamaño'))) {
+      riskMultiplier *= 1.15;
+      specificConcerns.push('Inconformidad con el tamaño');
+      recoveryStrategy = 'Mostrar opciones con diferentes distribuciones o tamaños';
+    }
+    if (noPurchaseReasons.some(reason => reason.toLowerCase().includes('financiación'))) {
+      riskMultiplier *= 1.25;
+      specificConcerns.push('Dificultades de financiación');
+      recoveryStrategy = 'Asesorar sobre opciones de crédito o planes de pago';
+    }
   }
 
   return {
-    riskMultiplier: Math.min(riskMultiplier, 2.0), // Cap at 2x risk
+    riskMultiplier,
     specificConcerns,
     recoveryStrategy
   };
+};
+
+export const getStageSpecificRecommendations = (
+  salesStage: string,
+  riskLevel: string,
+  weeksSinceLastContact: number,
+  daysSinceLastContact: number,
+  noPurchaseReasons?: string[]
+): StageRecommendation[] => {
+  const hasNoPurchaseHistory = noPurchaseReasons && noPurchaseReasons.length > 0;
+  
+  switch (salesStage) {
+    case 'prospecto':
+      return [
+        {
+          priority: 'alta',
+          action: 'Establecer contacto inicial dentro de 24 horas',
+          reason: 'Maximizar el interés inicial',
+          timeframe: 'Inmediato'
+        },
+        {
+          priority: 'media',
+          action: 'Recopilar información clave sobre sus necesidades',
+          reason: 'Personalizar el seguimiento',
+          timeframe: '3 días'
+        },
+        {
+          priority: 'baja',
+          action: 'Enviar material informativo relevante',
+          reason: 'Mantener el interés y proporcionar valor',
+          timeframe: '7 días'
+        }
+      ];
+    case 'contacto_inicial':
+      return [
+        {
+          priority: 'alta',
+          action: 'Confirmar y ampliar la información de contacto',
+          reason: 'Asegurar la comunicación efectiva',
+          timeframe: '2 días'
+        },
+        {
+          priority: 'media',
+          action: 'Investigar sus necesidades y motivaciones',
+          reason: 'Preparar una propuesta personalizada',
+          timeframe: '5 días'
+        },
+        {
+          priority: 'baja',
+          action: 'Ofrecer una consulta gratuita',
+          reason: 'Aumentar el compromiso',
+          timeframe: '10 días'
+        }
+      ];
+    case 'necesidades_descubiertas':
+      return [
+        {
+          priority: 'alta',
+          action: 'Validar y priorizar sus necesidades clave',
+          reason: 'Asegurar la alineación con la oferta',
+          timeframe: '3 días'
+        },
+        {
+          priority: 'media',
+          action: 'Desarrollar una propuesta de valor adaptada',
+          reason: 'Mostrar cómo se satisfacen sus necesidades',
+          timeframe: '7 días'
+        },
+        {
+          priority: 'baja',
+          action: 'Presentar casos de éxito similares',
+          reason: 'Generar confianza y credibilidad',
+          timeframe: '14 días'
+        }
+      ];
+    case 'presentacion_propuesta':
+      return [
+        {
+          priority: 'alta',
+          action: 'Programar una reunión de seguimiento para discutir la propuesta',
+          reason: 'Resolver dudas y objeciones',
+          timeframe: '3 días'
+        },
+        {
+          priority: 'media',
+          action: 'Ajustar la propuesta según el feedback inicial',
+          reason: 'Maximizar la aceptación',
+          timeframe: '7 días'
+        },
+        {
+          priority: 'baja',
+          action: 'Enviar información adicional relevante',
+          reason: 'Reforzar el valor de la propuesta',
+          timeframe: '14 días'
+        }
+      ];
+    case 'gestion_objeciones':
+      return [
+        {
+          priority: 'alta',
+          action: 'Identificar y abordar las objeciones clave',
+          reason: 'Superar las barreras para el cierre',
+          timeframe: '3 días'
+        },
+        {
+          priority: 'media',
+          action: 'Ofrecer soluciones creativas y alternativas',
+          reason: 'Mostrar flexibilidad y compromiso',
+          timeframe: '7 días'
+        },
+        {
+          priority: 'baja',
+          action: 'Proporcionar testimonios y garantías',
+          reason: 'Generar confianza y reducir el riesgo percibido',
+          timeframe: '14 días'
+        }
+      ];
+    case 'negociacion':
+      return [
+        {
+          priority: 'alta',
+          action: 'Definir los límites de la negociación',
+          reason: 'Asegurar un acuerdo beneficioso',
+          timeframe: '2 días'
+        },
+        {
+          priority: 'media',
+          action: 'Buscar puntos en común y concesiones mutuas',
+          reason: 'Facilitar el acuerdo',
+          timeframe: '5 días'
+        },
+        {
+          priority: 'baja',
+          action: 'Documentar los términos acordados',
+          reason: 'Evitar malentendidos',
+          timeframe: '7 días'
+        }
+      ];
+    case 'cierre':
+      return [
+        {
+          priority: 'alta',
+          action: 'Confirmar todos los detalles del acuerdo',
+          reason: 'Evitar sorpresas de último momento',
+          timeframe: '1 día'
+        },
+        {
+          priority: 'media',
+          action: 'Facilitar la firma del contrato',
+          reason: 'Acelerar el proceso',
+          timeframe: '3 días'
+        },
+        {
+          priority: 'baja',
+          action: 'Celebrar el acuerdo y agradecer la confianza',
+          reason: 'Fortalecer la relación',
+          timeframe: '5 días'
+        }
+      ];
+    case 'seguimiento_postventa':
+      return [
+        {
+          priority: 'alta',
+          action: 'Realizar una llamada de seguimiento inicial',
+          reason: 'Asegurar la satisfacción',
+          timeframe: '3 días'
+        },
+        {
+          priority: 'media',
+          action: 'Solicitar feedback y testimonios',
+          reason: 'Mejorar la oferta y generar referencias',
+          timeframe: '14 días'
+        },
+        {
+          priority: 'baja',
+          action: 'Ofrecer soporte continuo y recursos adicionales',
+          reason: 'Fidelizar al cliente',
+          timeframe: 'Mensual'
+        }
+      ];
+    
+    case 'no_compra':
+      if (hasNoPurchaseHistory) {
+        const priceRelated = noPurchaseReasons?.some(reason => reason.toLowerCase().includes('precio'));
+        const timingRelated = noPurchaseReasons?.some(reason => reason.toLowerCase().includes('timing') || reason.toLowerCase().includes('momento'));
+        
+        if (priceRelated) {
+          return [
+            {
+              priority: 'media',
+              action: 'Revisar si hay nuevas ofertas o descuentos disponibles',
+              reason: 'Cliente rechazó por precio anteriormente',
+              timeframe: '3-6 meses'
+            },
+            {
+              priority: 'baja',
+              action: 'Enviar información sobre propiedades en rango de precio mencionado',
+              reason: 'Conoces su presupuesto objetivo',
+              timeframe: 'Mensual'
+            }
+          ];
+        }
+        
+        if (timingRelated) {
+          return [
+            {
+              priority: 'media',
+              action: 'Programar seguimiento trimestral para evaluar cambio de situación',
+              reason: 'Timing puede cambiar con el tiempo',
+              timeframe: '3 meses'
+            },
+            {
+              priority: 'baja',
+              action: 'Mantener en base de datos para ofertas especiales',
+              reason: 'Puede reconsiderar en futuro',
+              timeframe: 'Según disponibilidad'
+            }
+          ];
+        }
+      }
+      
+      return [
+        {
+          priority: 'baja',
+          action: 'Mantener en base de nurturing con contenido de valor',
+          reason: 'Cliente ya expresó desinterés, mantener relación a largo plazo',
+          timeframe: 'Mensual'
+        },
+        {
+          priority: 'baja',
+          action: 'Incluir en campañas de nuevos proyectos o ofertas especiales',
+          reason: 'Circunstancias pueden cambiar',
+          timeframe: 'Según disponibilidad'
+        }
+      ];
+
+    default:
+      return [];
+  }
 };
