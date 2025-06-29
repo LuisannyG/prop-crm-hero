@@ -128,11 +128,6 @@ const RealLearningEngineSimulator = () => {
     price: Math.round(price)
   }));
 
-  const priceRangeData = Object.entries(propertyAnalysis.priceRangeDistribution).map(([range, count]) => ({
-    range,
-    count
-  }));
-
   return (
     <div className="space-y-6">
       {/* Header con información de Lima */}
@@ -274,6 +269,9 @@ const RealLearningEngineSimulator = () => {
                 </div>
                 <div className="mt-4 text-sm text-gray-600">
                   <p>• Línea sólida: tus datos • Línea punteada: actividad general de Lima</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    <strong>Fuente:</strong> Análisis combinado de datos de usuario y estadísticas del mercado inmobiliario de Lima Metropolitana 2024
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -305,6 +303,9 @@ const RealLearningEngineSimulator = () => {
                       </div>
                     ))}
                 </div>
+                <div className="mt-4 text-xs text-gray-500">
+                  <strong>Fuente:</strong> Reportes del sector inmobiliario de Lima, CAPECO y análisis de mercado 2024
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -325,6 +326,9 @@ const RealLearningEngineSimulator = () => {
                   </div>
                 ))}
               </div>
+              <div className="mt-4 text-xs text-gray-500">
+                <strong>Fuente:</strong> Análisis de tendencias del mercado inmobiliario peruano, BCRP y estudios sectoriales 2024
+              </div>
             </CardContent>
           </Card>
 
@@ -332,20 +336,34 @@ const RealLearningEngineSimulator = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <DollarSign className="w-5 h-5" />
-                Distribución de Precios
+                Precios Promedio por Tipo de Propiedad
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={priceRangeData}>
+                  <BarChart data={priceByTypeData} margin={{ bottom: 60 }}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="range" angle={-45} textAnchor="end" height={100} fontSize={12} />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="count" fill="#8884d8" />
+                    <XAxis 
+                      dataKey="type" 
+                      angle={-45} 
+                      textAnchor="end" 
+                      height={100} 
+                      fontSize={12}
+                    />
+                    <YAxis 
+                      tickFormatter={(value) => `S/${(value/1000).toFixed(0)}k`}
+                    />
+                    <Tooltip 
+                      formatter={(value) => [`S/${Number(value).toLocaleString()}`, 'Precio Promedio']}
+                      labelFormatter={(label) => `Tipo: ${label}`}
+                    />
+                    <Bar dataKey="price" fill="#8884d8" />
                   </BarChart>
                 </ResponsiveContainer>
+              </div>
+              <div className="mt-4 text-xs text-gray-500">
+                <strong>Fuente:</strong> Combinación de datos de usuario y precios promedio del mercado inmobiliario de Lima 2024
               </div>
             </CardContent>
           </Card>
@@ -370,10 +388,14 @@ const RealLearningEngineSimulator = () => {
                   </LineChart>
                 </ResponsiveContainer>
               </div>
+              <div className="mt-4 text-xs text-gray-500">
+                <strong>Fuente:</strong> Datos de contactos y conversiones del usuario procesados con IA
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
+        
         <TabsContent value="individual-contacts" className="space-y-6">
           <Card>
             <CardHeader>
