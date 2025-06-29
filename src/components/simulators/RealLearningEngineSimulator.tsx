@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -135,44 +134,56 @@ const RealLearningEngineSimulator = () => {
   const getRiskReasonsByStage = (stage: string, daysInStage: number, lastContactDays: number) => {
     const reasons = [];
     
-    // Razones específicas por etapa
+    // Razones específicas por etapa del proceso de venta CRM
     switch (stage) {
-      case 'Prospecto inicial':
-      case 'Lead generado':
-        if (lastContactDays > 3) reasons.push('Contacto inicial perdiendo momentum');
-        if (daysInStage > 7) reasons.push('Demasiado tiempo sin avanzar desde prospecto');
+      case 'Contacto inicial recibido':
+        if (lastContactDays > 1) reasons.push('Contacto inicial requiere respuesta inmediata');
+        if (daysInStage > 2) reasons.push('Datos básicos no obtenidos oportunamente');
         break;
         
-      case 'Contacto realizado':
-      case 'Primer contacto':
-        if (lastContactDays > 5) reasons.push('Falta seguimiento después del primer contacto');
-        if (daysInStage > 10) reasons.push('No se ha logrado agendar cita');
+      case 'Primer contacto activo':
+        if (lastContactDays > 2) reasons.push('Mensaje personalizado no enviado');
+        if (daysInStage > 3) reasons.push('Interés inicial no generado en tiempo óptimo');
         break;
         
-      case 'Cita agendada':
-        if (lastContactDays > 2) reasons.push('Falta confirmación de cita');
-        if (daysInStage > 5) reasons.push('Cita no realizada o reprogramada');
+      case 'Calificación del prospecto':
+        if (lastContactDays > 3) reasons.push('Calificación pendiente por mucho tiempo');
+        if (daysInStage > 5) reasons.push('Lead no calificado adecuadamente');
         break;
         
-      case 'Visita realizada':
-        if (lastContactDays > 2) reasons.push('Sin seguimiento post-visita crítico');
-        if (daysInStage > 5) reasons.push('No se ha obtenido feedback de la visita');
+      case 'Registro y segmentación':
+        if (daysInStage > 3) reasons.push('Segmentación no completada');
+        if (lastContactDays > 2) reasons.push('Clasificación de perfil pendiente');
         break;
         
-      case 'Interesado':
-      case 'Interés confirmado':
-        if (lastContactDays > 3) reasons.push('Cliente interesado sin seguimiento activo');
-        if (daysInStage > 14) reasons.push('Interés puede estar enfriándose');
+      case 'Nutrición / Seguimiento inicial':
+        if (lastContactDays > 7) reasons.push('Nutrición interrumpida, interés puede perderse');
+        if (daysInStage > 21) reasons.push('Proceso de nutrición muy extenso');
+        break;
+        
+      case 'Agendamiento de reunión / demo':
+        if (lastContactDays > 5) reasons.push('Demo no agendada después de nutrición');
+        if (daysInStage > 7) reasons.push('Falta insistencia en mostrar valor directo');
+        break;
+        
+      case 'Presentación personalizada':
+        if (lastContactDays > 3) reasons.push('Sin seguimiento post-agendamiento');
+        if (daysInStage > 5) reasons.push('Presentación no realizada oportunamente');
         break;
         
       case 'Negociación':
         if (lastContactDays > 7) reasons.push('Negociación estancada sin comunicación');
-        if (daysInStage > 21) reasons.push('Negociación prolongada indica objeciones no resueltas');
+        if (daysInStage > 14) reasons.push('Objeciones no resueltas, necesita incentivos');
         break;
         
-      case 'Propuesta enviada':
-        if (lastContactDays > 5) reasons.push('Propuesta sin respuesta o seguimiento');
-        if (daysInStage > 10) reasons.push('Cliente evaluando otras opciones');
+      case 'Cierre / Firma':
+        if (lastContactDays > 2) reasons.push('Proceso de pago no facilitado');
+        if (daysInStage > 3) reasons.push('Cierre no completado rápidamente');
+        break;
+        
+      case 'Postventa y fidelización':
+        if (lastContactDays > 30) reasons.push('Falta seguimiento para retención');
+        if (daysInStage > 60) reasons.push('Oportunidad de transformar en embajador');
         break;
         
       default:
@@ -192,48 +203,54 @@ const RealLearningEngineSimulator = () => {
     else if (lastContactDays > 7) riskScore += 25;
     else if (lastContactDays > 3) riskScore += 10;
     
-    // Factores de riesgo específicos por etapa y días en la etapa
+    // Factores de riesgo específicos por etapa del proceso de venta CRM
     switch (stage) {
-      case 'Prospecto inicial':
-      case 'Lead generado':
-        if (daysInStage > 7) riskScore += 30;
-        else if (daysInStage > 3) riskScore += 15;
+      case 'Contacto inicial recibido':
+        if (daysInStage > 2) riskScore += 35; // Muy crítico responder rápido
+        else if (daysInStage > 1) riskScore += 20;
         break;
         
-      case 'Contacto realizado':
-      case 'Primer contacto':
-        if (daysInStage > 10) riskScore += 35;
+      case 'Primer contacto activo':
+        if (daysInStage > 3) riskScore += 30;
+        else if (daysInStage > 2) riskScore += 15;
+        break;
+        
+      case 'Calificación del prospecto':
+        if (daysInStage > 5) riskScore += 25;
+        else if (daysInStage > 3) riskScore += 10;
+        break;
+        
+      case 'Registro y segmentación':
+        if (daysInStage > 3) riskScore += 20;
+        break;
+        
+      case 'Nutrición / Seguimiento inicial':
+        if (daysInStage > 21) riskScore += 20;
+        else if (daysInStage > 14) riskScore += 10;
+        break;
+        
+      case 'Agendamiento de reunión / demo':
+        if (daysInStage > 7) riskScore += 35; // Crítico agendar demo
         else if (daysInStage > 5) riskScore += 20;
         break;
         
-      case 'Cita agendada':
-        if (daysInStage > 5) riskScore += 40;
-        else if (daysInStage > 2) riskScore += 25;
-        break;
-        
-      case 'Visita realizada':
-        if (daysInStage > 5) riskScore += 45;
-        else if (daysInStage > 2) riskScore += 25;
-        break;
-        
-      case 'Interesado':
-      case 'Interés confirmado':
-        if (daysInStage > 14) riskScore += 25;
-        else if (daysInStage > 7) riskScore += 10;
+      case 'Presentación personalizada':
+        if (daysInStage > 5) riskScore += 40; // Muy crítico hacer la demo
+        else if (daysInStage > 3) riskScore += 25;
         break;
         
       case 'Negociación':
-        if (daysInStage > 21) riskScore += 30;
-        else if (daysInStage > 14) riskScore += 15;
+        if (daysInStage > 14) riskScore += 25;
+        else if (daysInStage > 10) riskScore += 15;
         break;
         
-      case 'Propuesta enviada':
-        if (daysInStage > 10) riskScore += 35;
-        else if (daysInStage > 5) riskScore += 20;
+      case 'Cierre / Firma':
+        if (daysInStage > 3) riskScore += 45; // Crítico cerrar rápido
+        else if (daysInStage > 2) riskScore += 30;
         break;
         
-      case 'Seguimiento':
-        if (daysInStage > 30) riskScore += 15;
+      case 'Postventa y fidelización':
+        if (daysInStage > 60) riskScore += 15;
         break;
         
       default:
@@ -515,7 +532,7 @@ const RealLearningEngineSimulator = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="w-5 h-5" />
-                Análisis Individual de Contactos por Etapa
+                Análisis Individual de Contactos - Proceso de Venta CRM
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -531,19 +548,41 @@ const RealLearningEngineSimulator = () => {
                     lastContactDays
                   );
 
+                  // Obtener información específica de la etapa
+                  const getStageInfo = (stage: string) => {
+                    const stageMap = {
+                      'Contacto inicial recibido': { objective: 'Obtener datos básicos del prospecto', color: 'bg-blue-50 border-blue-200' },
+                      'Primer contacto activo': { objective: 'Generar interés inicial', color: 'bg-green-50 border-green-200' },
+                      'Calificación del prospecto': { objective: 'Determinar si es un lead calificado', color: 'bg-yellow-50 border-yellow-200' },
+                      'Registro y segmentación': { objective: 'Clasificar según interés y perfil', color: 'bg-purple-50 border-purple-200' },
+                      'Nutrición / Seguimiento inicial': { objective: 'Mantener interés hasta decisión', color: 'bg-orange-50 border-orange-200' },
+                      'Agendamiento de reunión / demo': { objective: 'Obtener una cita para mostrar valor directo', color: 'bg-indigo-50 border-indigo-200' },
+                      'Presentación personalizada': { objective: 'Mostrar solución adaptada a su flujo de trabajo', color: 'bg-pink-50 border-pink-200' },
+                      'Negociación': { objective: 'Confirmar interés y resolver dudas', color: 'bg-red-50 border-red-200' },
+                      'Cierre / Firma': { objective: 'Conseguir que pague o confirme suscripción', color: 'bg-emerald-50 border-emerald-200' },
+                      'Postventa y fidelización': { objective: 'Retener y transformar en embajador de marca', color: 'bg-teal-50 border-teal-200' }
+                    };
+                    return stageMap[stage] || { objective: 'Seguimiento general', color: 'bg-gray-50 border-gray-200' };
+                  };
+
+                  const stageInfo = getStageInfo(contact.stage);
+
                   return (
-                    <div key={contact.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                    <div key={contact.id} className={`border rounded-lg p-4 hover:bg-gray-50 ${stageInfo.color}`}>
                       <div className="flex justify-between items-start mb-3">
                         <div>
                           <h4 className="font-medium">{contact.name}</h4>
                           <div className="flex items-center gap-2 mt-1">
                             <Badge variant="outline" className="text-xs">
-                              {contact.stage.replace(/_/g, ' ')}
+                              Etapa {contact.stage.match(/^\d+/) ? contact.stage.split('.')[0] : ''}: {contact.stage.replace(/^\d+\.\s*/, '')}
                             </Badge>
                             <span className="text-xs text-gray-500">
                               {contact.daysInCurrentStage} días en esta etapa
                             </span>
                           </div>
+                          <p className="text-xs text-gray-600 mt-1 italic">
+                            <strong>Objetivo:</strong> {stageInfo.objective}
+                          </p>
                         </div>
                         <div className="flex items-center gap-2">
                           <Badge variant={riskAnalysis.level === 'Alto' ? 'destructive' : riskAnalysis.level === 'Medio' ? 'default' : 'outline'}>
@@ -576,11 +615,12 @@ const RealLearningEngineSimulator = () => {
                         </div>
                       </div>
 
-                      {/* Explicación del riesgo específico */}
+                      {/* Explicación del riesgo específico por etapa */}
                       {riskAnalysis.reasons.length > 0 && (
-                        <div className="bg-orange-50 p-3 rounded mb-3">
-                          <p className="text-sm font-medium text-orange-800 mb-2">
-                            Razones del riesgo {riskAnalysis.level.toLowerCase()}:
+                        <div className="bg-orange-50 p-3 rounded mb-3 border border-orange-200">
+                          <p className="text-sm font-medium text-orange-800 mb-2 flex items-center gap-2">
+                            <AlertTriangle className="w-4 h-4" />
+                            ¿Por qué riesgo {riskAnalysis.level.toLowerCase()}? (Etapa: {contact.stage})
                           </p>
                           <ul className="text-sm text-orange-700 space-y-1">
                             {riskAnalysis.reasons.map((reason, index) => (
@@ -594,9 +634,10 @@ const RealLearningEngineSimulator = () => {
                       )}
 
                       {stageRecommendations.length > 0 && (
-                        <div className="bg-blue-50 p-3 rounded">
-                          <p className="text-sm font-medium text-blue-800 mb-2">
-                            Recomendaciones específicas para "{contact.stage}":
+                        <div className="bg-blue-50 p-3 rounded border border-blue-200">
+                          <p className="text-sm font-medium text-blue-800 mb-2 flex items-center gap-2">
+                            <Target className="w-4 h-4" />
+                            Acciones recomendadas para esta etapa:
                           </p>
                           <div className="space-y-2">
                             {stageRecommendations.slice(0, 3).map((rec, index) => (
@@ -608,7 +649,7 @@ const RealLearningEngineSimulator = () => {
                                   {rec.priority}
                                 </Badge>
                                 <div className="flex-1">
-                                  <p className="text-sm text-blue-700">{rec.action}</p>
+                                  <p className="text-sm text-blue-700 font-medium">{rec.action}</p>
                                   <p className="text-xs text-blue-600">⏱️ {rec.timeframe}</p>
                                   {rec.description && (
                                     <p className="text-xs text-blue-500 mt-1 italic">{rec.description}</p>
