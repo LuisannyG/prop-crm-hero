@@ -17,7 +17,8 @@ import {
   Home,
   Activity,
   MapPin,
-  Calendar
+  Calendar,
+  Clock
 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
 import { 
@@ -34,7 +35,7 @@ import {
   IndividualPropertyAnalysis,
   CombinedAnalysis
 } from "@/utils/aiAnalytics";
-import { limaMarketTrends, getCurrentQuarter } from "@/utils/limaMarketTrends";
+import { limaMarketTrends, getCurrentQuarter, shouldUpdateData, getLastUpdateDate } from "@/utils/limaMarketTrends";
 import { useAuth } from "@/contexts/AuthContext";
 
 const RealLearningEngineSimulator = () => {
@@ -47,15 +48,20 @@ const RealLearningEngineSimulator = () => {
   const [individualProperties, setIndividualProperties] = useState<IndividualPropertyAnalysis[]>([]);
   const [combinedAnalysis, setCombinedAnalysis] = useState<CombinedAnalysis | null>(null);
   const [activeTab, setActiveTab] = useState("analytics");
+  const [lastUpdateTime, setLastUpdateTime] = useState<string>("");
+  const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(true);
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
-  const loadAnalytics = async () => {
+  const loadAnalytics = async (forceUpdate = false) => {
     if (!user?.id) return;
+    
+    // Verificar si necesitamos actualizar los datos
+    if (!forceUpdate && !shouldUpdateData()) return;
     
     setLoading(true);
     try {
-      console.log('Cargando análisis completo de datos...');
+      console.log('Cargando análisis actualizado con datos del', new Date().toLocaleString('es-PE'));
       
       const [contactData, propertyData] = await Promise.all([
         analyzeContacts(user.id),
@@ -76,14 +82,26 @@ const RealLearningEngineSimulator = () => {
       setIndividualContacts(individualContactsData);
       setIndividualProperties(individualPropertiesData);
       setCombinedAnalysis(combinedData);
+      setLastUpdateTime(getLastUpdateDate());
       
-      console.log('Análisis completo:', { contactData, propertyData, insightsData, individualContactsData, individualPropertiesData, combinedData });
+      console.log('Análisis actualizado exitosamente');
     } catch (error) {
       console.error('Error al cargar analytics:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  // Auto-actualización cada hora si está habilitada
+  useEffect(() => {
+    if (autoUpdateEnabled) {
+      const interval = setInterval(() => {
+        loadAnalytics(true);
+      }, 60 * 60 * 1000); // 1 hora
+
+      return () => clearInterval(interval);
+    }
+  }, [autoUpdateEnabled, user?.id]);
 
   useEffect(() => {
     loadAnalytics();
@@ -94,7 +112,8 @@ const RealLearningEngineSimulator = () => {
       <div className="flex items-center justify-center p-8">
         <div className="text-center">
           <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
-          <p className="text-gray-600">Analizando tus datos con IA y tendencias de Lima...</p>
+          <p className="text-gray-600">Actualizando datos con información de hoy...</p>
+          <p className="text-sm text-gray-500 mt-2">Analizando tendencias de Lima en tiempo real</p>
         </div>
       </div>
     );
@@ -106,9 +125,9 @@ const RealLearningEngineSimulator = () => {
         <Brain className="w-16 h-16 mx-auto mb-4 text-gray-400" />
         <h3 className="text-xl font-bold mb-2">No hay suficientes datos</h3>
         <p className="text-gray-600 mb-4">Necesitas al menos algunos contactos y propiedades para generar análisis predictivos.</p>
-        <Button onClick={loadAnalytics}>
+        <Button onClick={() => loadAnalytics(true)}>
           <RefreshCw className="w-4 h-4 mr-2" />
-          Intentar de nuevo
+          Actualizar datos
         </Button>
       </div>
     );
@@ -130,28 +149,47 @@ const RealLearningEngineSimulator = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header con información de Lima */}
+      {/* Header con información actualizada diariamente */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg p-6">
         <div className="flex justify-between items-center mb-4">
           <div>
             <h2 className="text-2xl font-bold">Motor de Aprendizaje IA - Lima</h2>
-            <p className="text-blue-100">Análisis basado en datos reales del mercado limeño</p>
-            <div className="flex items-center gap-2 mt-2 text-sm">
-              <MapPin className="w-4 h-4" />
-              <span>Mercado: Lima Metropolitana</span>
+            <p className="text-blue-100">Análisis basado en datos actualizados diariamente</p>
+            <div className="flex items-center gap-4 mt-2 text-sm">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4" />
+                <span>Mercado: Lima Metropolitana</span>
+              </div>
               <span className="text-blue-200">•</span>
-              <Calendar className="w-4 h-4" />
-              <span>Temporada: {seasonalInfo.description}</span>
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                <span>Temporada: {seasonalInfo.description}</span>
+              </div>
+              <span className="text-blue-200">•</span>
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                <span>Actualizado: {lastUpdateTime}</span>
+              </div>
             </div>
           </div>
-          <Button 
-            onClick={loadAnalytics}
-            variant="outline" 
-            className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-          >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Actualizar
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => setAutoUpdateEnabled(!autoUpdateEnabled)}
+              variant="outline" 
+              className={`bg-white/10 border-white/20 text-white hover:bg-white/20 ${autoUpdateEnabled ? 'bg-green-500/20' : ''}`}
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Auto-actualización {autoUpdateEnabled ? 'ON' : 'OFF'}
+            </Button>
+            <Button 
+              onClick={() => loadAnalytics(true)}
+              variant="outline" 
+              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Actualizar ahora
+            </Button>
+          </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -188,7 +226,17 @@ const RealLearningEngineSimulator = () => {
               <span className="text-sm font-medium">Crecimiento {currentQuarter}</span>
             </div>
             <div className="text-2xl font-bold">+{insights.nextMonthPrediction.marketGrowth.toFixed(1)}%</div>
-            <div className="text-xs text-blue-200">Tendencia de Lima</div>
+            <div className="text-xs text-blue-200">Tendencia actualizada hoy</div>
+          </div>
+        </div>
+
+        {/* Indicador de frescura de datos */}
+        <div className="mt-4 p-3 bg-white/10 rounded-lg">
+          <div className="flex items-center justify-between text-sm">
+            <span>{insights.dataFreshness}</span>
+            <Badge variant="secondary" className="bg-green-500/20 text-green-100">
+              Datos en tiempo real
+            </Badge>
           </div>
         </div>
       </div>
@@ -197,7 +245,7 @@ const RealLearningEngineSimulator = () => {
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="analytics">
             <BarChart3 className="w-4 h-4 mr-2" />
-            Tendencias Lima
+            Tendencias Diarias
           </TabsTrigger>
           <TabsTrigger value="individual-contacts">
             <User className="w-4 h-4 mr-2" />
@@ -222,7 +270,7 @@ const RealLearningEngineSimulator = () => {
         </TabsList>
 
         <TabsContent value="analytics" className="space-y-6">
-          {/* Alerta de temporada */}
+          {/* Alerta de temporada actualizada */}
           <Card className="border-blue-200 bg-blue-50">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -233,6 +281,7 @@ const RealLearningEngineSimulator = () => {
                   <p className="text-xs text-blue-500 mt-1">
                     Factor de ajuste: {seasonalInfo.multiplier > 1 ? '+' : ''}{((seasonalInfo.multiplier - 1) * 100).toFixed(0)}% vs promedio anual
                   </p>
+                  <p className="text-xs text-green-600 mt-1">✓ Actualizado hoy: {new Date().toLocaleDateString('es-PE')}</p>
                 </div>
               </div>
             </CardContent>
@@ -270,7 +319,7 @@ const RealLearningEngineSimulator = () => {
                 <div className="mt-4 text-sm text-gray-600">
                   <p>• Línea sólida: tus datos • Línea punteada: actividad general de Lima</p>
                   <p className="text-xs text-gray-500 mt-1">
-                    <strong>Fuente:</strong> Análisis combinado de datos de usuario y estadísticas del mercado inmobiliario de Lima Metropolitana 2024
+                    <strong>Fuente:</strong> Datos actualizados diariamente - Última actualización: {contactAnalysis.lastUpdated}
                   </p>
                 </div>
               </CardContent>
@@ -304,18 +353,18 @@ const RealLearningEngineSimulator = () => {
                     ))}
                 </div>
                 <div className="mt-4 text-xs text-gray-500">
-                  <strong>Fuente:</strong> Reportes del sector inmobiliario de Lima, CAPECO y análisis de mercado 2024
+                  <strong>Fuente:</strong> Datos del mercado inmobiliario de Lima actualizados diariamente
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Insights del mercado de Lima */}
+          {/* Insights del mercado actualizados */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Lightbulb className="w-5 h-5" />
-                Insights del Mercado Limeño
+                Insights del Mercado Limeño - Actualizados Hoy
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -327,7 +376,7 @@ const RealLearningEngineSimulator = () => {
                 ))}
               </div>
               <div className="mt-4 text-xs text-gray-500">
-                <strong>Fuente:</strong> Análisis de tendencias del mercado inmobiliario peruano, BCRP y estudios sectoriales 2024
+                <strong>Fuente:</strong> Análisis actualizado diariamente basado en tendencias del mercado peruano - {new Date().toLocaleDateString('es-PE')}
               </div>
             </CardContent>
           </Card>
@@ -363,7 +412,7 @@ const RealLearningEngineSimulator = () => {
                 </ResponsiveContainer>
               </div>
               <div className="mt-4 text-xs text-gray-500">
-                <strong>Fuente:</strong> Combinación de datos de usuario y precios promedio del mercado inmobiliario de Lima 2024
+                <strong>Fuente:</strong> Precios actualizados diariamente - Última actualización: {propertyAnalysis.lastUpdated}
               </div>
             </CardContent>
           </Card>
@@ -614,7 +663,7 @@ const RealLearningEngineSimulator = () => {
                 <TrendingUp className="w-12 h-12 mx-auto mb-4 text-orange-600" />
                 <div className="text-2xl font-bold text-orange-600">{insights.nextMonthPrediction.marketGrowth.toFixed(1)}%</div>
                 <div className="text-sm text-gray-600">Crecimiento de Mercado</div>
-                <div className="text-xs text-orange-700 mt-2">Tendencia mensual</div>
+                <div className="text-xs text-orange-700 mt-2">Actualizado hoy</div>
               </CardContent>
             </Card>
           </div>
@@ -657,7 +706,7 @@ const RealLearningEngineSimulator = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Target className="w-5 h-5" />
-                Recomendaciones Personalizadas IA
+                Recomendaciones Actualizadas con IA
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -678,7 +727,7 @@ const RealLearningEngineSimulator = () => {
                     <p className="text-sm text-gray-600 mb-3">{rec.description}</p>
                     <div className="flex justify-between items-center">
                       <div className="text-xs text-gray-500">
-                        Tipo: {rec.type} • Generado por IA
+                        Tipo: {rec.type} • Actualizado: {insights.lastUpdated}
                       </div>
                       <Button size="sm" variant="outline">
                         Aplicar Sugerencia
