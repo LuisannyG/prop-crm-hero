@@ -62,7 +62,8 @@ const RealLearningEngineSimulator = () => {
       console.log('Cargando análisis completo de datos...');
       
       // Actualizar datos de Lima
-      setLimaData(generateDailyLimaData());
+      const updatedLimaData = generateDailyLimaData();
+      setLimaData(updatedLimaData);
       
       const [contactData, propertyData] = await Promise.all([
         analyzeContacts(user.id),
@@ -176,7 +177,7 @@ const RealLearningEngineSimulator = () => {
               <span className="text-sm font-medium">Tus Contactos</span>
             </div>
             <div className="text-2xl font-bold">{contactAnalysis.totalContacts}</div>
-            <div className="text-xs text-blue-200">vs {Math.round(limaMarketTrends.monthlyTrends.reduce((sum, m) => sum + m.contacts, 0) / 12)} promedio Lima</div>
+            <div className="text-xs text-blue-200">vs {Math.round(limaData.monthlyTrends.reduce((sum, m) => sum + m.contacts, 0) / 12)} promedio Lima</div>
           </div>
           
           <div className="bg-white/10 rounded-lg p-4">
@@ -300,7 +301,7 @@ const RealLearningEngineSimulator = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {Object.entries(limaMarketTrends.districtTrends)
+                  {Object.entries(limaData.districtTrends)
                     .sort(([,a], [,b]) => b.demand - a.demand)
                     .slice(0, 6)
                     .map(([district, data]) => (
@@ -335,7 +336,7 @@ const RealLearningEngineSimulator = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {limaMarketTrends.marketInsights.map((insight, index) => (
+                {limaData.marketInsights.map((insight, index) => (
                   <div key={index} className="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
                     <p className="text-sm text-blue-800">{insight}</p>
                   </div>

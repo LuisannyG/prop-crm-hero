@@ -37,7 +37,22 @@ export const generateDailyLimaData = () => {
       "Casa": { share: 22, avgPrice: 485000, demand: 76 },
       "Oficina": { share: 8, avgPrice: 265000, demand: 65 },
       "Local comercial": { share: 2, avgPrice: 195000, demand: 58 }
-    }
+    },
+
+    seasonalFactors: {
+      "Q1": { multiplier: 0.85, description: "Temporada baja post-fiestas" },
+      "Q2": { multiplier: 1.15, description: "Incremento por Día de la Madre y cambio de temporada" },
+      "Q3": { multiplier: 0.95, description: "Estabilidad en temporada escolar" },
+      "Q4": { multiplier: 1.25, description: "Pico de actividad por gratificaciones y fin de año" }
+    },
+
+    marketInsights: [
+      "Lima Norte muestra el mayor crecimiento en demanda habitacional (+18% anual)",
+      "Departamentos de 2-3 dormitorios tienen la mayor rotación del mercado",
+      "Los precios en Miraflores y San Isidro se mantienen estables pero con alta demanda",
+      "Surco y La Molina lideran las ventas familiares por ubicación y servicios",
+      "El mercado de oficinas se está recuperando gradualmente post-pandemia"
+    ]
   };
 
   // Aplicar variación diaria (±5%)
@@ -69,28 +84,17 @@ export const generateDailyLimaData = () => {
 
 export const limaMarketTrends = generateDailyLimaData();
 
-export const seasonalFactors = {
-  "Q1": { multiplier: 0.85, description: "Temporada baja post-fiestas" },
-  "Q2": { multiplier: 1.15, description: "Incremento por Día de la Madre y cambio de temporada" },
-  "Q3": { multiplier: 0.95, description: "Estabilidad en temporada escolar" },
-  "Q4": { multiplier: 1.25, description: "Pico de actividad por gratificaciones y fin de año" }
-};
-
-export const marketInsights = [
-  "Lima Norte muestra el mayor crecimiento en demanda habitacional (+18% anual)",
-  "Departamentos de 2-3 dormitorios tienen la mayor rotación del mercado",
-  "Los precios en Miraflores y San Isidro se mantienen estables pero con alta demanda",
-  "Surco y La Molina lideran las ventas familiares por ubicación y servicios",
-  "El mercado de oficinas se está recuperando gradualmente post-pandemia"
-];
-
 export const getCurrentQuarter = () => {
-  return "Q3";
+  const month = new Date().getMonth() + 1;
+  if (month <= 3) return "Q1";
+  if (month <= 6) return "Q2";
+  if (month <= 9) return "Q3";
+  return "Q4";
 };
 
 export const getSeasonalAdjustment = () => {
   const quarter = getCurrentQuarter();
-  return seasonalFactors[quarter];
+  return limaMarketTrends.seasonalFactors[quarter];
 };
 
 export const getLastUpdateTime = () => {
