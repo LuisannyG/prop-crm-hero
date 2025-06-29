@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -202,7 +203,7 @@ const RealLearningEngineSimulator = () => {
       case 'Contacto realizado':
       case 'Primer contacto':
         if (daysInStage > 10) riskScore += 35;
-        else if (daysStage > 5) riskScore += 20;
+        else if (daysInStage > 5) riskScore += 20;
         break;
         
       case 'Cita agendada':
@@ -500,12 +501,12 @@ const RealLearningEngineSimulator = () => {
                     <Line type="monotone" dataKey="contacts" stroke="#8884d8" name="Contactos" />
                     <Line type="monotone" dataKey="conversions" stroke="#82ca9d" name="Conversiones" />
                   </LineChart>
-                </div>
-                <div className="mt-4 text-xs text-gray-500">
-                  <strong>Fuente:</strong> Datos de contactos y conversiones del usuario procesados con IA
-                </div>
-              </CardContent>
-            </Card>
+                </ResponsiveContainer>
+              </div>
+              <div className="mt-4 text-xs text-gray-500">
+                <strong>Fuente:</strong> Datos de contactos y conversiones del usuario procesados con IA
+              </div>
+            </CardContent>
           </Card>
         </TabsContent>
         
