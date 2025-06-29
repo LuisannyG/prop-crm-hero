@@ -9,10 +9,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { getStageSpecificRecommendations, getStageRiskFactors, getNoPurchaseRiskAssessment } from '@/utils/stageRecommendations';
 import { 
   Shield, AlertTriangle, Filter, ArrowUpDown, Clock, 
   Calendar, MessageSquare, Zap, CheckCircle2, X, Phone, Mail,
-  TrendingUp, Users, Target, Activity
+  TrendingUp, Users, Target, Activity, AlertCircle, Ban
 } from 'lucide-react';
 
 interface Contact {
@@ -47,6 +48,14 @@ interface RiskAlert {
   created_at: string;
 }
 
+interface NoPurchaseReason {
+  id: string;
+  contact_id: string;
+  reason_category: string;
+  reason_details: string;
+  created_at: string;
+}
+
 // Helper function to safely convert Json to string array
 const jsonToStringArray = (json: any): string[] => {
   if (Array.isArray(json)) {
@@ -62,6 +71,7 @@ const RiskDetectionApp = () => {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [riskMetrics, setRiskMetrics] = useState<RiskMetric[]>([]);
   const [riskAlerts, setRiskAlerts] = useState<RiskAlert[]>([]);
+  const [noPurchaseReasons, setNoPurchaseReasons] = useState<NoPurchaseReason[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortOrder, setSortOrder] = useState("risk-desc");
@@ -112,9 +122,19 @@ const RiskDetectionApp = () => {
 
       if (alertsError) throw alertsError;
 
+      // Obtener motivos de no compra
+      const { data: noPurchaseData, error: noPurchaseError } = await supabase
+        .from('no_purchase_reasons')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+
+      if (noPurchaseError) throw noPurchaseError;
+
       setContacts(contactsData || []);
       setRiskMetrics(transformedMetrics);
       setRiskAlerts(alertsData || []);
+      setNoPurchaseReasons(noPurchaseData || []);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast({
@@ -170,18 +190,50 @@ const RiskDetectionApp = () => {
       if (riskData && riskData.length > 0) {
         const risk = riskData[0];
         
+        // Obtener motivos de no compra para este contacto
+        const contactNoPurchaseReasons = noPurchaseReasons
+          .filter(reason => reason.contact_id === contactId)
+          .map(reason => `${reason.reason_category}: ${reason.reason_details || ''}`);
+
+        // Aplicar análisis de motivos de no compra
+        const noPurchaseAssessment = getNoPurchaseRiskAssessment(contactNoPurchaseReasons);
+        
+        // Ajustar score de riesgo basado en motivos de no compra
+        const adjustedRiskScore = Math.min(100, Math.round(risk.risk_score * noPurchaseAssessment.riskMultiplier));
+        
+        // Combinar factores de riesgo con preocupaciones específicas
+        const enhancedRiskFactors = [
+          ...jsonToStringArray(risk.risk_factors),
+          ...noPurchaseAssessment.specificConcerns
+        ];
+
+        // Generar recomendaciones específicas por etapa con contexto de motivos de no compra
+        const contact = contacts.find(c => c.id === contactId);
+        const stageRecommendations = getStageSpecificRecommendations(
+          contact?.sales_stage || '',
+          adjustedRiskScore >= 70 ? 'Alto' : adjustedRiskScore >= 40 ? 'Medio' : 'Bajo',
+          Math.round(risk.last_contact_days / 7), // Aproximar días en etapa
+          risk.last_contact_days,
+          contactNoPurchaseReasons
+        );
+
+        const enhancedRecommendations = [
+          ...stageRecommendations.map(rec => rec.action),
+          noPurchaseAssessment.recoveryStrategy
+        ];
+        
         // Guardar o actualizar métricas de riesgo
         const { error: upsertError } = await supabase
           .from('client_risk_metrics')
           .upsert({
             user_id: user.id,
             contact_id: contactId,
-            risk_score: risk.risk_score,
+            risk_score: adjustedRiskScore,
             last_contact_days: risk.last_contact_days,
             interaction_frequency: risk.interaction_frequency,
             engagement_score: risk.engagement_score,
-            risk_factors: risk.risk_factors,
-            recommendations: risk.recommendations,
+            risk_factors: enhancedRiskFactors,
+            recommendations: enhancedRecommendations,
             last_calculated: new Date().toISOString()
           }, {
             onConflict: 'user_id,contact_id'
@@ -190,8 +242,8 @@ const RiskDetectionApp = () => {
         if (upsertError) throw upsertError;
 
         // Crear alerta automática si el riesgo es alto
-        if (risk.risk_score >= 70) {
-          await createRiskAlert(contactId, risk.risk_score);
+        if (adjustedRiskScore >= 70) {
+          await createRiskAlert(contactId, adjustedRiskScore, noPurchaseAssessment.specificConcerns);
         }
       }
     } catch (error) {
@@ -199,16 +251,20 @@ const RiskDetectionApp = () => {
     }
   };
 
-  const createRiskAlert = async (contactId: string, riskScore: number) => {
+  const createRiskAlert = async (contactId: string, riskScore: number, specificConcerns?: string[]) => {
     if (!user) return;
 
     const contact = contacts.find(c => c.id === contactId);
     if (!contact) return;
 
+    const concernsText = specificConcerns && specificConcerns.length > 0 
+      ? ` (${specificConcerns.join(', ')})`
+      : '';
+
     const alertType = riskScore >= 80 ? 'high_risk' : 'stage_stagnation';
     const alertMessage = riskScore >= 80 
-      ? `${contact.full_name} tiene un riesgo muy alto (${riskScore}%) de abandonar el proceso`
-      : `${contact.full_name} muestra señales de desinterés (${riskScore}% de riesgo)`;
+      ? `${contact.full_name} tiene riesgo crítico (${riskScore}%) de abandonar${concernsText}`
+      : `${contact.full_name} muestra señales de desinterés (${riskScore}%)${concernsText}`;
 
     try {
       const { error } = await supabase
@@ -292,9 +348,11 @@ const RiskDetectionApp = () => {
     }
   };
 
-  // Combinar datos de contactos con métricas de riesgo
+  // Combinar datos de contactos con métricas de riesgo y motivos de no compra
   const clientsWithRisk = contacts.map(contact => {
     const riskMetric = riskMetrics.find(m => m.contact_id === contact.id);
+    const contactNoPurchaseHistory = noPurchaseReasons.filter(reason => reason.contact_id === contact.id);
+    
     return {
       ...contact,
       riskScore: riskMetric?.risk_score || 0,
@@ -303,7 +361,8 @@ const RiskDetectionApp = () => {
       engagementScore: riskMetric?.engagement_score || 0,
       riskFactors: riskMetric?.risk_factors || [],
       recommendations: riskMetric?.recommendations || [],
-      lastCalculated: riskMetric?.last_calculated
+      lastCalculated: riskMetric?.last_calculated,
+      noPurchaseHistory: contactNoPurchaseHistory
     };
   });
 
@@ -312,6 +371,7 @@ const RiskDetectionApp = () => {
     if (filterStatus === "high-risk") return client.riskScore >= 70;
     if (filterStatus === "medium-risk") return client.riskScore >= 40 && client.riskScore < 70;
     if (filterStatus === "low-risk") return client.riskScore < 40;
+    if (filterStatus === "with-objections") return client.noPurchaseHistory.length > 0;
     return true;
   });
 
@@ -322,12 +382,14 @@ const RiskDetectionApp = () => {
       case "risk-asc": return a.riskScore - b.riskScore;
       case "contact-desc": return b.lastContactDays - a.lastContactDays;
       case "contact-asc": return a.lastContactDays - b.lastContactDays;
+      case "objections-desc": return b.noPurchaseHistory.length - a.noPurchaseHistory.length;
       default: return b.riskScore - a.riskScore;
     }
   });
 
   const highRiskCount = clientsWithRisk.filter(c => c.riskScore >= 70).length;
   const mediumRiskCount = clientsWithRisk.filter(c => c.riskScore >= 40 && c.riskScore < 70).length;
+  const withObjectionsCount = clientsWithRisk.filter(c => c.noPurchaseHistory.length > 0).length;
   const totalClients = clientsWithRisk.length;
 
   if (loading) {
@@ -369,7 +431,7 @@ const RiskDetectionApp = () => {
       </div>
 
       {/* Métricas de resumen */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -410,10 +472,22 @@ const RiskDetectionApp = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Alertas Activas</p>
-                <p className="text-2xl font-bold text-purple-600">{riskAlerts.length}</p>
+                <p className="text-sm font-medium text-gray-600">Con Objeciones</p>
+                <p className="text-2xl font-bold text-purple-600">{withObjectionsCount}</p>
               </div>
-              <TrendingUp className="w-8 h-8 text-purple-600" />
+              <Ban className="w-8 h-8 text-purple-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Alertas Activas</p>
+                <p className="text-2xl font-bold text-indigo-600">{riskAlerts.length}</p>
+              </div>
+              <TrendingUp className="w-8 h-8 text-indigo-600" />
             </div>
           </CardContent>
         </Card>
@@ -471,7 +545,7 @@ const RiskDetectionApp = () => {
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
             <div className="flex gap-2">
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-[200px]">
                   <Filter className="h-4 w-4 mr-2" />
                   <SelectValue placeholder="Filtrar por riesgo" />
                 </SelectTrigger>
@@ -480,11 +554,12 @@ const RiskDetectionApp = () => {
                   <SelectItem value="high-risk">Riesgo alto (70%+)</SelectItem>
                   <SelectItem value="medium-risk">Riesgo medio (40-69%)</SelectItem>
                   <SelectItem value="low-risk">Riesgo bajo (&lt;40%)</SelectItem>
+                  <SelectItem value="with-objections">Con objeciones históricas</SelectItem>
                 </SelectContent>
               </Select>
 
               <Select value={sortOrder} onValueChange={setSortOrder}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-[200px]">
                   <ArrowUpDown className="h-4 w-4 mr-2" />
                   <SelectValue placeholder="Ordenar por" />
                 </SelectTrigger>
@@ -493,6 +568,7 @@ const RiskDetectionApp = () => {
                   <SelectItem value="risk-asc">↑ Riesgo (menor primero)</SelectItem>
                   <SelectItem value="contact-desc">↓ Días sin contacto</SelectItem>
                   <SelectItem value="contact-asc">↑ Días sin contacto</SelectItem>
+                  <SelectItem value="objections-desc">↓ Más objeciones</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -536,15 +612,22 @@ const RiskDetectionApp = () => {
                   <div className="flex-1 space-y-3">
                     <div className="flex items-center justify-between">
                       <h3 className="text-lg font-semibold text-gray-900">{client.full_name}</h3>
-                      <Badge 
-                        variant={client.riskScore >= 70 ? "destructive" : "secondary"}
-                        className="text-xs"
-                      >
-                        {client.riskScore >= 80 ? "CRÍTICO" :
-                         client.riskScore >= 60 ? "ALTO RIESGO" :
-                         client.riskScore >= 40 ? "RIESGO MEDIO" :
-                         "BAJO RIESGO"}
-                      </Badge>
+                      <div className="flex gap-2">
+                        <Badge 
+                          variant={client.riskScore >= 70 ? "destructive" : "secondary"}
+                          className="text-xs"
+                        >
+                          {client.riskScore >= 80 ? "CRÍTICO" :
+                           client.riskScore >= 60 ? "ALTO RIESGO" :
+                           client.riskScore >= 40 ? "RIESGO MEDIO" :
+                           "BAJO RIESGO"}
+                        </Badge>
+                        {client.noPurchaseHistory.length > 0 && (
+                          <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700">
+                            {client.noPurchaseHistory.length} objeción(es)
+                          </Badge>
+                        )}
+                      </div>
                     </div>
 
                     <div className="flex flex-wrap gap-4 text-sm text-gray-600">
@@ -561,6 +644,20 @@ const RiskDetectionApp = () => {
                         {client.engagementScore}% engagement
                       </div>
                     </div>
+
+                    {/* Historial de objeciones */}
+                    {client.noPurchaseHistory.length > 0 && (
+                      <div>
+                        <p className="text-sm font-medium text-purple-700 mb-2">Historial de objeciones:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {client.noPurchaseHistory.map((reason, index) => (
+                            <Badge key={index} variant="outline" className="text-xs bg-purple-50 text-purple-700">
+                              {reason.reason_category}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Factores de riesgo */}
                     {client.riskFactors.length > 0 && (
@@ -581,7 +678,7 @@ const RiskDetectionApp = () => {
                       <div>
                         <p className="text-sm font-medium text-gray-700 mb-2">Recomendaciones:</p>
                         <ul className="space-y-1">
-                          {client.recommendations.slice(0, 2).map((rec, index) => (
+                          {client.recommendations.slice(0, 3).map((rec, index) => (
                             <li key={index} className="text-sm text-gray-600 flex items-start gap-2">
                               <span className="text-blue-500 mt-1">•</span>
                               {rec}

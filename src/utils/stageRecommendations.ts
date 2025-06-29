@@ -10,9 +10,20 @@ export const getStageSpecificRecommendations = (
   stage: string, 
   riskLevel: 'Alto' | 'Medio' | 'Bajo',
   daysInStage: number,
-  lastContactDays: number
+  lastContactDays: number,
+  noPurchaseReasons?: string[]
 ): StageRecommendation[] => {
   const recommendations: StageRecommendation[] = [];
+  const hasNoPurchaseHistory = noPurchaseReasons && noPurchaseReasons.length > 0;
+  const hasPriceObjection = noPurchaseReasons?.some(reason => 
+    reason.toLowerCase().includes('precio') || reason.toLowerCase().includes('price')
+  );
+  const hasTimingIssues = noPurchaseReasons?.some(reason => 
+    reason.toLowerCase().includes('timing') || reason.toLowerCase().includes('momento')
+  );
+  const hasLocationConcerns = noPurchaseReasons?.some(reason => 
+    reason.toLowerCase().includes('ubicacion') || reason.toLowerCase().includes('location')
+  );
 
   switch (stage) {
     case 'Contacto inicial recibido':
@@ -45,15 +56,18 @@ export const getStageSpecificRecommendations = (
           description: 'El primer contacto activo debe realizarse dentro de los primeros 3 días'
         });
       }
+      if (hasNoPurchaseHistory) {
+        recommendations.push({
+          action: 'Abordar objeciones previas en primer mensaje',
+          priority: 'Alta',
+          timeframe: '24 horas',
+          description: 'Cliente tiene historial de objeciones que deben ser consideradas'
+        });
+      }
       recommendations.push({
         action: 'Enviar mensaje personalizado con demo',
         priority: 'Alta',
         timeframe: '24 horas'
-      });
-      recommendations.push({
-        action: 'Compartir resumen de beneficios del CRM',
-        priority: 'Media',
-        timeframe: '48 horas'
       });
       break;
 
@@ -66,24 +80,30 @@ export const getStageSpecificRecommendations = (
           description: 'La calificación debe completarse para avanzar en el proceso'
         });
       }
+      if (hasPriceObjection) {
+        recommendations.push({
+          action: 'Explorar presupuesto y opciones de financiamiento',
+          priority: 'Alta',
+          timeframe: '24 horas',
+          description: 'Cliente ha tenido objeciones de precio anteriormente'
+        });
+      }
       recommendations.push({
         action: 'Preguntar sobre cantidad de propiedades gestionadas',
         priority: 'Alta',
         timeframe: '24 horas'
       });
-      recommendations.push({
-        action: 'Consultar herramientas actuales de gestión',
-        priority: 'Alta',
-        timeframe: '24 horas'
-      });
-      recommendations.push({
-        action: 'Evaluar disposición a pagar por solución CRM',
-        priority: 'Media',
-        timeframe: '48 horas'
-      });
       break;
 
     case 'Registro y segmentación':
+      if (hasLocationConcerns) {
+        recommendations.push({
+          action: 'Segmentar por preferencias de ubicación específicas',
+          priority: 'Alta',
+          timeframe: '24 horas',
+          description: 'Cliente ha mostrado sensibilidad a ubicación'
+        });
+      }
       recommendations.push({
         action: 'Clasificar perfil: independiente vs agencia',
         priority: 'Alta',
@@ -91,11 +111,6 @@ export const getStageSpecificRecommendations = (
       });
       recommendations.push({
         action: 'Segmentar por tipo de gestión inmobiliaria',
-        priority: 'Media',
-        timeframe: '48 horas'
-      });
-      recommendations.push({
-        action: 'Crear etiquetas en base de datos',
         priority: 'Media',
         timeframe: '48 horas'
       });
@@ -110,20 +125,18 @@ export const getStageSpecificRecommendations = (
           description: 'La nutrición requiere contacto regular para mantener interés'
         });
       }
+      if (hasTimingIssues) {
+        recommendations.push({
+          action: 'Contenido sobre timing óptimo de compra inmobiliaria',
+          priority: 'Media',
+          timeframe: '3 días',
+          description: 'Cliente ha mostrado dudas sobre el momento de compra'
+        });
+      }
       recommendations.push({
         action: 'Enviar tips de gestión inmobiliaria',
         priority: 'Media',
         timeframe: '3 días'
-      });
-      recommendations.push({
-        action: 'Compartir casos de éxito de otros agentes',
-        priority: 'Media',
-        timeframe: '1 semana'
-      });
-      recommendations.push({
-        action: 'Recordatorio vía WhatsApp',
-        priority: 'Media',
-        timeframe: 'Semanal'
       });
       break;
 
@@ -136,15 +149,18 @@ export const getStageSpecificRecommendations = (
           description: 'El agendamiento es crítico para avanzar en el proceso de venta'
         });
       }
+      if (hasPriceObjection) {
+        recommendations.push({
+          action: 'Preparar demo con enfoque en ROI y value proposition',
+          priority: 'Alta',
+          timeframe: '48 horas',
+          description: 'Demostrar valor económico por objeciones previas de precio'
+        });
+      }
       recommendations.push({
         action: 'Proponer demo semi-funcional',
         priority: 'Alta',
         timeframe: '48 horas'
-      });
-      recommendations.push({
-        action: 'Ofrecer acompañamiento en Google Sheet',
-        priority: 'Media',
-        timeframe: '3 días'
       });
       break;
 
@@ -157,20 +173,18 @@ export const getStageSpecificRecommendations = (
           description: 'La presentación debe realizarse pronto después del agendamiento'
         });
       }
+      if (hasNoPurchaseHistory) {
+        recommendations.push({
+          action: 'Adaptar presentación para abordar objeciones conocidas',
+          priority: 'Alta',
+          timeframe: '24 horas',
+          description: 'Personalizar demo basado en objeciones históricas'
+        });
+      }
       recommendations.push({
         action: 'Preparar demo con leads del prospecto',
         priority: 'Alta',
         timeframe: '24 horas'
-      });
-      recommendations.push({
-        action: 'Mostrar flujo completo del CRM',
-        priority: 'Alta',
-        timeframe: 'En la reunión'
-      });
-      recommendations.push({
-        action: 'Explicar beneficios concretos para su negocio',
-        priority: 'Media',
-        timeframe: 'En la reunión'
       });
       break;
 
@@ -183,19 +197,17 @@ export const getStageSpecificRecommendations = (
           description: 'La negociación prolongada requiere incentivos especiales'
         });
       }
+      if (hasPriceObjection) {
+        recommendations.push({
+          action: 'Presentar opciones de pricing flexibles',
+          priority: 'Alta',
+          timeframe: '24 horas',
+          description: 'Cliente tiene historial de sensibilidad al precio'
+        });
+      }
       recommendations.push({
         action: 'Proponer plan beta con descuento',
         priority: 'Alta',
-        timeframe: '24 horas'
-      });
-      recommendations.push({
-        action: 'Flexibilizar precio de entrada',
-        priority: 'Media',
-        timeframe: '48 horas'
-      });
-      recommendations.push({
-        action: 'Resolver dudas técnicas pendientes',
-        priority: 'Media',
         timeframe: '24 horas'
       });
       break;
@@ -209,13 +221,16 @@ export const getStageSpecificRecommendations = (
           description: 'El cierre debe completarse rápidamente para evitar pérdida'
         });
       }
+      if (hasNoPurchaseHistory) {
+        recommendations.push({
+          action: 'Reforzar garantías y política de devolución',
+          priority: 'Alta',
+          timeframe: '24 horas',
+          description: 'Cliente necesita seguridad adicional por historial de dudas'
+        });
+      }
       recommendations.push({
         action: 'Enviar enlace de pago directo',
-        priority: 'Alta',
-        timeframe: '24 horas'
-      });
-      recommendations.push({
-        action: 'Confirmar registro en lista premium',
         priority: 'Alta',
         timeframe: '24 horas'
       });
@@ -226,16 +241,6 @@ export const getStageSpecificRecommendations = (
         action: 'Enviar encuesta de satisfacción',
         priority: 'Media',
         timeframe: '1 semana'
-      });
-      recommendations.push({
-        action: 'Notificar actualizaciones de funcionalidades',
-        priority: 'Baja',
-        timeframe: 'Mensual'
-      });
-      recommendations.push({
-        action: 'Invitar a comunidad de usuarios exclusivos',
-        priority: 'Media',
-        timeframe: '2 semanas'
       });
       recommendations.push({
         action: 'Solicitar referidos y testimonios',
@@ -253,7 +258,7 @@ export const getStageSpecificRecommendations = (
       break;
   }
 
-  // Recomendaciones adicionales basadas en riesgo general
+  // Recomendaciones adicionales basadas en riesgo general y motivos de no compra
   if (riskLevel === 'Alto' && lastContactDays > 5) {
     recommendations.unshift({
       action: 'Contacto prioritario por riesgo alto de pérdida',
@@ -263,11 +268,45 @@ export const getStageSpecificRecommendations = (
     });
   }
 
+  if (hasNoPurchaseHistory && riskLevel !== 'Alto') {
+    recommendations.push({
+      action: 'Revisar y abordar objeciones históricas',
+      priority: 'Media',
+      timeframe: '48 horas',
+      description: 'Cliente tiene historial de objeciones que requieren atención'
+    });
+  }
+
   return recommendations;
 };
 
-export const getStageRiskFactors = (stage: string, daysInStage: number, lastContactDays: number): string[] => {
+export const getStageRiskFactors = (
+  stage: string, 
+  daysInStage: number, 
+  lastContactDays: number,
+  noPurchaseReasons?: string[]
+): string[] => {
   const factors = [];
+  const hasNoPurchaseHistory = noPurchaseReasons && noPurchaseReasons.length > 0;
+  
+  // Factores basados en motivos de no compra
+  if (hasNoPurchaseHistory) {
+    factors.push(`Historial de ${noPurchaseReasons!.length} objeción(es) previa(s)`);
+    
+    const hasPriceObjection = noPurchaseReasons!.some(reason => 
+      reason.toLowerCase().includes('precio') || reason.toLowerCase().includes('price')
+    );
+    if (hasPriceObjection) {
+      factors.push('Sensibilidad demostrada al precio');
+    }
+
+    const hasTimingIssues = noPurchaseReasons!.some(reason => 
+      reason.toLowerCase().includes('timing') || reason.toLowerCase().includes('momento')
+    );
+    if (hasTimingIssues) {
+      factors.push('Dudas sobre timing de compra');
+    }
+  }
   
   switch (stage) {
     case 'Contacto inicial recibido':
@@ -320,4 +359,66 @@ export const getStageRiskFactors = (stage: string, daysInStage: number, lastCont
   }
   
   return factors;
+};
+
+export const getNoPurchaseRiskAssessment = (noPurchaseReasons: string[]): {
+  riskMultiplier: number;
+  specificConcerns: string[];
+  recoveryStrategy: string;
+} => {
+  let riskMultiplier = 1.0;
+  const specificConcerns: string[] = [];
+  let recoveryStrategy = 'Seguimiento estándar';
+
+  if (noPurchaseReasons.length === 0) {
+    return { riskMultiplier, specificConcerns, recoveryStrategy };
+  }
+
+  // Aumentar riesgo base por tener historial de objeciones
+  riskMultiplier += (noPurchaseReasons.length * 0.15);
+
+  const reasonsText = noPurchaseReasons.join(' ').toLowerCase();
+
+  // Análisis de tipos de objeciones
+  if (reasonsText.includes('precio') || reasonsText.includes('price')) {
+    specificConcerns.push('Sensibilidad al precio');
+    riskMultiplier += 0.2;
+    recoveryStrategy = 'Enfoque en valor y ROI';
+  }
+
+  if (reasonsText.includes('ubicacion') || reasonsText.includes('location')) {
+    specificConcerns.push('Preocupaciones de ubicación');
+    riskMultiplier += 0.15;
+    recoveryStrategy = 'Mostrar opciones alternativas de ubicación';
+  }
+
+  if (reasonsText.includes('timing') || reasonsText.includes('momento')) {
+    specificConcerns.push('Dudas sobre el momento');
+    riskMultiplier += 0.1;
+    recoveryStrategy = 'Nutrición prolongada con seguimiento periódico';
+  }
+
+  if (reasonsText.includes('financiacion') || reasonsText.includes('financing')) {
+    specificConcerns.push('Problemas de financiamiento');
+    riskMultiplier += 0.25;
+    recoveryStrategy = 'Presentar opciones de financiamiento flexibles';
+  }
+
+  if (reasonsText.includes('competencia') || reasonsText.includes('competition')) {
+    specificConcerns.push('Considerando competencia');
+    riskMultiplier += 0.3;
+    recoveryStrategy = 'Diferenciación urgente y propuesta única de valor';
+  }
+
+  // Múltiples objeciones aumentan significativamente el riesgo
+  if (noPurchaseReasons.length > 2) {
+    riskMultiplier += 0.2;
+    recoveryStrategy = 'Intervención personalizada urgente';
+  }
+
+  return {
+    riskMultiplier: Math.min(riskMultiplier, 2.0), // Cap at 2x risk
+    specificConcerns,
+    recoveryStrategy
+  };
 };
