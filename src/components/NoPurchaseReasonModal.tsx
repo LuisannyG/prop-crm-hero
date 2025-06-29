@@ -40,6 +40,7 @@ const NoPurchaseReasonModal = ({ contacts, properties, onReasonAdded }: NoPurcha
   const [reasonCategory, setReasonCategory] = useState("");
   const [reasonDetails, setReasonDetails] = useState("");
   const [priceFeedback, setPriceFeedback] = useState("");
+  const [anotherProperty, setAnotherProperty] = useState(false);
   const [willReconsider, setWillReconsider] = useState(false);
   const [followUpDate, setFollowUpDate] = useState<Date>();
   const [notes, setNotes] = useState("");
@@ -61,7 +62,8 @@ const NoPurchaseReasonModal = ({ contacts, properties, onReasonAdded }: NoPurcha
 
     setLoading(true);
     try {
-      const { error } = await supabase
+      // 1. Registrar el motivo de no compra
+      const { error: reasonError } = await supabase
         .from('no_purchase_reasons')
         .insert({
           user_id: user.id,
@@ -75,19 +77,86 @@ const NoPurchaseReasonModal = ({ contacts, properties, onReasonAdded }: NoPurcha
           notes: notes
         });
 
-      if (error) {
-        console.error('Error saving no purchase reason:', error);
-        toast({
-          title: "Error",
-          description: "No se pudo guardar el motivo de no compra.",
-          variant: "destructive",
-        });
-        return;
+      if (reasonError) throw reasonError;
+
+      // 2. Actualizar el estado del contacto a "lost" (perdido)
+      const newStatus = willReconsider ? 'inactive' : 'lost';
+      const newSalesStage = willReconsider ? 'seguimiento_futuro' : 'no_compra_registrada';
+      
+      const { error: contactError } = await supabase
+        .from('contacts')
+        .update({ 
+          status: newStatus,
+          sales_stage: newSalesStage,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', contactId);
+
+      if (contactError) throw contactError;
+
+      // 3. Resolver alertas de riesgo activas para este contacto
+      const { error: alertError } = await supabase
+        .from('risk_alerts')
+        .update({ 
+          is_resolved: true,
+          resolved_at: new Date().toISOString(),
+          notes: `Motivo de no compra registrado: ${reasonCategory}`
+        })
+        .eq('contact_id', contactId)
+        .eq('is_resolved', false);
+
+      if (alertError) console.warn('Error resolviendo alertas:', alertError);
+
+      // 4. Cancelar recordatorios pendientes para este contacto (excepto si va a reconsiderar)
+      if (!willReconsider) {
+        const { error: reminderError } = await supabase
+          .from('reminders')
+          .update({ 
+            status: 'cancelado',
+            updated_at: new Date().toISOString()
+          })
+          .eq('contact_id', contactId)
+          .eq('status', 'pendiente');
+
+        if (reminderError) console.warn('Error cancelando recordatorios:', reminderError);
       }
 
+      // 5. Si va a reconsiderar, crear un recordatorio de seguimiento
+      if (willReconsider && followUpDate) {
+        const { error: newReminderError } = await supabase
+          .from('reminders')
+          .insert({
+            user_id: user.id,
+            contact_id: contactId,
+            title: `Seguimiento por reconsideración - ${reasonCategory}`,
+            description: `Cliente mostró interés en reconsiderar. Motivo inicial: ${reasonCategory}. ${notes ? `Notas: ${notes}` : ''}`,
+            reminder_date: followUpDate.toISOString(),
+            priority: 'media',
+            status: 'pendiente'
+          });
+
+        if (newReminderError) console.warn('Error creando recordatorio:', newReminderError);
+      }
+
+      // 6. Registrar la interacción
+      const { error: interactionError } = await supabase
+        .from('interactions')
+        .insert({
+          user_id: user.id,
+          contact_id: contactId,
+          property_id: propertyId || null,
+          interaction_type: 'no_compra',
+          subject: `Motivo de no compra: ${reasonCategory}`,
+          notes: `${reasonDetails} ${notes ? `\nNotas adicionales: ${notes}` : ''}`,
+          outcome: willReconsider ? 'reconsiderara' : 'perdido',
+          interaction_date: new Date().toISOString()
+        });
+
+      if (interactionError) console.warn('Error registrando interacción:', interactionError);
+
       toast({
-        title: "Éxito",
-        description: "Motivo de no compra registrado exitosamente.",
+        title: "Motivo registrado exitosamente",
+        description: `El contacto ha sido marcado como ${willReconsider ? 'inactivo con seguimiento futuro' : 'perdido'}. ${willReconsider && followUpDate ? 'Se creó un recordatorio de seguimiento.' : ''}`,
       });
 
       // Reset form
@@ -96,16 +165,17 @@ const NoPurchaseReasonModal = ({ contacts, properties, onReasonAdded }: NoPurcha
       setReasonCategory("");
       setReasonDetails("");
       setPriceFeedback("");
+      setAnotherProperty(false);
       setWillReconsider(false);
       setFollowUpDate(undefined);
       setNotes("");
       setOpen(false);
       onReasonAdded();
     } catch (error) {
-      console.error('Unexpected error:', error);
+      console.error('Error registrando motivo de no compra:', error);
       toast({
         title: "Error",
-        description: "Error inesperado al guardar el motivo.",
+        description: "Error al registrar el motivo de no compra.",
         variant: "destructive",
       });
     } finally {
@@ -199,6 +269,17 @@ const NoPurchaseReasonModal = ({ contacts, properties, onReasonAdded }: NoPurcha
             </div>
           )}
 
+          {reasonCategory === "otra_propiedad" && (
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="anotherProperty"
+                checked={anotherProperty}
+                onCheckedChange={(checked) => setAnotherProperty(!!checked)}
+              />
+              <Label htmlFor="anotherProperty">¿Compró otra propiedad con nosotros?</Label>
+            </div>
+          )}
+
           <div className="flex items-center space-x-2">
             <Checkbox
               id="reconsider"
@@ -243,12 +324,20 @@ const NoPurchaseReasonModal = ({ contacts, properties, onReasonAdded }: NoPurcha
             />
           </div>
 
+          <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+            <p className="text-sm text-yellow-800">
+              <strong>Nota:</strong> Al registrar este motivo, el contacto será marcado como 
+              {willReconsider ? ' "inactivo" y se programará seguimiento' : ' "perdido"'}.
+              Las alertas activas serán resueltas automáticamente.
+            </p>
+          </div>
+
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancelar
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Guardando..." : "Guardar Motivo"}
+              {loading ? "Guardando..." : "Registrar y Actualizar Estado"}
             </Button>
           </div>
         </form>

@@ -13,7 +13,7 @@ import { getStageSpecificRecommendations, getStageRiskFactors, getNoPurchaseRisk
 import { 
   Shield, AlertTriangle, Filter, ArrowUpDown, Clock, 
   Calendar, MessageSquare, Zap, CheckCircle2, X, Phone, Mail,
-  TrendingUp, Users, Target, Activity, AlertCircle, Ban
+  TrendingUp, Users, Target, Activity, AlertCircle, Ban, XCircle
 } from 'lucide-react';
 
 interface Contact {
@@ -22,6 +22,7 @@ interface Contact {
   email: string;
   phone: string;
   sales_stage: string;
+  status: string;
   created_at: string;
 }
 
@@ -87,11 +88,12 @@ const RiskDetectionApp = () => {
     try {
       setLoading(true);
       
-      // Obtener contactos
+      // Obtener contactos (excluir contactos perdidos a menos que se especifique)
       const { data: contactsData, error: contactsError } = await supabase
         .from('contacts')
         .select('*')
         .eq('user_id', user?.id)
+        .neq('status', 'lost') // Excluir contactos marcados como perdidos
         .order('created_at', { ascending: false });
 
       if (contactsError) throw contactsError;
@@ -178,7 +180,6 @@ const RiskDetectionApp = () => {
     if (!user) return;
 
     try {
-      // Llamar a la función de la base de datos para calcular riesgo
       const { data: riskData, error: riskError } = await supabase
         .rpc('calculate_client_risk_score', {
           contact_uuid: contactId,
@@ -190,29 +191,24 @@ const RiskDetectionApp = () => {
       if (riskData && riskData.length > 0) {
         const risk = riskData[0];
         
-        // Obtener motivos de no compra para este contacto
         const contactNoPurchaseReasons = noPurchaseReasons
           .filter(reason => reason.contact_id === contactId)
           .map(reason => `${reason.reason_category}: ${reason.reason_details || ''}`);
 
-        // Aplicar análisis de motivos de no compra
         const noPurchaseAssessment = getNoPurchaseRiskAssessment(contactNoPurchaseReasons);
         
-        // Ajustar score de riesgo basado en motivos de no compra
         const adjustedRiskScore = Math.min(100, Math.round(risk.risk_score * noPurchaseAssessment.riskMultiplier));
         
-        // Combinar factores de riesgo con preocupaciones específicas
         const enhancedRiskFactors = [
           ...jsonToStringArray(risk.risk_factors),
           ...noPurchaseAssessment.specificConcerns
         ];
 
-        // Generar recomendaciones específicas por etapa con contexto de motivos de no compra
         const contact = contacts.find(c => c.id === contactId);
         const stageRecommendations = getStageSpecificRecommendations(
           contact?.sales_stage || '',
           adjustedRiskScore >= 70 ? 'Alto' : adjustedRiskScore >= 40 ? 'Medio' : 'Bajo',
-          Math.round(risk.last_contact_days / 7), // Aproximar días en etapa
+          Math.round(risk.last_contact_days / 7),
           risk.last_contact_days,
           contactNoPurchaseReasons
         );
@@ -222,7 +218,6 @@ const RiskDetectionApp = () => {
           noPurchaseAssessment.recoveryStrategy
         ];
         
-        // Guardar o actualizar métricas de riesgo
         const { error: upsertError } = await supabase
           .from('client_risk_metrics')
           .upsert({
@@ -241,7 +236,6 @@ const RiskDetectionApp = () => {
 
         if (upsertError) throw upsertError;
 
-        // Crear alerta automática si el riesgo es alto
         if (adjustedRiskScore >= 70) {
           await createRiskAlert(contactId, adjustedRiskScore, noPurchaseAssessment.specificConcerns);
         }
@@ -372,6 +366,8 @@ const RiskDetectionApp = () => {
     if (filterStatus === "medium-risk") return client.riskScore >= 40 && client.riskScore < 70;
     if (filterStatus === "low-risk") return client.riskScore < 40;
     if (filterStatus === "with-objections") return client.noPurchaseHistory.length > 0;
+    if (filterStatus === "inactive") return client.status === 'inactive';
+    if (filterStatus === "active") return client.status === 'active' || client.status === 'prospect' || client.status === 'client';
     return true;
   });
 
@@ -390,6 +386,7 @@ const RiskDetectionApp = () => {
   const highRiskCount = clientsWithRisk.filter(c => c.riskScore >= 70).length;
   const mediumRiskCount = clientsWithRisk.filter(c => c.riskScore >= 40 && c.riskScore < 70).length;
   const withObjectionsCount = clientsWithRisk.filter(c => c.noPurchaseHistory.length > 0).length;
+  const inactiveCount = clientsWithRisk.filter(c => c.status === 'inactive').length;
   const totalClients = clientsWithRisk.length;
 
   if (loading) {
@@ -431,12 +428,12 @@ const RiskDetectionApp = () => {
       </div>
 
       {/* Métricas de resumen */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Clientes</p>
+                <p className="text-sm font-medium text-gray-600">Total Activos</p>
                 <p className="text-2xl font-bold text-gray-900">{totalClients}</p>
               </div>
               <Users className="w-8 h-8 text-blue-600" />
@@ -476,6 +473,18 @@ const RiskDetectionApp = () => {
                 <p className="text-2xl font-bold text-purple-600">{withObjectionsCount}</p>
               </div>
               <Ban className="w-8 h-8 text-purple-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Inactivos</p>
+                <p className="text-2xl font-bold text-gray-600">{inactiveCount}</p>
+              </div>
+              <XCircle className="w-8 h-8 text-gray-600" />
             </div>
           </CardContent>
         </Card>
@@ -547,10 +556,12 @@ const RiskDetectionApp = () => {
               <Select value={filterStatus} onValueChange={setFilterStatus}>
                 <SelectTrigger className="w-[200px]">
                   <Filter className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Filtrar por riesgo" />
+                  <SelectValue placeholder="Filtrar por estado" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos los clientes</SelectItem>
+                  <SelectItem value="active">Activos</SelectItem>
+                  <SelectItem value="inactive">Inactivos</SelectItem>
                   <SelectItem value="high-risk">Riesgo alto (70%+)</SelectItem>
                   <SelectItem value="medium-risk">Riesgo medio (40-69%)</SelectItem>
                   <SelectItem value="low-risk">Riesgo bajo (&lt;40%)</SelectItem>
@@ -600,6 +611,7 @@ const RiskDetectionApp = () => {
             <Card 
               key={client.id} 
               className={`border-l-4 ${
+                client.status === 'inactive' ? "border-l-gray-500 bg-gray-50" :
                 client.riskScore >= 80 ? "border-l-red-500 bg-red-50" :
                 client.riskScore >= 60 ? "border-l-orange-500 bg-orange-50" :
                 client.riskScore >= 40 ? "border-l-yellow-500 bg-yellow-50" :
@@ -613,15 +625,21 @@ const RiskDetectionApp = () => {
                     <div className="flex items-center justify-between">
                       <h3 className="text-lg font-semibold text-gray-900">{client.full_name}</h3>
                       <div className="flex gap-2">
-                        <Badge 
-                          variant={client.riskScore >= 70 ? "destructive" : "secondary"}
-                          className="text-xs"
-                        >
-                          {client.riskScore >= 80 ? "CRÍTICO" :
-                           client.riskScore >= 60 ? "ALTO RIESGO" :
-                           client.riskScore >= 40 ? "RIESGO MEDIO" :
-                           "BAJO RIESGO"}
-                        </Badge>
+                        {client.status === 'inactive' ? (
+                          <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-700">
+                            INACTIVO
+                          </Badge>
+                        ) : (
+                          <Badge 
+                            variant={client.riskScore >= 70 ? "destructive" : "secondary"}
+                            className="text-xs"
+                          >
+                            {client.riskScore >= 80 ? "CRÍTICO" :
+                             client.riskScore >= 60 ? "ALTO RIESGO" :
+                             client.riskScore >= 40 ? "RIESGO MEDIO" :
+                             "BAJO RIESGO"}
+                          </Badge>
+                        )}
                         {client.noPurchaseHistory.length > 0 && (
                           <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700">
                             {client.noPurchaseHistory.length} objeción(es)
@@ -692,62 +710,73 @@ const RiskDetectionApp = () => {
                   {/* Panel de riesgo y acciones */}
                   <div className="lg:w-64 space-y-4">
                     {/* Score de riesgo */}
-                    <div className="text-center">
-                      <div className="text-sm text-gray-500 mb-1">Probabilidad de abandono</div>
-                      <div className={`text-3xl font-bold mb-2 ${
-                        client.riskScore >= 80 ? "text-red-600" :
-                        client.riskScore >= 60 ? "text-orange-600" :
-                        client.riskScore >= 40 ? "text-yellow-600" :
-                        "text-green-600"
-                      }`}>
-                        {client.riskScore}%
+                    {client.status !== 'inactive' && (
+                      <div className="text-center">
+                        <div className="text-sm text-gray-500 mb-1">Probabilidad de abandono</div>
+                        <div className={`text-3xl font-bold mb-2 ${
+                          client.riskScore >= 80 ? "text-red-600" :
+                          client.riskScore >= 60 ? "text-orange-600" :
+                          client.riskScore >= 40 ? "text-yellow-600" :
+                          "text-green-600"
+                        }`}>
+                          {client.riskScore}%
+                        </div>
+                        <Progress 
+                          value={client.riskScore} 
+                          className="h-2"
+                          indicatorClassName={`${
+                            client.riskScore >= 80 ? "bg-red-500" :
+                            client.riskScore >= 60 ? "bg-orange-500" :
+                            client.riskScore >= 40 ? "bg-yellow-500" :
+                            "bg-green-500"
+                          }`}
+                        />
                       </div>
-                      <Progress 
-                        value={client.riskScore} 
-                        className="h-2"
-                        indicatorClassName={`${
-                          client.riskScore >= 80 ? "bg-red-500" :
-                          client.riskScore >= 60 ? "bg-orange-500" :
-                          client.riskScore >= 40 ? "bg-yellow-500" :
-                          "bg-green-500"
-                        }`}
-                      />
-                    </div>
+                    )}
 
-                    {/* Acciones rápidas */}
-                    <div className="space-y-2">
-                      <div className="grid grid-cols-2 gap-2">
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          className="text-xs"
-                          onClick={() => applyRecoveryAction(client.id, 'priority_call', 'Llamada prioritaria programada')}
-                        >
-                          <Phone className="w-3 h-3 mr-1" />
-                          Llamar
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          className="text-xs"
-                          onClick={() => applyRecoveryAction(client.id, 'follow_up_email', 'Email de seguimiento enviado')}
-                        >
-                          <Mail className="w-3 h-3 mr-1" />
-                          Email
-                        </Button>
+                    {/* Acciones rápidas solo para clientes activos */}
+                    {client.status !== 'inactive' && (
+                      <div className="space-y-2">
+                        <div className="grid grid-cols-2 gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            className="text-xs"
+                            onClick={() => applyRecoveryAction(client.id, 'priority_call', 'Llamada prioritaria programada')}
+                          >
+                            <Phone className="w-3 h-3 mr-1" />
+                            Llamar
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            className="text-xs"
+                            onClick={() => applyRecoveryAction(client.id, 'follow_up_email', 'Email de seguimiento enviado')}
+                          >
+                            <Mail className="w-3 h-3 mr-1" />
+                            Email
+                          </Button>
+                        </div>
+                        
+                        {client.riskScore >= 70 && (
+                          <Button 
+                            size="sm" 
+                            className="w-full bg-red-600 hover:bg-red-700 text-white text-xs"
+                            onClick={() => applyRecoveryAction(client.id, 'discount_offer', 'Oferta especial aplicada')}
+                          >
+                            <Zap className="w-3 h-3 mr-1" />
+                            Acción Urgente
+                          </Button>
+                        )}
                       </div>
-                      
-                      {client.riskScore >= 70 && (
-                        <Button 
-                          size="sm" 
-                          className="w-full bg-red-600 hover:bg-red-700 text-white text-xs"
-                          onClick={() => applyRecoveryAction(client.id, 'discount_offer', 'Oferta especial aplicada')}
-                        >
-                          <Zap className="w-3 h-3 mr-1" />
-                          Acción Urgente
-                        </Button>
-                      )}
-                    </div>
+                    )}
+
+                    {client.status === 'inactive' && (
+                      <div className="text-center p-4 bg-gray-100 rounded-lg">
+                        <XCircle className="w-8 h-8 mx-auto mb-2 text-gray-500" />
+                        <p className="text-sm text-gray-600">Cliente en seguimiento futuro</p>
+                      </div>
+                    )}
 
                     {client.lastCalculated && (
                       <div className="text-xs text-gray-500 text-center">
