@@ -17,10 +17,7 @@ import {
   Home,
   Activity,
   MapPin,
-  Calendar,
-  Clock,
-  Info,
-  HelpCircle
+  Calendar
 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
 import { 
@@ -37,9 +34,8 @@ import {
   IndividualPropertyAnalysis,
   CombinedAnalysis
 } from "@/utils/aiAnalytics";
-import { limaMarketTrends, getCurrentQuarter, shouldUpdateData, getLastUpdateDate } from "@/utils/limaMarketTrends";
+import { limaMarketTrends, getCurrentQuarter } from "@/utils/limaMarketTrends";
 import { useAuth } from "@/contexts/AuthContext";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const RealLearningEngineSimulator = () => {
   const { user } = useAuth();
@@ -51,105 +47,15 @@ const RealLearningEngineSimulator = () => {
   const [individualProperties, setIndividualProperties] = useState<IndividualPropertyAnalysis[]>([]);
   const [combinedAnalysis, setCombinedAnalysis] = useState<CombinedAnalysis | null>(null);
   const [activeTab, setActiveTab] = useState("analytics");
-  const [lastUpdateTime, setLastUpdateTime] = useState<string>("");
-  const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(true);
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
-  const getRiskExplanation = (riskLevel: string, stage: string, daysInStage: number, totalInteractions: number) => {
-    const explanations = {
-      'Alto': {
-        'Prospecto inicial': `Riesgo alto porque lleva ${daysInStage} días sin avanzar desde el contacto inicial. Con solo ${totalInteractions} interacciones, muestra poco engagement.`,
-        'Contacto realizado': `Riesgo alto: ${daysInStage} días desde el primer contacto sin generar interés real. Necesita seguimiento inmediato.`,
-        'Interés mostrado': `Riesgo alto: A pesar de mostrar interés inicial, lleva ${daysInStage} días estancado. Puede estar considerando otras opciones.`,
-        'Cita programada': `Riesgo alto: Cita programada pero ${daysInStage} días sin concretar. Posible pérdida de interés o problemas de timing.`,
-        'Propuesta enviada': `Riesgo alto: Propuesta enviada hace ${daysInStage} días sin respuesta. Puede estar evaluando competencia o perdió interés.`,
-        'Negociación': `Riesgo alto: Negociación estancada por ${daysInStage} días. Posibles objeciones no resueltas o problemas de precio.`,
-        'Contrato enviado': `Riesgo alto: Contrato enviado hace ${daysInStage} días sin firma. Posibles dudas de último momento.`,
-        'default': `Riesgo alto: Proceso estancado por ${daysInStage} días con baja actividad (${totalInteractions} interacciones).`
-      },
-      'Medio': {
-        'Prospecto inicial': `Riesgo medio: Contacto reciente pero necesita seguimiento activo para mantener interés.`,
-        'Contacto realizado': `Riesgo medio: Contacto establecido pero requiere nurturing para avanzar a la siguiente etapa.`,
-        'Interés mostrado': `Riesgo medio: Interés confirmado pero necesita propuesta concreta para avanzar.`,
-        'Cita programada': `Riesgo medio: Cita programada, buen momento para profundizar necesidades.`,
-        'Propuesta enviada': `Riesgo medio: Propuesta reciente, en período normal de evaluación.`,
-        'Negociación': `Riesgo medio: Negociación activa, requiere seguimiento para cerrar.`,
-        'Contrato enviado': `Riesgo medio: Contrato en revisión, período normal de evaluación legal.`,
-        'default': `Riesgo medio: Proceso en desarrollo normal, requiere seguimiento consistente.`
-      },
-      'Bajo': {
-        'Prospecto inicial': `Riesgo bajo: Contacto reciente y engagement positivo inicial.`,
-        'Contacto realizado': `Riesgo bajo: Comunicación fluida establecida, progreso normal.`,
-        'Interés mostrado': `Riesgo bajo: Interés confirmado con interacciones frecuentes.`,
-        'Cita programada': `Riesgo bajo: Cita confirmada con cliente comprometido.`,
-        'Propuesta enviada': `Riesgo bajo: Propuesta bien recibida, cliente activo en comunicación.`,
-        'Negociación': `Riesgo bajo: Negociación activa con avances positivos.`,
-        'Contrato enviado': `Riesgo bajo: Cliente comprometido, proceso de firma en curso.`,
-        'default': `Riesgo bajo: Cliente activo con engagement positivo constante.`
-      }
-    };
-
-    return explanations[riskLevel as keyof typeof explanations]?.[stage as keyof typeof explanations['Alto']] || 
-           explanations[riskLevel as keyof typeof explanations]?.default || 
-           'Análisis de riesgo basado en actividad y tiempo en etapa actual.';
-  };
-
-  const getStageSpecificRecommendations = (stage: string, riskLevel: string, daysInStage: number) => {
-    const recommendations: { [key: string]: { [key: string]: string[] } } = {
-      'Prospecto inicial': {
-        'Alto': ['Llamada inmediata para confirmar interés', 'Enviar información básica por WhatsApp', 'Agendar cita presencial urgente'],
-        'Medio': ['Seguimiento telefónico', 'Enviar catálogo de propiedades', 'Programar cita en los próximos 3 días'],
-        'Bajo': ['Continuar con proceso normal', 'Enviar propiedades relevantes', 'Mantener comunicación regular']
-      },
-      'Contacto realizado': {
-        'Alto': ['Reactivar con propuesta de valor única', 'Cambiar canal de comunicación', 'Ofrecer visita inmediata'],
-        'Medio': ['Llamar para entender necesidades específicas', 'Enviar opciones personalizadas', 'Programar segunda cita'],
-        'Bajo': ['Profundizar en necesidades específicas', 'Presentar opciones más detalladas', 'Agendar visita a propiedades']
-      },
-      'Interés mostrado': {
-        'Alto': ['Revisión urgente de objeciones', 'Ajustar propuesta de valor', 'Reunión presencial inmediata'],
-        'Medio': ['Clarificar dudas pendientes', 'Mostrar propiedades similares', 'Discutir opciones de financiamiento'],
-        'Bajo': ['Presentar propuesta formal', 'Agendar visitas a propiedades', 'Preparar documentación preliminar']
-      },
-      'Cita programada': {
-        'Alto': ['Confirmar cita urgentemente', 'Ofrecer nueva fecha/hora', 'Reunión virtual como alternativa'],
-        'Medio': ['Confirmar cita 24h antes', 'Preparar presentación personalizada', 'Enviar ubicación y detalles'],
-        'Bajo': ['Confirmar cita normalmente', 'Preparar documentos de propiedades', 'Planificar visita completa']
-      },
-      'Propuesta enviada': {
-        'Alto': ['Llamar para discutir propuesta', 'Revisar y ajustar términos', 'Ofrecer alternativas inmediatas'],
-        'Medio': ['Seguimiento sobre dudas de la propuesta', 'Aclarar términos y condiciones', 'Preparar documentación adicional'],
-        'Bajo': ['Seguimiento normal de propuesta', 'Estar disponible para preguntas', 'Preparar próximos pasos']
-      },
-      'Negociación': {
-        'Alto': ['Identificar objeciones principales', 'Proponer soluciones creativas', 'Involucrar a supervisor si es necesario'],
-        'Medio': ['Revisar puntos de negociación', 'Buscar términos de compromiso', 'Documentar acuerdos parciales'],
-        'Bajo': ['Continuar negociación constructiva', 'Documentar puntos acordados', 'Preparar contrato preliminar']
-      },
-      'Contrato enviado': {
-        'Alto': ['Llamar para revisar contrato juntos', 'Aclarar cláusulas específicas', 'Ofrecer firma presencial'],
-        'Medio': ['Seguimiento sobre revisión del contrato', 'Estar disponible para dudas legales', 'Coordinar con abogados si es necesario'],
-        'Bajo': ['Seguimiento normal de firma', 'Preparar documentos finales', 'Coordinar fecha de cierre']
-      }
-    };
-
-    return recommendations[stage]?.[riskLevel] || [
-      'Mantener comunicación regular',
-      'Monitorear progreso del cliente',
-      'Ajustar estrategia según respuesta'
-    ];
-  };
-
-  const loadAnalytics = async (forceUpdate = false) => {
+  const loadAnalytics = async () => {
     if (!user?.id) return;
-    
-    // Verificar si necesitamos actualizar los datos
-    if (!forceUpdate && !shouldUpdateData()) return;
     
     setLoading(true);
     try {
-      console.log('Cargando análisis actualizado con datos del', new Date().toLocaleString('es-PE'));
+      console.log('Cargando análisis completo de datos...');
       
       const [contactData, propertyData] = await Promise.all([
         analyzeContacts(user.id),
@@ -170,26 +76,14 @@ const RealLearningEngineSimulator = () => {
       setIndividualContacts(individualContactsData);
       setIndividualProperties(individualPropertiesData);
       setCombinedAnalysis(combinedData);
-      setLastUpdateTime(getLastUpdateDate());
       
-      console.log('Análisis actualizado exitosamente');
+      console.log('Análisis completo:', { contactData, propertyData, insightsData, individualContactsData, individualPropertiesData, combinedData });
     } catch (error) {
       console.error('Error al cargar analytics:', error);
     } finally {
       setLoading(false);
     }
   };
-
-  // Auto-actualización cada hora si está habilitada
-  useEffect(() => {
-    if (autoUpdateEnabled) {
-      const interval = setInterval(() => {
-        loadAnalytics(true);
-      }, 60 * 60 * 1000); // 1 hora
-
-      return () => clearInterval(interval);
-    }
-  }, [autoUpdateEnabled, user?.id]);
 
   useEffect(() => {
     loadAnalytics();
@@ -200,8 +94,7 @@ const RealLearningEngineSimulator = () => {
       <div className="flex items-center justify-center p-8">
         <div className="text-center">
           <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
-          <p className="text-gray-600">Actualizando datos con información de hoy...</p>
-          <p className="text-sm text-gray-500 mt-2">Analizando tendencias de Lima en tiempo real</p>
+          <p className="text-gray-600">Analizando tus datos con IA y tendencias de Lima...</p>
         </div>
       </div>
     );
@@ -213,14 +106,15 @@ const RealLearningEngineSimulator = () => {
         <Brain className="w-16 h-16 mx-auto mb-4 text-gray-400" />
         <h3 className="text-xl font-bold mb-2">No hay suficientes datos</h3>
         <p className="text-gray-600 mb-4">Necesitas al menos algunos contactos y propiedades para generar análisis predictivos.</p>
-        <Button onClick={() => loadAnalytics(true)}>
+        <Button onClick={loadAnalytics}>
           <RefreshCw className="w-4 h-4 mr-2" />
-          Actualizar datos
+          Intentar de nuevo
         </Button>
       </div>
     );
   }
 
+  // Preparar datos para gráficos con información de Lima
   const currentQuarter = getCurrentQuarter();
   const seasonalInfo = limaMarketTrends.seasonalFactors[currentQuarter];
 
@@ -236,46 +130,28 @@ const RealLearningEngineSimulator = () => {
 
   return (
     <div className="space-y-6">
+      {/* Header con información de Lima */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg p-6">
         <div className="flex justify-between items-center mb-4">
           <div>
             <h2 className="text-2xl font-bold">Motor de Aprendizaje IA - Lima</h2>
-            <p className="text-blue-100">Análisis basado en datos actualizados diariamente</p>
-            <div className="flex items-center gap-4 mt-2 text-sm">
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
-                <span>Mercado: Lima Metropolitana</span>
-              </div>
+            <p className="text-blue-100">Análisis basado en datos reales del mercado limeño</p>
+            <div className="flex items-center gap-2 mt-2 text-sm">
+              <MapPin className="w-4 h-4" />
+              <span>Mercado: Lima Metropolitana</span>
               <span className="text-blue-200">•</span>
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                <span>Temporada: {seasonalInfo.description}</span>
-              </div>
-              <span className="text-blue-200">•</span>
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                <span>Actualizado: {lastUpdateTime}</span>
-              </div>
+              <Calendar className="w-4 h-4" />
+              <span>Temporada: {seasonalInfo.description}</span>
             </div>
           </div>
-          <div className="flex gap-2">
-            <Button 
-              onClick={() => setAutoUpdateEnabled(!autoUpdateEnabled)}
-              variant="outline" 
-              className={`bg-white/10 border-white/20 text-white hover:bg-white/20 ${autoUpdateEnabled ? 'bg-green-500/20' : ''}`}
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Auto-actualización {autoUpdateEnabled ? 'ON' : 'OFF'}
-            </Button>
-            <Button 
-              onClick={() => loadAnalytics(true)}
-              variant="outline" 
-              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Actualizar ahora
-            </Button>
-          </div>
+          <Button 
+            onClick={loadAnalytics}
+            variant="outline" 
+            className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Actualizar
+          </Button>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -312,16 +188,7 @@ const RealLearningEngineSimulator = () => {
               <span className="text-sm font-medium">Crecimiento {currentQuarter}</span>
             </div>
             <div className="text-2xl font-bold">+{insights.nextMonthPrediction.marketGrowth.toFixed(1)}%</div>
-            <div className="text-xs text-blue-200">Tendencia actualizada hoy</div>
-          </div>
-        </div>
-
-        <div className="mt-4 p-3 bg-white/10 rounded-lg">
-          <div className="flex items-center justify-between text-sm">
-            <span>{insights.dataFreshness}</span>
-            <Badge variant="secondary" className="bg-green-500/20 text-green-100">
-              Datos en tiempo real
-            </Badge>
+            <div className="text-xs text-blue-200">Tendencia de Lima</div>
           </div>
         </div>
       </div>
@@ -330,7 +197,7 @@ const RealLearningEngineSimulator = () => {
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="analytics">
             <BarChart3 className="w-4 h-4 mr-2" />
-            Tendencias Diarias
+            Tendencias Lima
           </TabsTrigger>
           <TabsTrigger value="individual-contacts">
             <User className="w-4 h-4 mr-2" />
@@ -355,6 +222,7 @@ const RealLearningEngineSimulator = () => {
         </TabsList>
 
         <TabsContent value="analytics" className="space-y-6">
+          {/* Alerta de temporada */}
           <Card className="border-blue-200 bg-blue-50">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -365,7 +233,6 @@ const RealLearningEngineSimulator = () => {
                   <p className="text-xs text-blue-500 mt-1">
                     Factor de ajuste: {seasonalInfo.multiplier > 1 ? '+' : ''}{((seasonalInfo.multiplier - 1) * 100).toFixed(0)}% vs promedio anual
                   </p>
-                  <p className="text-xs text-green-600 mt-1">✓ Actualizado hoy: {new Date().toLocaleDateString('es-PE')}</p>
                 </div>
               </div>
             </CardContent>
@@ -403,7 +270,7 @@ const RealLearningEngineSimulator = () => {
                 <div className="mt-4 text-sm text-gray-600">
                   <p>• Línea sólida: tus datos • Línea punteada: actividad general de Lima</p>
                   <p className="text-xs text-gray-500 mt-1">
-                    <strong>Fuente:</strong> Datos actualizados diariamente - Última actualización: {contactAnalysis.lastUpdated}
+                    <strong>Fuente:</strong> Análisis combinado de datos de usuario y estadísticas del mercado inmobiliario de Lima Metropolitana 2024
                   </p>
                 </div>
               </CardContent>
@@ -437,17 +304,18 @@ const RealLearningEngineSimulator = () => {
                     ))}
                 </div>
                 <div className="mt-4 text-xs text-gray-500">
-                  <strong>Fuente:</strong> Datos del mercado inmobiliario de Lima actualizados diariamente
+                  <strong>Fuente:</strong> Reportes del sector inmobiliario de Lima, CAPECO y análisis de mercado 2024
                 </div>
               </CardContent>
             </Card>
           </div>
 
+          {/* Insights del mercado de Lima */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Lightbulb className="w-5 h-5" />
-                Insights del Mercado Limeño - Actualizados Hoy
+                Insights del Mercado Limeño
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -459,7 +327,7 @@ const RealLearningEngineSimulator = () => {
                 ))}
               </div>
               <div className="mt-4 text-xs text-gray-500">
-                <strong>Fuente:</strong> Análisis actualizado diariamente basado en tendencias del mercado peruano - {new Date().toLocaleDateString('es-PE')}
+                <strong>Fuente:</strong> Análisis de tendencias del mercado inmobiliario peruano, BCRP y estudios sectoriales 2024
               </div>
             </CardContent>
           </Card>
@@ -495,7 +363,7 @@ const RealLearningEngineSimulator = () => {
                 </ResponsiveContainer>
               </div>
               <div className="mt-4 text-xs text-gray-500">
-                <strong>Fuente:</strong> Precios actualizados diariamente - Última actualización: {propertyAnalysis.lastUpdated}
+                <strong>Fuente:</strong> Combinación de datos de usuario y precios promedio del mercado inmobiliario de Lima 2024
               </div>
             </CardContent>
           </Card>
@@ -527,6 +395,7 @@ const RealLearningEngineSimulator = () => {
           </Card>
         </TabsContent>
 
+        
         <TabsContent value="individual-contacts" className="space-y-6">
           <Card>
             <CardHeader>
@@ -545,39 +414,9 @@ const RealLearningEngineSimulator = () => {
                         <p className="text-sm text-gray-600">Etapa: {contact.stage.replace(/_/g, ' ')}</p>
                       </div>
                       <div className="flex gap-2">
-                        <div className="flex items-center gap-1">
-                          <Badge variant={contact.riskLevel === 'Alto' ? 'destructive' : contact.riskLevel === 'Medio' ? 'default' : 'outline'}>
-                            Riesgo: {contact.riskLevel}
-                          </Badge>
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                                <HelpCircle className="w-4 h-4" />
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-md">
-                              <DialogHeader>
-                                <DialogTitle className="flex items-center gap-2">
-                                  <Info className="w-5 h-5" />
-                                  Explicación del Riesgo
-                                </DialogTitle>
-                              </DialogHeader>
-                              <div className="space-y-3">
-                                <div className="bg-gray-50 p-3 rounded-lg">
-                                  <p className="text-sm font-medium mb-2">Cliente: {contact.name}</p>
-                                  <p className="text-sm text-gray-600">Etapa: {contact.stage}</p>
-                                  <p className="text-sm text-gray-600">Nivel de riesgo: {contact.riskLevel}</p>
-                                </div>
-                                <div>
-                                  <p className="text-sm font-medium mb-2">¿Por qué este nivel de riesgo?</p>
-                                  <p className="text-sm text-gray-700">
-                                    {getRiskExplanation(contact.riskLevel, contact.stage, contact.daysInCurrentStage, contact.totalInteractions)}
-                                  </p>
-                                </div>
-                              </div>
-                            </DialogContent>
-                          </Dialog>
-                        </div>
+                        <Badge variant={contact.riskLevel === 'Alto' ? 'destructive' : contact.riskLevel === 'Medio' ? 'default' : 'outline'}>
+                          Riesgo: {contact.riskLevel}
+                        </Badge>
                         <Badge variant="secondary">
                           {contact.conversionProbability}% conversión
                         </Badge>
@@ -596,16 +435,16 @@ const RealLearningEngineSimulator = () => {
                       </div>
                     </div>
 
-                    <div className="bg-blue-50 p-3 rounded">
-                      <p className="text-sm font-medium text-blue-800 mb-2">
-                        Acciones recomendadas para "{contact.stage}":
-                      </p>
-                      <ul className="text-sm text-blue-700 space-y-1">
-                        {getStageSpecificRecommendations(contact.stage, contact.riskLevel, contact.daysInCurrentStage).map((action, index) => (
-                          <li key={index}>• {action}</li>
-                        ))}
-                      </ul>
-                    </div>
+                    {contact.recommendedActions.length > 0 && (
+                      <div className="bg-blue-50 p-3 rounded">
+                        <p className="text-sm font-medium text-blue-800 mb-2">Acciones recomendadas:</p>
+                        <ul className="text-sm text-blue-700 space-y-1">
+                          {contact.recommendedActions.map((action, index) => (
+                            <li key={index}>• {action}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -775,7 +614,7 @@ const RealLearningEngineSimulator = () => {
                 <TrendingUp className="w-12 h-12 mx-auto mb-4 text-orange-600" />
                 <div className="text-2xl font-bold text-orange-600">{insights.nextMonthPrediction.marketGrowth.toFixed(1)}%</div>
                 <div className="text-sm text-gray-600">Crecimiento de Mercado</div>
-                <div className="text-xs text-orange-700 mt-2">Actualizado hoy</div>
+                <div className="text-xs text-orange-700 mt-2">Tendencia mensual</div>
               </CardContent>
             </Card>
           </div>
@@ -818,7 +657,7 @@ const RealLearningEngineSimulator = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Target className="w-5 h-5" />
-                Recomendaciones Actualizadas con IA
+                Recomendaciones Personalizadas IA
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -839,7 +678,7 @@ const RealLearningEngineSimulator = () => {
                     <p className="text-sm text-gray-600 mb-3">{rec.description}</p>
                     <div className="flex justify-between items-center">
                       <div className="text-xs text-gray-500">
-                        Tipo: {rec.type} • Actualizado: {insights.lastUpdated}
+                        Tipo: {rec.type} • Generado por IA
                       </div>
                       <Button size="sm" variant="outline">
                         Aplicar Sugerencia

@@ -1,5 +1,6 @@
+
 import { supabase } from '@/integrations/supabase/client';
-import { limaMarketTrends, getCurrentQuarter, getSeasonalAdjustment, getLastUpdateDate } from './limaMarketTrends';
+import { limaMarketTrends, getCurrentQuarter, getSeasonalAdjustment } from './limaMarketTrends';
 
 export interface ContactAnalysis {
   totalContacts: number;
@@ -12,11 +13,9 @@ export interface ContactAnalysis {
     conversions: number;
     marketActivity?: number;
     avgPrice?: number;
-    lastUpdated?: string;
   }>;
   topSources: Array<{ source: string; count: number }>;
   clientTypes: Record<string, number>;
-  lastUpdated: string;
 }
 
 export interface PropertyAnalysis {
@@ -31,7 +30,6 @@ export interface PropertyAnalysis {
     bestPerformingDistricts: string[];
     recommendations: string[];
   };
-  lastUpdated: string;
 }
 
 export interface PredictiveInsights {
@@ -55,8 +53,6 @@ export interface PredictiveInsights {
     confidence: number;
   }>;
   marketInsights: string[];
-  lastUpdated: string;
-  dataFreshness: string;
 }
 
 export interface IndividualContactAnalysis {
@@ -128,17 +124,16 @@ export const analyzeContacts = async (userId: string): Promise<ContactAnalysis> 
 
     const conversionRate = totalContacts > 0 ? (convertedContacts / totalContacts) * 100 : 0;
 
-    // Usar tendencias dinámicas actualizadas diariamente
+    // Usar tendencias reales de Lima mezcladas con datos del usuario
     const userMonthlyData = calculateUserMonthlyTrends(contacts || [], interactions || []);
     const combinedTrends = limaMarketTrends.monthlyTrends.map((limaTrend, index) => {
       const userTrend = userMonthlyData[index] || { contacts: 0, conversions: 0 };
       return {
         month: limaTrend.month,
-        contacts: userTrend.contacts || Math.round(limaTrend.contacts * 0.1),
+        contacts: userTrend.contacts || Math.round(limaTrend.contacts * 0.1), // Escalar datos de Lima
         conversions: userTrend.conversions || Math.round(limaTrend.conversions * 0.1),
         marketActivity: limaTrend.marketActivity,
-        avgPrice: limaTrend.avgPrice,
-        lastUpdated: limaTrend.lastUpdated
+        avgPrice: limaTrend.avgPrice
       };
     });
 
@@ -172,11 +167,11 @@ export const analyzeContacts = async (userId: string): Promise<ContactAnalysis> 
       stageDistribution,
       monthlyTrends: combinedTrends,
       topSources,
-      clientTypes,
-      lastUpdated: getLastUpdateDate()
+      clientTypes
     };
   } catch (error) {
     console.error('Error analyzing contacts:', error);
+    // Retornar datos de Lima como fallback
     return {
       totalContacts: 0,
       conversionRate: 0,
@@ -184,8 +179,7 @@ export const analyzeContacts = async (userId: string): Promise<ContactAnalysis> 
       stageDistribution: {},
       monthlyTrends: limaMarketTrends.monthlyTrends,
       topSources: [],
-      clientTypes: {},
-      lastUpdated: getLastUpdateDate()
+      clientTypes: {}
     };
   }
 };
@@ -202,18 +196,16 @@ export const analyzeProperties = async (userId: string): Promise<PropertyAnalysi
     const totalProperties = properties?.length || 0;
     const avgPrice = totalProperties > 0 
       ? properties.reduce((sum, p) => sum + (p.price || 0), 0) / totalProperties
-      : 320000;
+      : 320000; // Precio promedio de Lima
 
     const priceByType: Record<string, number> = {};
     const priceRangeDistribution: Record<string, number> = {};
     const districtDistribution: Record<string, number> = {};
     const statusDistribution: Record<string, number> = {};
 
-    // Usar datos dinámicos actualizados
+    // Usar datos reales como base - extraer solo los precios promedio
     Object.entries(limaMarketTrends.propertyTypeTrends).forEach(([type, data]) => {
-      // Aplicar variación diaria a los precios
-      const dailyVariation = Math.sin(new Date().getTime() / (1000 * 60 * 60 * 24)) * 0.02 + 1;
-      priceByType[type] = Math.round(data.avgPrice * dailyVariation);
+      priceByType[type] = data.avgPrice;
     });
 
     properties?.forEach(property => {
@@ -223,9 +215,10 @@ export const analyzeProperties = async (userId: string): Promise<PropertyAnalysi
       const status = property.status || 'Disponible';
 
       if (price > 0) {
-        priceByType[type] = ((priceByType[type] || 0) + price) / 2;
+        priceByType[type] = ((priceByType[type] || 0) + price) / 2; // Promedio con datos reales
       }
 
+      // Distribución por rangos de precio
       if (price < 200000) priceRangeDistribution['Menos de S/200k'] = (priceRangeDistribution['Menos de S/200k'] || 0) + 1;
       else if (price < 350000) priceRangeDistribution['S/200k - S/350k'] = (priceRangeDistribution['S/200k - S/350k'] || 0) + 1;
       else if (price < 500000) priceRangeDistribution['S/350k - S/500k'] = (priceRangeDistribution['S/350k - S/500k'] || 0) + 1;
@@ -235,6 +228,7 @@ export const analyzeProperties = async (userId: string): Promise<PropertyAnalysi
       statusDistribution[status] = (statusDistribution[status] || 0) + 1;
     });
 
+    // Comparación con mercado de Lima
     const limaAverage = 320000;
     const vsLimaAverage = avgPrice > 0 ? ((avgPrice - limaAverage) / limaAverage) * 100 : 0;
 
@@ -253,8 +247,7 @@ export const analyzeProperties = async (userId: string): Promise<PropertyAnalysi
           'Departamentos de 2-3 dormitorios tienen alta demanda',
           'El mercado actual favorece precios entre S/300k-S/450k'
         ]
-      },
-      lastUpdated: getLastUpdateDate()
+      }
     };
   } catch (error) {
     console.error('Error analyzing properties:', error);
@@ -274,8 +267,7 @@ export const analyzeProperties = async (userId: string): Promise<PropertyAnalysi
         vsLimaAverage: 0,
         bestPerformingDistricts: ['Surco', 'La Molina', 'San Borja'],
         recommendations: []
-      },
-      lastUpdated: getLastUpdateDate()
+      }
     };
   }
 };
@@ -288,21 +280,16 @@ export const generatePredictiveInsights = async (
   const seasonalFactor = getSeasonalAdjustment();
   const currentQuarter = getCurrentQuarter();
   
-  // Cálculos dinámicos basados en la fecha actual
-  const today = new Date();
-  const dayOfMonth = today.getDate();
-  const isEndOfMonth = dayOfMonth >= 25;
-  
+  // Predicciones basadas en datos reales de Lima y tendencias del usuario
   const recentMonths = contactAnalysis.monthlyTrends.slice(-3);
   const avgMonthlyContacts = recentMonths.reduce((sum, m) => sum + m.contacts, 0) / recentMonths.length;
   const avgMonthlyConversions = recentMonths.reduce((sum, m) => sum + m.conversions, 0) / recentMonths.length;
 
-  // Aplicar factores de tiempo real
-  const timeBoost = isEndOfMonth ? 1.2 : 1.0;
-  const expectedContacts = Math.round(avgMonthlyContacts * seasonalFactor.multiplier * timeBoost);
-  const expectedSales = Math.round(avgMonthlyConversions * seasonalFactor.multiplier * timeBoost);
+  const expectedContacts = Math.round(avgMonthlyContacts * seasonalFactor.multiplier);
+  const expectedSales = Math.round(avgMonthlyConversions * seasonalFactor.multiplier);
   const expectedRevenue = expectedSales * propertyAnalysis.avgPrice;
 
+  // Calcular crecimiento del mercado basado en tendencias de Lima
   const marketGrowth = currentQuarter === 'Q4' ? 8.5 : 
                      currentQuarter === 'Q2' ? 12.1 : 
                      currentQuarter === 'Q3' ? 5.8 : 3.2;
@@ -358,12 +345,11 @@ export const generatePredictiveInsights = async (
     },
     riskAlerts,
     recommendations,
-    marketInsights: limaMarketTrends.marketInsights,
-    lastUpdated: getLastUpdateDate(),
-    dataFreshness: `Datos actualizados: ${today.toLocaleDateString('es-PE')}`
+    marketInsights: limaMarketTrends.marketInsights
   };
 };
 
+// Función auxiliar para calcular tendencias mensuales del usuario
 const calculateUserMonthlyTrends = (contacts: any[], interactions: any[]) => {
   const monthlyData = Array(12).fill(null).map((_, index) => ({
     contacts: 0,
