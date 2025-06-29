@@ -131,6 +131,120 @@ const RealLearningEngineSimulator = () => {
     price: Math.round(price)
   }));
 
+  const getRiskReasonsByStage = (stage: string, daysInStage: number, lastContactDays: number) => {
+    const reasons = [];
+    
+    // Razones específicas por etapa
+    switch (stage) {
+      case 'Prospecto inicial':
+      case 'Lead generado':
+        if (lastContactDays > 3) reasons.push('Contacto inicial perdiendo momentum');
+        if (daysInStage > 7) reasons.push('Demasiado tiempo sin avanzar desde prospecto');
+        break;
+        
+      case 'Contacto realizado':
+      case 'Primer contacto':
+        if (lastContactDays > 5) reasons.push('Falta seguimiento después del primer contacto');
+        if (daysInStage > 10) reasons.push('No se ha logrado agendar cita');
+        break;
+        
+      case 'Cita agendada':
+        if (lastContactDays > 2) reasons.push('Falta confirmación de cita');
+        if (daysInStage > 5) reasons.push('Cita no realizada o reprogramada');
+        break;
+        
+      case 'Visita realizada':
+        if (lastContactDays > 2) reasons.push('Sin seguimiento post-visita crítico');
+        if (daysInStage > 5) reasons.push('No se ha obtenido feedback de la visita');
+        break;
+        
+      case 'Interesado':
+      case 'Interés confirmado':
+        if (lastContactDays > 3) reasons.push('Cliente interesado sin seguimiento activo');
+        if (daysInStage > 14) reasons.push('Interés puede estar enfriándose');
+        break;
+        
+      case 'Negociación':
+        if (lastContactDays > 7) reasons.push('Negociación estancada sin comunicación');
+        if (daysInStage > 21) reasons.push('Negociación prolongada indica objeciones no resueltas');
+        break;
+        
+      case 'Propuesta enviada':
+        if (lastContactDays > 5) reasons.push('Propuesta sin respuesta o seguimiento');
+        if (daysInStage > 10) reasons.push('Cliente evaluando otras opciones');
+        break;
+        
+      default:
+        if (lastContactDays > 7) reasons.push('Comunicación irregular');
+        if (daysInStage > 30) reasons.push('Proceso muy lento');
+    }
+    
+    return reasons;
+  };
+
+  const calculateStageSpecificRisk = (stage: string, daysInStage: number, lastContactDays: number): { level: 'Alto' | 'Medio' | 'Bajo', score: number, reasons: string[] } => {
+    let riskScore = 0;
+    const reasons = getRiskReasonsByStage(stage, daysInStage, lastContactDays);
+    
+    // Factores de riesgo por días sin contacto
+    if (lastContactDays > 14) riskScore += 40;
+    else if (lastContactDays > 7) riskScore += 25;
+    else if (lastContactDays > 3) riskScore += 10;
+    
+    // Factores de riesgo específicos por etapa y días en la etapa
+    switch (stage) {
+      case 'Prospecto inicial':
+      case 'Lead generado':
+        if (daysInStage > 7) riskScore += 30;
+        else if (daysInStage > 3) riskScore += 15;
+        break;
+        
+      case 'Contacto realizado':
+      case 'Primer contacto':
+        if (daysInStage > 10) riskScore += 35;
+        else if (daysStage > 5) riskScore += 20;
+        break;
+        
+      case 'Cita agendada':
+        if (daysInStage > 5) riskScore += 40;
+        else if (daysInStage > 2) riskScore += 25;
+        break;
+        
+      case 'Visita realizada':
+        if (daysInStage > 5) riskScore += 45;
+        else if (daysInStage > 2) riskScore += 25;
+        break;
+        
+      case 'Interesado':
+      case 'Interés confirmado':
+        if (daysInStage > 14) riskScore += 25;
+        else if (daysInStage > 7) riskScore += 10;
+        break;
+        
+      case 'Negociación':
+        if (daysInStage > 21) riskScore += 30;
+        else if (daysInStage > 14) riskScore += 15;
+        break;
+        
+      case 'Propuesta enviada':
+        if (daysInStage > 10) riskScore += 35;
+        else if (daysInStage > 5) riskScore += 20;
+        break;
+        
+      case 'Seguimiento':
+        if (daysInStage > 30) riskScore += 15;
+        break;
+        
+      default:
+        if (daysInStage > 30) riskScore += 20;
+    }
+    
+    // Determinar nivel de riesgo
+    const level: 'Alto' | 'Medio' | 'Bajo' = riskScore >= 60 ? 'Alto' : riskScore >= 30 ? 'Medio' : 'Bajo';
+    
+    return { level, score: Math.min(riskScore, 100), reasons };
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg p-6">
@@ -386,12 +500,12 @@ const RealLearningEngineSimulator = () => {
                     <Line type="monotone" dataKey="contacts" stroke="#8884d8" name="Contactos" />
                     <Line type="monotone" dataKey="conversions" stroke="#82ca9d" name="Conversiones" />
                   </LineChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="mt-4 text-xs text-gray-500">
-                <strong>Fuente:</strong> Datos de contactos y conversiones del usuario procesados con IA
-              </div>
-            </CardContent>
+                </div>
+                <div className="mt-4 text-xs text-gray-500">
+                  <strong>Fuente:</strong> Datos de contactos y conversiones del usuario procesados con IA
+                </div>
+              </CardContent>
+            </Card>
           </Card>
         </TabsContent>
         
@@ -400,17 +514,20 @@ const RealLearningEngineSimulator = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="w-5 h-5" />
-                Análisis Individual de Contactos
+                Análisis Individual de Contactos por Etapa
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4 max-h-96 overflow-y-auto">
                 {individualContacts.map((contact) => {
+                  const lastContactDays = Math.floor((Date.now() - new Date(contact.lastInteractionDate).getTime()) / (1000 * 60 * 60 * 24));
+                  const riskAnalysis = calculateStageSpecificRisk(contact.stage, contact.daysInCurrentStage, lastContactDays);
+                  
                   const stageRecommendations = getStageSpecificRecommendations(
                     contact.stage, 
-                    contact.riskLevel, 
+                    riskAnalysis.level, 
                     contact.daysInCurrentStage, 
-                    Math.floor((Date.now() - new Date(contact.lastInteractionDate).getTime()) / (1000 * 60 * 60 * 24))
+                    lastContactDays
                   );
 
                   return (
@@ -428,20 +545,20 @@ const RealLearningEngineSimulator = () => {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Badge variant={contact.riskLevel === 'Alto' ? 'destructive' : contact.riskLevel === 'Medio' ? 'default' : 'outline'}>
-                            Riesgo: {contact.riskLevel}
+                          <Badge variant={riskAnalysis.level === 'Alto' ? 'destructive' : riskAnalysis.level === 'Medio' ? 'default' : 'outline'}>
+                            Riesgo: {riskAnalysis.level}
                           </Badge>
                           <RiskExplanationDialog
                             contactName={contact.name}
-                            riskLevel={contact.riskLevel}
-                            riskScore={Math.floor(100 - contact.conversionProbability)}
+                            riskLevel={riskAnalysis.level}
+                            riskScore={riskAnalysis.score}
                             daysInStage={contact.daysInCurrentStage}
-                            lastContactDays={Math.floor((Date.now() - new Date(contact.lastInteractionDate).getTime()) / (1000 * 60 * 60 * 24))}
-                            interactionFrequency={contact.totalInteractions / 4} // Aproximación semanal
+                            lastContactDays={lastContactDays}
+                            interactionFrequency={contact.totalInteractions / 4}
                             stage={contact.stage}
                           />
                           <Badge variant="secondary">
-                            {contact.conversionProbability}% conversión
+                            {Math.max(0, 100 - riskAnalysis.score)}% conversión
                           </Badge>
                         </div>
                       </div>
@@ -458,10 +575,27 @@ const RealLearningEngineSimulator = () => {
                         </div>
                       </div>
 
+                      {/* Explicación del riesgo específico */}
+                      {riskAnalysis.reasons.length > 0 && (
+                        <div className="bg-orange-50 p-3 rounded mb-3">
+                          <p className="text-sm font-medium text-orange-800 mb-2">
+                            Razones del riesgo {riskAnalysis.level.toLowerCase()}:
+                          </p>
+                          <ul className="text-sm text-orange-700 space-y-1">
+                            {riskAnalysis.reasons.map((reason, index) => (
+                              <li key={index} className="flex items-start gap-2">
+                                <span className="text-orange-500 mt-1">•</span>
+                                {reason}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
                       {stageRecommendations.length > 0 && (
                         <div className="bg-blue-50 p-3 rounded">
                           <p className="text-sm font-medium text-blue-800 mb-2">
-                            Recomendaciones para "{contact.stage}":
+                            Recomendaciones específicas para "{contact.stage}":
                           </p>
                           <div className="space-y-2">
                             {stageRecommendations.slice(0, 3).map((rec, index) => (
