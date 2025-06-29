@@ -17,8 +17,7 @@ import {
   Home,
   Activity,
   MapPin,
-  Calendar,
-  Clock
+  Calendar
 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
 import { 
@@ -35,9 +34,7 @@ import {
   IndividualPropertyAnalysis,
   CombinedAnalysis
 } from "@/utils/aiAnalytics";
-import { generateDailyLimaData, getCurrentQuarter, getLastUpdateTime } from "@/utils/limaMarketTrends";
-import { getStageSpecificRecommendations, getStageDisplayName } from "@/utils/stageRecommendations";
-import { RiskExplanationDialog } from "@/components/RiskExplanationDialog";
+import { limaMarketTrends, getCurrentQuarter } from "@/utils/limaMarketTrends";
 import { useAuth } from "@/contexts/AuthContext";
 
 const RealLearningEngineSimulator = () => {
@@ -50,7 +47,6 @@ const RealLearningEngineSimulator = () => {
   const [individualProperties, setIndividualProperties] = useState<IndividualPropertyAnalysis[]>([]);
   const [combinedAnalysis, setCombinedAnalysis] = useState<CombinedAnalysis | null>(null);
   const [activeTab, setActiveTab] = useState("analytics");
-  const [limaData, setLimaData] = useState(generateDailyLimaData());
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
@@ -60,10 +56,6 @@ const RealLearningEngineSimulator = () => {
     setLoading(true);
     try {
       console.log('Cargando análisis completo de datos...');
-      
-      // Actualizar datos de Lima
-      const updatedLimaData = generateDailyLimaData();
-      setLimaData(updatedLimaData);
       
       const [contactData, propertyData] = await Promise.all([
         analyzeContacts(user.id),
@@ -85,7 +77,7 @@ const RealLearningEngineSimulator = () => {
       setIndividualProperties(individualPropertiesData);
       setCombinedAnalysis(combinedData);
       
-      console.log('Análisis completo cargado');
+      console.log('Análisis completo:', { contactData, propertyData, insightsData, individualContactsData, individualPropertiesData, combinedData });
     } catch (error) {
       console.error('Error al cargar analytics:', error);
     } finally {
@@ -124,8 +116,7 @@ const RealLearningEngineSimulator = () => {
 
   // Preparar datos para gráficos con información de Lima
   const currentQuarter = getCurrentQuarter();
-  const seasonalInfo = limaData.seasonalFactors?.[currentQuarter] || { description: "Temporada actual", multiplier: 1 };
-  const lastUpdate = getLastUpdateTime();
+  const seasonalInfo = limaMarketTrends.seasonalFactors[currentQuarter];
 
   const stageData = Object.entries(contactAnalysis.stageDistribution).map(([stage, count]) => ({
     name: stage.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
@@ -139,25 +130,18 @@ const RealLearningEngineSimulator = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header con información de Lima actualizada */}
+      {/* Header con información de Lima */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg p-6">
         <div className="flex justify-between items-center mb-4">
           <div>
             <h2 className="text-2xl font-bold">Motor de Aprendizaje IA - Lima</h2>
             <p className="text-blue-100">Análisis basado en datos reales del mercado limeño</p>
-            <div className="flex items-center gap-4 mt-2 text-sm">
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
-                <span>Mercado: Lima Metropolitana</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                <span>Temporada: {seasonalInfo.description}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                <span>Actualizado: {new Date(lastUpdate).toLocaleDateString()}</span>
-              </div>
+            <div className="flex items-center gap-2 mt-2 text-sm">
+              <MapPin className="w-4 h-4" />
+              <span>Mercado: Lima Metropolitana</span>
+              <span className="text-blue-200">•</span>
+              <Calendar className="w-4 h-4" />
+              <span>Temporada: {seasonalInfo.description}</span>
             </div>
           </div>
           <Button 
@@ -177,7 +161,7 @@ const RealLearningEngineSimulator = () => {
               <span className="text-sm font-medium">Tus Contactos</span>
             </div>
             <div className="text-2xl font-bold">{contactAnalysis.totalContacts}</div>
-            <div className="text-xs text-blue-200">vs {Math.round(limaData.monthlyTrends.reduce((sum, m) => sum + m.contacts, 0) / 12)} promedio Lima</div>
+            <div className="text-xs text-blue-200">vs {Math.round(limaMarketTrends.monthlyTrends.reduce((sum, m) => sum + m.contacts, 0) / 12)} promedio Lima</div>
           </div>
           
           <div className="bg-white/10 rounded-lg p-4">
@@ -301,7 +285,7 @@ const RealLearningEngineSimulator = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {Object.entries(limaData.districtTrends)
+                  {Object.entries(limaMarketTrends.districtTrends)
                     .sort(([,a], [,b]) => b.demand - a.demand)
                     .slice(0, 6)
                     .map(([district, data]) => (
@@ -336,7 +320,7 @@ const RealLearningEngineSimulator = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {limaData.marketInsights.map((insight, index) => (
+                {limaMarketTrends.marketInsights.map((insight, index) => (
                   <div key={index} className="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
                     <p className="text-sm text-blue-800">{insight}</p>
                   </div>
@@ -422,67 +406,47 @@ const RealLearningEngineSimulator = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4 max-h-96 overflow-y-auto">
-                {individualContacts.map((contact) => {
-                  const stageSpecificRecommendations = getStageSpecificRecommendations(
-                    contact.stage, 
-                    contact.conversionProbability, 
-                    contact.daysInCurrentStage,
-                    Math.floor(Math.random() * 30) // lastContactDays simulado
-                  );
-                  
-                  return (
-                    <div key={contact.id} className="border rounded-lg p-4 hover:bg-gray-50">
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <h4 className="font-medium">{contact.name}</h4>
-                          <p className="text-sm text-gray-600">
-                            Etapa: {getStageDisplayName(contact.stage)}
-                          </p>
-                        </div>
-                        <div className="flex gap-2 items-center">
-                          <Badge variant={contact.riskLevel === 'Alto' ? 'destructive' : contact.riskLevel === 'Medio' ? 'default' : 'outline'}>
-                            Riesgo: {contact.riskLevel}
-                          </Badge>
-                          <RiskExplanationDialog
-                            contactName={contact.name}
-                            riskScore={contact.conversionProbability}
-                            stage={contact.stage}
-                            daysInStage={contact.daysInCurrentStage}
-                            lastContactDays={Math.floor(Math.random() * 30)}
-                            interactionFrequency={contact.totalInteractions / 4}
-                            riskFactors={contact.riskLevel === 'Alto' ? ['Días sin contacto', 'Estancado en etapa'] : []}
-                          />
-                          <Badge variant="secondary">
-                            {contact.conversionProbability}% conversión
-                          </Badge>
-                        </div>
+                {individualContacts.map((contact) => (
+                  <div key={contact.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h4 className="font-medium">{contact.name}</h4>
+                        <p className="text-sm text-gray-600">Etapa: {contact.stage.replace(/_/g, ' ')}</p>
                       </div>
-                      
-                      <div className="grid grid-cols-3 gap-4 text-sm mb-3">
-                        <div>
-                          <span className="font-medium">Días en etapa:</span> {contact.daysInCurrentStage}
-                        </div>
-                        <div>
-                          <span className="font-medium">Interacciones:</span> {contact.totalInteractions}
-                        </div>
-                        <div>
-                          <span className="font-medium">Última interacción:</span> {new Date(contact.lastInteractionDate).toLocaleDateString()}
-                        </div>
+                      <div className="flex gap-2">
+                        <Badge variant={contact.riskLevel === 'Alto' ? 'destructive' : contact.riskLevel === 'Medio' ? 'default' : 'outline'}>
+                          Riesgo: {contact.riskLevel}
+                        </Badge>
+                        <Badge variant="secondary">
+                          {contact.conversionProbability}% conversión
+                        </Badge>
                       </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-4 text-sm mb-3">
+                      <div>
+                        <span className="font-medium">Días en etapa:</span> {contact.daysInCurrentStage}
+                      </div>
+                      <div>
+                        <span className="font-medium">Interacciones:</span> {contact.totalInteractions}
+                      </div>
+                      <div>
+                        <span className="font-medium">Última interacción:</span> {new Date(contact.lastInteractionDate).toLocaleDateString()}
+                      </div>
+                    </div>
 
+                    {contact.recommendedActions.length > 0 && (
                       <div className="bg-blue-50 p-3 rounded">
-                        <p className="text-sm font-medium text-blue-800 mb-2">
-                          Recomendaciones para {getStageDisplayName(contact.stage)}:
-                        </p>
+                        <p className="text-sm font-medium text-blue-800 mb-2">Acciones recomendadas:</p>
                         <ul className="text-sm text-blue-700 space-y-1">
-                          {stageSpecificRecommendations.slice(0, 3).map((action, index) => (
+                          {contact.recommendedActions.map((action, index) => (
                             <li key={index}>• {action}</li>
                           ))}
                         </ul>
                       </div>
-                    </div>
-                  );
-                })}
+                    )}
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>

@@ -1,5 +1,6 @@
+
 import { supabase } from '@/integrations/supabase/client';
-import { generateDailyLimaData, getCurrentQuarter, getSeasonalAdjustment } from './limaMarketTrends';
+import { limaMarketTrends, getCurrentQuarter, getSeasonalAdjustment } from './limaMarketTrends';
 
 export interface ContactAnalysis {
   totalContacts: number;
@@ -278,7 +279,6 @@ export const generatePredictiveInsights = async (
 ): Promise<PredictiveInsights> => {
   const seasonalFactor = getSeasonalAdjustment();
   const currentQuarter = getCurrentQuarter();
-  const limaData = generateDailyLimaData();
   
   // Predicciones basadas en datos reales de Lima y tendencias del usuario
   const recentMonths = contactAnalysis.monthlyTrends.slice(-3);
@@ -345,7 +345,7 @@ export const generatePredictiveInsights = async (
     },
     riskAlerts,
     recommendations,
-    marketInsights: limaData.marketInsights
+    marketInsights: limaMarketTrends.marketInsights
   };
 };
 
