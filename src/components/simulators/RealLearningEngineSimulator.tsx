@@ -18,7 +18,9 @@ import {
   Activity,
   MapPin,
   Calendar,
-  Clock
+  Clock,
+  Info,
+  HelpCircle
 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
 import { 
@@ -37,6 +39,7 @@ import {
 } from "@/utils/aiAnalytics";
 import { limaMarketTrends, getCurrentQuarter, shouldUpdateData, getLastUpdateDate } from "@/utils/limaMarketTrends";
 import { useAuth } from "@/contexts/AuthContext";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const RealLearningEngineSimulator = () => {
   const { user } = useAuth();
@@ -52,6 +55,91 @@ const RealLearningEngineSimulator = () => {
   const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(true);
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+
+  const getRiskExplanation = (riskLevel: string, stage: string, daysInStage: number, totalInteractions: number) => {
+    const explanations = {
+      'Alto': {
+        'Prospecto inicial': `Riesgo alto porque lleva ${daysInStage} días sin avanzar desde el contacto inicial. Con solo ${totalInteractions} interacciones, muestra poco engagement.`,
+        'Contacto realizado': `Riesgo alto: ${daysInStage} días desde el primer contacto sin generar interés real. Necesita seguimiento inmediato.`,
+        'Interés mostrado': `Riesgo alto: A pesar de mostrar interés inicial, lleva ${daysInStage} días estancado. Puede estar considerando otras opciones.`,
+        'Cita programada': `Riesgo alto: Cita programada pero ${daysInStage} días sin concretar. Posible pérdida de interés o problemas de timing.`,
+        'Propuesta enviada': `Riesgo alto: Propuesta enviada hace ${daysInStage} días sin respuesta. Puede estar evaluando competencia o perdió interés.`,
+        'Negociación': `Riesgo alto: Negociación estancada por ${daysInStage} días. Posibles objeciones no resueltas o problemas de precio.`,
+        'Contrato enviado': `Riesgo alto: Contrato enviado hace ${daysInStage} días sin firma. Posibles dudas de último momento.`,
+        'default': `Riesgo alto: Proceso estancado por ${daysInStage} días con baja actividad (${totalInteractions} interacciones).`
+      },
+      'Medio': {
+        'Prospecto inicial': `Riesgo medio: Contacto reciente pero necesita seguimiento activo para mantener interés.`,
+        'Contacto realizado': `Riesgo medio: Contacto establecido pero requiere nurturing para avanzar a la siguiente etapa.`,
+        'Interés mostrado': `Riesgo medio: Interés confirmado pero necesita propuesta concreta para avanzar.`,
+        'Cita programada': `Riesgo medio: Cita programada, buen momento para profundizar necesidades.`,
+        'Propuesta enviada': `Riesgo medio: Propuesta reciente, en período normal de evaluación.`,
+        'Negociación': `Riesgo medio: Negociación activa, requiere seguimiento para cerrar.`,
+        'Contrato enviado': `Riesgo medio: Contrato en revisión, período normal de evaluación legal.`,
+        'default': `Riesgo medio: Proceso en desarrollo normal, requiere seguimiento consistente.`
+      },
+      'Bajo': {
+        'Prospecto inicial': `Riesgo bajo: Contacto reciente y engagement positivo inicial.`,
+        'Contacto realizado': `Riesgo bajo: Comunicación fluida establecida, progreso normal.`,
+        'Interés mostrado': `Riesgo bajo: Interés confirmado con interacciones frecuentes.`,
+        'Cita programada': `Riesgo bajo: Cita confirmada con cliente comprometido.`,
+        'Propuesta enviada': `Riesgo bajo: Propuesta bien recibida, cliente activo en comunicación.`,
+        'Negociación': `Riesgo bajo: Negociación activa con avances positivos.`,
+        'Contrato enviado': `Riesgo bajo: Cliente comprometido, proceso de firma en curso.`,
+        'default': `Riesgo bajo: Cliente activo con engagement positivo constante.`
+      }
+    };
+
+    return explanations[riskLevel as keyof typeof explanations]?.[stage as keyof typeof explanations['Alto']] || 
+           explanations[riskLevel as keyof typeof explanations]?.default || 
+           'Análisis de riesgo basado en actividad y tiempo en etapa actual.';
+  };
+
+  const getStageSpecificRecommendations = (stage: string, riskLevel: string, daysInStage: number) => {
+    const recommendations: { [key: string]: { [key: string]: string[] } } = {
+      'Prospecto inicial': {
+        'Alto': ['Llamada inmediata para confirmar interés', 'Enviar información básica por WhatsApp', 'Agendar cita presencial urgente'],
+        'Medio': ['Seguimiento telefónico', 'Enviar catálogo de propiedades', 'Programar cita en los próximos 3 días'],
+        'Bajo': ['Continuar con proceso normal', 'Enviar propiedades relevantes', 'Mantener comunicación regular']
+      },
+      'Contacto realizado': {
+        'Alto': ['Reactivar con propuesta de valor única', 'Cambiar canal de comunicación', 'Ofrecer visita inmediata'],
+        'Medio': ['Llamar para entender necesidades específicas', 'Enviar opciones personalizadas', 'Programar segunda cita'],
+        'Bajo': ['Profundizar en necesidades específicas', 'Presentar opciones más detalladas', 'Agendar visita a propiedades']
+      },
+      'Interés mostrado': {
+        'Alto': ['Revisión urgente de objeciones', 'Ajustar propuesta de valor', 'Reunión presencial inmediata'],
+        'Medio': ['Clarificar dudas pendientes', 'Mostrar propiedades similares', 'Discutir opciones de financiamiento'],
+        'Bajo': ['Presentar propuesta formal', 'Agendar visitas a propiedades', 'Preparar documentación preliminar']
+      },
+      'Cita programada': {
+        'Alto': ['Confirmar cita urgentemente', 'Ofrecer nueva fecha/hora', 'Reunión virtual como alternativa'],
+        'Medio': ['Confirmar cita 24h antes', 'Preparar presentación personalizada', 'Enviar ubicación y detalles'],
+        'Bajo': ['Confirmar cita normalmente', 'Preparar documentos de propiedades', 'Planificar visita completa']
+      },
+      'Propuesta enviada': {
+        'Alto': ['Llamar para discutir propuesta', 'Revisar y ajustar términos', 'Ofrecer alternativas inmediatas'],
+        'Medio': ['Seguimiento sobre dudas de la propuesta', 'Aclarar términos y condiciones', 'Preparar documentación adicional'],
+        'Bajo': ['Seguimiento normal de propuesta', 'Estar disponible para preguntas', 'Preparar próximos pasos']
+      },
+      'Negociación': {
+        'Alto': ['Identificar objeciones principales', 'Proponer soluciones creativas', 'Involucrar a supervisor si es necesario'],
+        'Medio': ['Revisar puntos de negociación', 'Buscar términos de compromiso', 'Documentar acuerdos parciales'],
+        'Bajo': ['Continuar negociación constructiva', 'Documentar puntos acordados', 'Preparar contrato preliminar']
+      },
+      'Contrato enviado': {
+        'Alto': ['Llamar para revisar contrato juntos', 'Aclarar cláusulas específicas', 'Ofrecer firma presencial'],
+        'Medio': ['Seguimiento sobre revisión del contrato', 'Estar disponible para dudas legales', 'Coordinar con abogados si es necesario'],
+        'Bajo': ['Seguimiento normal de firma', 'Preparar documentos finales', 'Coordinar fecha de cierre']
+      }
+    };
+
+    return recommendations[stage]?.[riskLevel] || [
+      'Mantener comunicación regular',
+      'Monitorear progreso del cliente',
+      'Ajustar estrategia según respuesta'
+    ];
+  };
 
   const loadAnalytics = async (forceUpdate = false) => {
     if (!user?.id) return;
@@ -133,7 +221,6 @@ const RealLearningEngineSimulator = () => {
     );
   }
 
-  // Preparar datos para gráficos con información de Lima
   const currentQuarter = getCurrentQuarter();
   const seasonalInfo = limaMarketTrends.seasonalFactors[currentQuarter];
 
@@ -149,7 +236,6 @@ const RealLearningEngineSimulator = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header con información actualizada diariamente */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg p-6">
         <div className="flex justify-between items-center mb-4">
           <div>
@@ -230,7 +316,6 @@ const RealLearningEngineSimulator = () => {
           </div>
         </div>
 
-        {/* Indicador de frescura de datos */}
         <div className="mt-4 p-3 bg-white/10 rounded-lg">
           <div className="flex items-center justify-between text-sm">
             <span>{insights.dataFreshness}</span>
@@ -270,7 +355,6 @@ const RealLearningEngineSimulator = () => {
         </TabsList>
 
         <TabsContent value="analytics" className="space-y-6">
-          {/* Alerta de temporada actualizada */}
           <Card className="border-blue-200 bg-blue-50">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -359,7 +443,6 @@ const RealLearningEngineSimulator = () => {
             </Card>
           </div>
 
-          {/* Insights del mercado actualizados */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -444,7 +527,6 @@ const RealLearningEngineSimulator = () => {
           </Card>
         </TabsContent>
 
-        
         <TabsContent value="individual-contacts" className="space-y-6">
           <Card>
             <CardHeader>
@@ -463,9 +545,39 @@ const RealLearningEngineSimulator = () => {
                         <p className="text-sm text-gray-600">Etapa: {contact.stage.replace(/_/g, ' ')}</p>
                       </div>
                       <div className="flex gap-2">
-                        <Badge variant={contact.riskLevel === 'Alto' ? 'destructive' : contact.riskLevel === 'Medio' ? 'default' : 'outline'}>
-                          Riesgo: {contact.riskLevel}
-                        </Badge>
+                        <div className="flex items-center gap-1">
+                          <Badge variant={contact.riskLevel === 'Alto' ? 'destructive' : contact.riskLevel === 'Medio' ? 'default' : 'outline'}>
+                            Riesgo: {contact.riskLevel}
+                          </Badge>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                                <HelpCircle className="w-4 h-4" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-md">
+                              <DialogHeader>
+                                <DialogTitle className="flex items-center gap-2">
+                                  <Info className="w-5 h-5" />
+                                  Explicación del Riesgo
+                                </DialogTitle>
+                              </DialogHeader>
+                              <div className="space-y-3">
+                                <div className="bg-gray-50 p-3 rounded-lg">
+                                  <p className="text-sm font-medium mb-2">Cliente: {contact.name}</p>
+                                  <p className="text-sm text-gray-600">Etapa: {contact.stage}</p>
+                                  <p className="text-sm text-gray-600">Nivel de riesgo: {contact.riskLevel}</p>
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium mb-2">¿Por qué este nivel de riesgo?</p>
+                                  <p className="text-sm text-gray-700">
+                                    {getRiskExplanation(contact.riskLevel, contact.stage, contact.daysInCurrentStage, contact.totalInteractions)}
+                                  </p>
+                                </div>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
                         <Badge variant="secondary">
                           {contact.conversionProbability}% conversión
                         </Badge>
@@ -484,16 +596,16 @@ const RealLearningEngineSimulator = () => {
                       </div>
                     </div>
 
-                    {contact.recommendedActions.length > 0 && (
-                      <div className="bg-blue-50 p-3 rounded">
-                        <p className="text-sm font-medium text-blue-800 mb-2">Acciones recomendadas:</p>
-                        <ul className="text-sm text-blue-700 space-y-1">
-                          {contact.recommendedActions.map((action, index) => (
-                            <li key={index}>• {action}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
+                    <div className="bg-blue-50 p-3 rounded">
+                      <p className="text-sm font-medium text-blue-800 mb-2">
+                        Acciones recomendadas para "{contact.stage}":
+                      </p>
+                      <ul className="text-sm text-blue-700 space-y-1">
+                        {getStageSpecificRecommendations(contact.stage, contact.riskLevel, contact.daysInCurrentStage).map((action, index) => (
+                          <li key={index}>• {action}</li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
                 ))}
               </div>
