@@ -17,7 +17,9 @@ import {
   Home,
   Activity,
   MapPin,
-  Calendar
+  Calendar,
+  Clock,
+  CheckCircle
 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
 import { 
@@ -36,6 +38,8 @@ import {
 } from "@/utils/aiAnalytics";
 import { limaMarketTrends, getCurrentQuarter } from "@/utils/limaMarketTrends";
 import { useAuth } from "@/contexts/AuthContext";
+import RiskExplanationDialog from "@/components/RiskExplanationDialog";
+import { getStageSpecificRecommendations } from "@/utils/stageRecommendations";
 
 const RealLearningEngineSimulator = () => {
   const { user } = useAuth();
@@ -114,7 +118,6 @@ const RealLearningEngineSimulator = () => {
     );
   }
 
-  // Preparar datos para gráficos con información de Lima
   const currentQuarter = getCurrentQuarter();
   const seasonalInfo = limaMarketTrends.seasonalFactors[currentQuarter];
 
@@ -130,7 +133,6 @@ const RealLearningEngineSimulator = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header con información de Lima */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg p-6">
         <div className="flex justify-between items-center mb-4">
           <div>
@@ -222,7 +224,6 @@ const RealLearningEngineSimulator = () => {
         </TabsList>
 
         <TabsContent value="analytics" className="space-y-6">
-          {/* Alerta de temporada */}
           <Card className="border-blue-200 bg-blue-50">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -310,7 +311,6 @@ const RealLearningEngineSimulator = () => {
             </Card>
           </div>
 
-          {/* Insights del mercado de Lima */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -394,7 +394,6 @@ const RealLearningEngineSimulator = () => {
             </CardContent>
           </Card>
         </TabsContent>
-
         
         <TabsContent value="individual-contacts" className="space-y-6">
           <Card>
@@ -406,47 +405,88 @@ const RealLearningEngineSimulator = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4 max-h-96 overflow-y-auto">
-                {individualContacts.map((contact) => (
-                  <div key={contact.id} className="border rounded-lg p-4 hover:bg-gray-50">
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h4 className="font-medium">{contact.name}</h4>
-                        <p className="text-sm text-gray-600">Etapa: {contact.stage.replace(/_/g, ' ')}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Badge variant={contact.riskLevel === 'Alto' ? 'destructive' : contact.riskLevel === 'Medio' ? 'default' : 'outline'}>
-                          Riesgo: {contact.riskLevel}
-                        </Badge>
-                        <Badge variant="secondary">
-                          {contact.conversionProbability}% conversión
-                        </Badge>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-3 gap-4 text-sm mb-3">
-                      <div>
-                        <span className="font-medium">Días en etapa:</span> {contact.daysInCurrentStage}
-                      </div>
-                      <div>
-                        <span className="font-medium">Interacciones:</span> {contact.totalInteractions}
-                      </div>
-                      <div>
-                        <span className="font-medium">Última interacción:</span> {new Date(contact.lastInteractionDate).toLocaleDateString()}
-                      </div>
-                    </div>
+                {individualContacts.map((contact) => {
+                  const stageRecommendations = getStageSpecificRecommendations(
+                    contact.stage, 
+                    contact.riskLevel, 
+                    contact.daysInCurrentStage, 
+                    Math.floor((Date.now() - new Date(contact.lastInteractionDate).getTime()) / (1000 * 60 * 60 * 24))
+                  );
 
-                    {contact.recommendedActions.length > 0 && (
-                      <div className="bg-blue-50 p-3 rounded">
-                        <p className="text-sm font-medium text-blue-800 mb-2">Acciones recomendadas:</p>
-                        <ul className="text-sm text-blue-700 space-y-1">
-                          {contact.recommendedActions.map((action, index) => (
-                            <li key={index}>• {action}</li>
-                          ))}
-                        </ul>
+                  return (
+                    <div key={contact.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h4 className="font-medium">{contact.name}</h4>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="outline" className="text-xs">
+                              {contact.stage.replace(/_/g, ' ')}
+                            </Badge>
+                            <span className="text-xs text-gray-500">
+                              {contact.daysInCurrentStage} días en esta etapa
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={contact.riskLevel === 'Alto' ? 'destructive' : contact.riskLevel === 'Medio' ? 'default' : 'outline'}>
+                            Riesgo: {contact.riskLevel}
+                          </Badge>
+                          <RiskExplanationDialog
+                            contactName={contact.name}
+                            riskLevel={contact.riskLevel}
+                            riskScore={Math.floor(100 - contact.conversionProbability)}
+                            daysInStage={contact.daysInCurrentStage}
+                            lastContactDays={Math.floor((Date.now() - new Date(contact.lastInteractionDate).getTime()) / (1000 * 60 * 60 * 24))}
+                            interactionFrequency={contact.totalInteractions / 4} // Aproximación semanal
+                            stage={contact.stage}
+                          />
+                          <Badge variant="secondary">
+                            {contact.conversionProbability}% conversión
+                          </Badge>
+                        </div>
                       </div>
-                    )}
-                  </div>
-                ))}
+                      
+                      <div className="grid grid-cols-3 gap-4 text-sm mb-3">
+                        <div>
+                          <span className="font-medium">Interacciones:</span> {contact.totalInteractions}
+                        </div>
+                        <div>
+                          <span className="font-medium">Última interacción:</span> {new Date(contact.lastInteractionDate).toLocaleDateString()}
+                        </div>
+                        <div>
+                          <span className="font-medium">Tiempo en etapa:</span> {contact.daysInCurrentStage} días
+                        </div>
+                      </div>
+
+                      {stageRecommendations.length > 0 && (
+                        <div className="bg-blue-50 p-3 rounded">
+                          <p className="text-sm font-medium text-blue-800 mb-2">
+                            Recomendaciones para "{contact.stage}":
+                          </p>
+                          <div className="space-y-2">
+                            {stageRecommendations.slice(0, 3).map((rec, index) => (
+                              <div key={index} className="flex items-start gap-2">
+                                <Badge 
+                                  variant={rec.priority === 'Alta' ? 'destructive' : rec.priority === 'Media' ? 'default' : 'outline'}
+                                  className="text-xs"
+                                >
+                                  {rec.priority}
+                                </Badge>
+                                <div className="flex-1">
+                                  <p className="text-sm text-blue-700">{rec.action}</p>
+                                  <p className="text-xs text-blue-600">⏱️ {rec.timeframe}</p>
+                                  {rec.description && (
+                                    <p className="text-xs text-blue-500 mt-1 italic">{rec.description}</p>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
