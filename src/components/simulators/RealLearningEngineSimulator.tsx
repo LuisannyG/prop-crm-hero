@@ -15,7 +15,9 @@ import {
   RefreshCw,
   User,
   Home,
-  Activity
+  Activity,
+  MapPin,
+  Calendar
 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
 import { 
@@ -32,6 +34,7 @@ import {
   IndividualPropertyAnalysis,
   CombinedAnalysis
 } from "@/utils/aiAnalytics";
+import { limaMarketTrends, getCurrentQuarter } from "@/utils/limaMarketTrends";
 import { useAuth } from "@/contexts/AuthContext";
 
 const RealLearningEngineSimulator = () => {
@@ -91,7 +94,7 @@ const RealLearningEngineSimulator = () => {
       <div className="flex items-center justify-center p-8">
         <div className="text-center">
           <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
-          <p className="text-gray-600">Analizando tus datos con IA...</p>
+          <p className="text-gray-600">Analizando tus datos con IA y tendencias de Lima...</p>
         </div>
       </div>
     );
@@ -111,7 +114,10 @@ const RealLearningEngineSimulator = () => {
     );
   }
 
-  // Preparar datos para gráficos
+  // Preparar datos para gráficos con información de Lima
+  const currentQuarter = getCurrentQuarter();
+  const seasonalInfo = limaMarketTrends.seasonalFactors[currentQuarter];
+
   const stageData = Object.entries(contactAnalysis.stageDistribution).map(([stage, count]) => ({
     name: stage.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
     value: count
@@ -129,12 +135,19 @@ const RealLearningEngineSimulator = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header con métricas principales */}
+      {/* Header con información de Lima */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg p-6">
         <div className="flex justify-between items-center mb-4">
           <div>
-            <h2 className="text-2xl font-bold">Motor de Aprendizaje IA</h2>
-            <p className="text-blue-100">Análisis predictivo basado en tus datos reales</p>
+            <h2 className="text-2xl font-bold">Motor de Aprendizaje IA - Lima</h2>
+            <p className="text-blue-100">Análisis basado en datos reales del mercado limeño</p>
+            <div className="flex items-center gap-2 mt-2 text-sm">
+              <MapPin className="w-4 h-4" />
+              <span>Mercado: Lima Metropolitana</span>
+              <span className="text-blue-200">•</span>
+              <Calendar className="w-4 h-4" />
+              <span>Temporada: {seasonalInfo.description}</span>
+            </div>
           </div>
           <Button 
             onClick={loadAnalytics}
@@ -150,17 +163,19 @@ const RealLearningEngineSimulator = () => {
           <div className="bg-white/10 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <Users className="w-5 h-5" />
-              <span className="text-sm font-medium">Total Contactos</span>
+              <span className="text-sm font-medium">Tus Contactos</span>
             </div>
             <div className="text-2xl font-bold">{contactAnalysis.totalContacts}</div>
+            <div className="text-xs text-blue-200">vs {Math.round(limaMarketTrends.monthlyTrends.reduce((sum, m) => sum + m.contacts, 0) / 12)} promedio Lima</div>
           </div>
           
           <div className="bg-white/10 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <Target className="w-5 h-5" />
-              <span className="text-sm font-medium">Tasa Conversión</span>
+              <span className="text-sm font-medium">Conversión</span>
             </div>
             <div className="text-2xl font-bold">{contactAnalysis.conversionRate.toFixed(1)}%</div>
+            <div className="text-xs text-blue-200">vs 18% promedio Lima</div>
           </div>
           
           <div className="bg-white/10 rounded-lg p-4">
@@ -169,14 +184,16 @@ const RealLearningEngineSimulator = () => {
               <span className="text-sm font-medium">Precio Promedio</span>
             </div>
             <div className="text-2xl font-bold">S/{propertyAnalysis.avgPrice.toLocaleString()}</div>
+            <div className="text-xs text-blue-200">vs S/320k promedio Lima</div>
           </div>
           
           <div className="bg-white/10 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="w-5 h-5" />
-              <span className="text-sm font-medium">Proyección Mes</span>
+              <span className="text-sm font-medium">Crecimiento {currentQuarter}</span>
             </div>
-            <div className="text-2xl font-bold">{insights.nextMonthPrediction.expectedContacts}</div>
+            <div className="text-2xl font-bold">+{insights.nextMonthPrediction.marketGrowth.toFixed(1)}%</div>
+            <div className="text-xs text-blue-200">Tendencia de Lima</div>
           </div>
         </div>
       </div>
@@ -185,7 +202,7 @@ const RealLearningEngineSimulator = () => {
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="analytics">
             <BarChart3 className="w-4 h-4 mr-2" />
-            Analytics General
+            Tendencias Lima
           </TabsTrigger>
           <TabsTrigger value="individual-contacts">
             <User className="w-4 h-4 mr-2" />
@@ -210,6 +227,107 @@ const RealLearningEngineSimulator = () => {
         </TabsList>
 
         <TabsContent value="analytics" className="space-y-6">
+          {/* Alerta de temporada */}
+          <Card className="border-blue-200 bg-blue-50">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <Calendar className="w-8 h-8 text-blue-600" />
+                <div>
+                  <h4 className="font-medium text-blue-800">Contexto de Temporada - {currentQuarter}</h4>
+                  <p className="text-sm text-blue-600">{seasonalInfo.description}</p>
+                  <p className="text-xs text-blue-500 mt-1">
+                    Factor de ajuste: {seasonalInfo.multiplier > 1 ? '+' : ''}{((seasonalInfo.multiplier - 1) * 100).toFixed(0)}% vs promedio anual
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5" />
+                  Tendencias Mensuales - Lima vs Tu Negocio
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={contactAnalysis.monthlyTrends}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip 
+                        formatter={(value, name) => [
+                          name === 'marketActivity' ? `${value}% actividad` : value,
+                          name === 'contacts' ? 'Tus contactos' :
+                          name === 'conversions' ? 'Tus conversiones' :
+                          name === 'marketActivity' ? 'Actividad Lima' : name
+                        ]}
+                      />
+                      <Line type="monotone" dataKey="contacts" stroke="#8884d8" name="contacts" strokeWidth={2} />
+                      <Line type="monotone" dataKey="conversions" stroke="#82ca9d" name="conversions" strokeWidth={2} />
+                      <Line type="monotone" dataKey="marketActivity" stroke="#ff7c7c" name="marketActivity" strokeDasharray="5 5" strokeWidth={2} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="mt-4 text-sm text-gray-600">
+                  <p>• Línea sólida: tus datos • Línea punteada: actividad general de Lima</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="w-5 h-5" />
+                  Distritos Top de Lima
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {Object.entries(limaMarketTrends.districtTrends)
+                    .sort(([,a], [,b]) => b.demand - a.demand)
+                    .slice(0, 6)
+                    .map(([district, data]) => (
+                      <div key={district} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                        <div>
+                          <p className="font-medium">{district}</p>
+                          <p className="text-sm text-gray-600">S/{data.avgPrice.toLocaleString()}</p>
+                        </div>
+                        <div className="text-right">
+                          <Badge variant={data.demand > 85 ? "default" : "outline"}>
+                            {data.demand}% demanda
+                          </Badge>
+                          <p className="text-xs text-green-600 mt-1">+{data.growth}% crecimiento</p>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Insights del mercado de Lima */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Lightbulb className="w-5 h-5" />
+                Insights del Mercado Limeño
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {limaMarketTrends.marketInsights.map((insight, index) => (
+                  <div key={index} className="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                    <p className="text-sm text-blue-800">{insight}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
