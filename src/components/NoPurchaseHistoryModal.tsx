@@ -79,34 +79,49 @@ const NoPurchaseHistoryModal = ({ isOpen, onClose, contacts, properties }: NoPur
 
     try {
       setLoading(true);
+      console.log('Fetching no purchase reasons for user:', user.id);
       
       const { data: reasonsData, error } = await supabase
         .from('no_purchase_reasons')
         .select(`
           *,
-          contacts(full_name),
-          properties(title)
+          contacts!fk_no_purchase_reasons_contact(full_name),
+          properties!fk_no_purchase_reasons_property(title)
         `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching reasons:', error);
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los motivos de no compra: " + error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log('Raw reasons data:', reasonsData);
 
       // Process the reasons data to handle potential errors in relationships
-      const processedReasons: NoPurchaseReason[] = (reasonsData || []).map((reason: any) => ({
-        ...reason,
-        contacts: reason.contacts && typeof reason.contacts === 'object' && !reason.contacts.error 
-          ? reason.contacts 
-          : null,
-        properties: reason.properties && typeof reason.properties === 'object' && !reason.properties.error 
-          ? reason.properties 
-          : null,
-      }));
+      const processedReasons: NoPurchaseReason[] = (reasonsData || []).map((reason: any) => {
+        console.log('Processing reason:', reason);
+        return {
+          ...reason,
+          contacts: reason.contacts && typeof reason.contacts === 'object' && !Array.isArray(reason.contacts)
+            ? reason.contacts 
+            : null,
+          properties: reason.properties && typeof reason.properties === 'object' && !Array.isArray(reason.properties)
+            ? reason.properties 
+            : null,
+        };
+      });
 
+      console.log('Processed reasons:', processedReasons);
       setReasons(processedReasons);
       calculateStats(processedReasons);
     } catch (error) {
-      console.error('Error fetching reasons:', error);
+      console.error('Error in fetchReasons:', error);
       toast({
         title: "Error",
         description: "No se pudieron cargar los motivos de no compra.",
@@ -264,23 +279,25 @@ const NoPurchaseHistoryModal = ({ isOpen, onClose, contacts, properties }: NoPur
               </div>
 
               {/* Motivos principales */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Motivos Principales</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {Object.entries(stats.mainReasons)
-                      .sort(([,a], [,b]) => b - a)
-                      .slice(0, 5)
-                      .map(([reason, count]) => (
-                        <Badge key={reason} variant="secondary" className="text-sm">
-                          {getCategoryLabel(reason)}: {count}
-                        </Badge>
-                      ))}
-                  </div>
-                </CardContent>
-              </Card>
+              {Object.keys(stats.mainReasons).length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Motivos Principales</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.entries(stats.mainReasons)
+                        .sort(([,a], [,b]) => b - a)
+                        .slice(0, 5)
+                        .map(([reason, count]) => (
+                          <Badge key={reason} variant="secondary" className="text-sm">
+                            {getCategoryLabel(reason)}: {count}
+                          </Badge>
+                        ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Tabla de registros */}
               <Card>

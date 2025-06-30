@@ -64,6 +64,9 @@ const PurchaseReasons = () => {
     if (!user) return;
 
     try {
+      setLoading(true);
+      console.log('Fetching data for user:', user.id);
+
       // Fetch contacts
       const { data: contactsData, error: contactsError } = await supabase
         .from('contacts')
@@ -84,13 +87,13 @@ const PurchaseReasons = () => {
         console.error('Error fetching properties:', propertiesError);
       }
 
-      // Fetch no purchase reasons with related data
+      // Fetch no purchase reasons with related data using explicit foreign key names
       const { data: reasonsData, error: reasonsError } = await supabase
         .from('no_purchase_reasons')
         .select(`
           *,
-          contacts(full_name),
-          properties(title)
+          contacts!fk_no_purchase_reasons_contact(full_name),
+          properties!fk_no_purchase_reasons_property(title)
         `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
@@ -99,25 +102,32 @@ const PurchaseReasons = () => {
         console.error('Error fetching reasons:', reasonsError);
         toast({
           title: "Error",
-          description: "No se pudieron cargar los motivos de no compra.",
+          description: "No se pudieron cargar los motivos de no compra: " + reasonsError.message,
           variant: "destructive",
         });
-      }
+      } else {
+        console.log('Raw reasons data:', reasonsData);
 
-      // Process the reasons data to handle potential errors in relationships
-      const processedReasons: NoPurchaseReason[] = (reasonsData || []).map((reason: any) => ({
-        ...reason,
-        contacts: reason.contacts && typeof reason.contacts === 'object' && !reason.contacts.error 
-          ? reason.contacts 
-          : null,
-        properties: reason.properties && typeof reason.properties === 'object' && !reason.properties.error 
-          ? reason.properties 
-          : null,
-      }));
+        // Process the reasons data to handle potential errors in relationships
+        const processedReasons: NoPurchaseReason[] = (reasonsData || []).map((reason: any) => {
+          console.log('Processing reason:', reason);
+          return {
+            ...reason,
+            contacts: reason.contacts && typeof reason.contacts === 'object' && !Array.isArray(reason.contacts)
+              ? reason.contacts 
+              : null,
+            properties: reason.properties && typeof reason.properties === 'object' && !Array.isArray(reason.properties)
+              ? reason.properties 
+              : null,
+          };
+        });
+
+        console.log('Processed reasons:', processedReasons);
+        setReasons(processedReasons);
+      }
 
       setContacts(contactsData || []);
       setProperties(propertiesData || []);
-      setReasons(processedReasons);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast({

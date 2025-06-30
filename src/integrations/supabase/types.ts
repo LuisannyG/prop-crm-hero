@@ -228,7 +228,22 @@ export type Database = {
           user_id?: string
           will_reconsider?: boolean | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_no_purchase_reasons_contact"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_no_purchase_reasons_property"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       performance_metrics: {
         Row: {
