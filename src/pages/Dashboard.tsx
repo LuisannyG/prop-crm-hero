@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -11,9 +12,7 @@ import {
   Brain,
   Shield,
   Settings,
-  AlertCircle,
-  TrendingDown,
-  Upload
+  AlertCircle
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -21,7 +20,6 @@ import DashboardNav from "@/components/DashboardNav";
 import EnhancedDashboardSimulator from "@/components/simulators/EnhancedDashboardSimulator";
 import NoPurchaseReasonModal from "@/components/NoPurchaseReasonModal";
 import ExcelExportButton from "@/components/ExcelExportButton";
-import SalesFunnelImport from "@/components/SalesFunnelImport";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -41,7 +39,6 @@ const Dashboard = () => {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [showImportModal, setShowImportModal] = useState(false);
 
   useEffect(() => {
     const fetchContactsAndProperties = async () => {
@@ -81,21 +78,6 @@ const Dashboard = () => {
             <p className="text-gray-600">Gestiona tu negocio inmobiliario de forma inteligente</p>
           </div>
           <div className="flex gap-2">
-            <Button
-              onClick={() => navigate('/purchase-reasons')}
-              className="bg-red-500 hover:bg-red-600"
-            >
-              <TrendingDown className="w-4 h-4 mr-2" />
-              Motivos de No Compra
-            </Button>
-            <Button
-              onClick={() => setShowImportModal(true)}
-              variant="outline"
-              className="border-blue-500 text-blue-600 hover:bg-blue-50"
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              Importar CSV
-            </Button>
             <NoPurchaseReasonModal 
               contacts={contacts}
               properties={properties}
@@ -109,27 +91,6 @@ const Dashboard = () => {
         <div className="mb-8">
           <EnhancedDashboardSimulator key={refreshKey} />
         </div>
-
-        {/* Modal de importación CSV */}
-        {showImportModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-4 border-b flex justify-between items-center">
-                <h2 className="text-xl font-semibold">Importar Embudo de Ventas</h2>
-                <Button
-                  variant="ghost"
-                  onClick={() => setShowImportModal(false)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  ✕
-                </Button>
-              </div>
-              <div className="p-4">
-                <SalesFunnelImport />
-              </div>
-            </div>
-          </div>
-        )}
       </main>
     </div>
   );
