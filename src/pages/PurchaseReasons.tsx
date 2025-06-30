@@ -23,10 +23,12 @@ interface Property {
 interface NoPurchaseReason {
   id: string;
   contact_id: string;
+  property_id?: string;
   reason_category: string;
   reason_details?: string;
   created_at: string;
-  contact?: Contact;
+  contacts?: Contact;
+  properties?: Property;
 }
 
 const PurchaseReasons = () => {
@@ -48,6 +50,8 @@ const PurchaseReasons = () => {
     try {
       setLoading(true);
       
+      console.log("Fetching data for user:", user.id);
+      
       // Fetch contacts
       const { data: contactsData, error: contactsError } = await supabase
         .from('contacts')
@@ -55,28 +59,50 @@ const PurchaseReasons = () => {
         .eq('user_id', user.id)
         .order('full_name');
 
-      if (contactsError) throw contactsError;
+      if (contactsError) {
+        console.error('Error fetching contacts:', contactsError);
+        throw contactsError;
+      }
+
+      console.log("Contacts fetched:", contactsData?.length);
 
       // Fetch properties
       const { data: propertiesData, error: propertiesError } = await supabase
         .from('properties')
-        .select('id, title')
+        .select('id, title')  
         .eq('user_id', user.id)
         .order('title');
 
-      if (propertiesError) throw propertiesError;
+      if (propertiesError) {
+        console.error('Error fetching properties:', propertiesError);
+        throw propertiesError;
+      }
 
-      // Fetch no purchase reasons with contact info
+      console.log("Properties fetched:", propertiesData?.length);
+
+      // Fetch no purchase reasons with contact and property info
       const { data: reasonsData, error: reasonsError } = await supabase
         .from('no_purchase_reasons')
         .select(`
-          *,
-          contacts!no_purchase_reasons_contact_id_fkey(id, full_name)
+          id,
+          contact_id,
+          property_id,
+          reason_category,
+          reason_details,
+          created_at,
+          contacts!no_purchase_reasons_contact_id_fkey(id, full_name),
+          properties!no_purchase_reasons_property_id_fkey(id, title)
         `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (reasonsError) throw reasonsError;
+      if (reasonsError) {
+        console.error('Error fetching no purchase reasons:', reasonsError);
+        throw reasonsError;
+      }
+
+      console.log("No purchase reasons fetched:", reasonsData?.length);
+      console.log("Raw reasons data:", reasonsData);
 
       setContacts(contactsData || []);
       setProperties(propertiesData || []);
@@ -191,7 +217,7 @@ const PurchaseReasons = () => {
             <CardHeader className="bg-red-50">
               <CardTitle className="flex items-center text-red-800">
                 <TrendingDown className="mr-2 h-5 w-5" />
-                Motivos Recientes de No Compra
+                Motivos Recientes de No Compra ({totalReasons})
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
@@ -209,26 +235,39 @@ const PurchaseReasons = () => {
                 </div>
               ) : (
                 <div className="space-y-4 max-h-96 overflow-y-auto">
-                  {noPurchaseReasons.slice(0, 10).map((reason) => (
-                    <div key={reason.id} className="border-l-4 border-red-300 pl-4 py-2">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h4 className="font-medium text-gray-900">
-                            {reason.contact?.full_name || 'Cliente no encontrado'}
-                          </h4>
-                          <Badge variant="outline" className="mt-1">
-                            {reasonLabels[reason.reason_category] || reason.reason_category}
-                          </Badge>
-                          {reason.reason_details && (
-                            <p className="text-sm text-gray-600 mt-1">{reason.reason_details}</p>
-                          )}
+                  {noPurchaseReasons.map((reason) => {
+                    console.log("Rendering reason:", reason);
+                    const contactName = reason.contacts?.full_name || 'Cliente no encontrado';
+                    const propertyTitle = reason.properties?.title;
+                    
+                    return (
+                      <div key={reason.id} className="border-l-4 border-red-300 pl-4 py-2">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="font-medium text-gray-900">
+                              {contactName}
+                            </h4>
+                            <Badge variant="outline" className="mt-1">
+                              {reasonLabels[reason.reason_category] || reason.reason_category}
+                            </Badge>
+                            {propertyTitle && (
+                              <p className="text-sm text-gray-600 mt-1">
+                                <strong>Propiedad:</strong> {propertyTitle}
+                              </p>
+                            )}
+                            {reason.reason_details && (
+                              <p className="text-sm text-gray-600 mt-1">
+                                <strong>Detalles:</strong> {reason.reason_details}
+                              </p>
+                            )}
+                          </div>
+                          <span className="text-xs text-gray-400">
+                            {format(new Date(reason.created_at), "dd/MM/yyyy")}
+                          </span>
                         </div>
-                        <span className="text-xs text-gray-400">
-                          {format(new Date(reason.created_at), "dd/MM/yyyy")}
-                        </span>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </CardContent>
