@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -83,7 +84,7 @@ const PurchaseReasons = () => {
         console.error('Error fetching properties:', propertiesError);
       }
 
-      // Fetch no purchase reasons with related data - using left join instead of inner join
+      // Fetch no purchase reasons with related data
       const { data: reasonsData, error: reasonsError } = await supabase
         .from('no_purchase_reasons')
         .select(`
@@ -103,9 +104,20 @@ const PurchaseReasons = () => {
         });
       }
 
+      // Process the reasons data to handle potential errors in relationships
+      const processedReasons: NoPurchaseReason[] = (reasonsData || []).map((reason: any) => ({
+        ...reason,
+        contacts: reason.contacts && typeof reason.contacts === 'object' && !reason.contacts.error 
+          ? reason.contacts 
+          : null,
+        properties: reason.properties && typeof reason.properties === 'object' && !reason.properties.error 
+          ? reason.properties 
+          : null,
+      }));
+
       setContacts(contactsData || []);
       setProperties(propertiesData || []);
-      setReasons(reasonsData || []);
+      setReasons(processedReasons);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast({
