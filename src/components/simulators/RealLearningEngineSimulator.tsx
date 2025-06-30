@@ -11,7 +11,7 @@ import {
   AlertCircle, Zap, Calendar, DollarSign,
   BarChart3, PieChart, Activity, Lightbulb,
   MapPin, Clock, Star, Shield, Eye, CheckCircle,
-  TrendingDown, ArrowUp, ArrowDown
+  TrendingDown, ArrowUp, ArrowDown, Home, Wallet
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -212,6 +212,37 @@ const RealLearningEngineSimulator = () => {
     }
   };
 
+  const getRiskFactorsExplanation = (contact: IndividualContactAnalysis) => {
+    const factors = [];
+    const riskScore = 100 - contact.conversionProbability;
+    
+    if (contact.daysInCurrentStage > 21) {
+      factors.push(`Lleva ${contact.daysInCurrentStage} días en la etapa "${contact.stage.replace(/_/g, ' ')}" sin avanzar, indicando posible desinterés o dudas no resueltas.`);
+    } else if (contact.daysInCurrentStage > 14) {
+      factors.push(`Ha permanecido ${contact.daysInCurrentStage} días en la etapa actual, más tiempo del promedio esperado.`);
+    }
+    
+    if (contact.totalInteractions < 3) {
+      factors.push(`Solo tiene ${contact.totalInteractions} interacciones registradas, lo que sugiere bajo nivel de engagement.`);
+    } else if (contact.totalInteractions < 5) {
+      factors.push(`Con ${contact.totalInteractions} interacciones, necesita más seguimiento para fortalecer la relación.`);
+    }
+    
+    if (contact.stage === 'contacto_inicial' && contact.daysInCurrentStage > 7) {
+      factors.push('Permanece en contacto inicial demasiado tiempo, puede estar comparando opciones o perdiendo interés.');
+    }
+    
+    if (contact.stage === 'visita_realizada' && contact.daysInCurrentStage > 10) {
+      factors.push('No ha progresado después de la visita, posiblemente tiene objeciones no expresadas sobre la propiedad.');
+    }
+    
+    if (contact.stage === 'negociacion' && contact.daysInCurrentStage > 14) {
+      factors.push('La negociación se ha extendido demasiado, puede haber problemas de financiamiento o expectativas de precio.');
+    }
+    
+    return factors;
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -258,128 +289,13 @@ const RealLearningEngineSimulator = () => {
         </Button>
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5 bg-white/80 backdrop-blur-sm rounded-xl p-1">
-          <TabsTrigger value="overview" className="rounded-lg">Dashboard</TabsTrigger>
+      <Tabs defaultValue="market" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4 bg-white/80 backdrop-blur-sm rounded-xl p-1">
           <TabsTrigger value="market" className="rounded-lg">Mercado Lima</TabsTrigger>
           <TabsTrigger value="contacts" className="rounded-lg">Análisis Contactos</TabsTrigger>
           <TabsTrigger value="properties" className="rounded-lg">Análisis Propiedades</TabsTrigger>
           <TabsTrigger value="predictions" className="rounded-lg">Predicciones IA</TabsTrigger>
         </TabsList>
-
-        <TabsContent value="overview">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="bg-white/80 backdrop-blur-sm border-blue-200 hover:shadow-lg transition-all duration-300">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Contactos</CardTitle>
-                <Users className="h-4 w-4 text-blue-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-blue-700">{contacts.length}</div>
-                <p className="text-xs text-gray-600">
-                  {contactAnalysis?.conversionRate?.toFixed(1)}% tasa de conversión
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white/80 backdrop-blur-sm border-purple-200 hover:shadow-lg transition-all duration-300">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Propiedades</CardTitle>
-                <Building className="h-4 w-4 text-purple-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-purple-700">{properties.length}</div>
-                <p className="text-xs text-gray-600">
-                  S/ {propertyAnalysis?.avgPrice?.toLocaleString() || 0} precio promedio
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white/80 backdrop-blur-sm border-green-200 hover:shadow-lg transition-all duration-300">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Recordatorios</CardTitle>
-                <Calendar className="h-4 w-4 text-green-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-700">{reminders.length}</div>
-                <p className="text-xs text-gray-600">
-                  {reminders.filter(r => r.priority === 'alta').length} alta prioridad
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white/80 backdrop-blur-sm border-orange-200 hover:shadow-lg transition-all duration-300">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Predicción IA</CardTitle>
-                <TrendingUp className="h-4 w-4 text-orange-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-orange-700">
-                  {predictiveInsights?.nextMonthPrediction?.expectedSales || 0}
-                </div>
-                <p className="text-xs text-gray-600">
-                  Ventas esperadas próximo mes
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {contactAnalysis && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-              <Card className="bg-white/80 backdrop-blur-sm border-blue-200">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="w-5 h-5 text-blue-600" />
-                    Tendencias Mensuales
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={contactAnalysis.monthlyTrends}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <Tooltip />
-                      <Line type="monotone" dataKey="contacts" stroke="#3B82F6" strokeWidth={2} />
-                      <Line type="monotone" dataKey="conversions" stroke="#10B981" strokeWidth={2} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white/80 backdrop-blur-sm border-purple-200">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <PieChart className="w-5 h-5 text-purple-600" />
-                    Distribución por Etapas
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <RechartsPieChart>
-                      <Pie
-                        data={Object.entries(contactAnalysis.stageDistribution).map(([key, value]) => ({
-                          name: key.replace(/_/g, ' '),
-                          value
-                        }))}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {Object.entries(contactAnalysis.stageDistribution).map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </RechartsPieChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-        </TabsContent>
 
         <TabsContent value="market">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -387,7 +303,7 @@ const RealLearningEngineSimulator = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <TrendingUp className="w-5 h-5 text-blue-600" />
-                  Tendencias Mercado Lima 2024
+                  Evolución Precios Lima 2024
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -396,9 +312,11 @@ const RealLearningEngineSimulator = () => {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
                     <YAxis />
-                    <Tooltip />
-                    <Area type="monotone" dataKey="contacts" stackId="1" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.6} />
-                    <Area type="monotone" dataKey="conversions" stackId="1" stroke="#10B981" fill="#10B981" fillOpacity={0.6} />
+                    <Tooltip formatter={(value, name) => [
+                      name === 'avgPrice' ? `S/ ${value.toLocaleString()}` : value,
+                      name === 'avgPrice' ? 'Precio Promedio' : 'Contactos'
+                    ]} />
+                    <Area type="monotone" dataKey="avgPrice" stackId="1" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.6} />
                   </AreaChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -408,49 +326,103 @@ const RealLearningEngineSimulator = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <MapPin className="w-5 h-5 text-green-600" />
-                  Precios por Distrito
+                  Actividad por Distrito
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={limaMarketTrends.districtActivity}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="district" angle={-45} textAnchor="end" height={100} />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="activity" fill="#10B981" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/80 backdrop-blur-sm border-purple-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Home className="w-5 h-5 text-purple-600" />
+                  Demanda por Distrito
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <RechartsPieChart>
+                    <Pie
+                      data={Object.entries(limaMarketTrends.districtTrends).map(([district, data]) => ({
+                        name: district,
+                        value: data.demand === 'Muy Alta' ? 5 : data.demand === 'Alta' ? 4 : data.demand === 'Media' ? 3 : 2,
+                        avgPrice: data.avgPrice
+                      }))}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="value"
+                      label={({ name, value }) => `${name}: ${value === 5 ? 'Muy Alta' : value === 4 ? 'Alta' : value === 3 ? 'Media' : 'Baja'}`}
+                    >
+                      {Object.entries(limaMarketTrends.districtTrends).map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </RechartsPieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/80 backdrop-blur-sm border-orange-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Wallet className="w-5 h-5 text-orange-600" />
+                  Crecimiento de Precios
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={Object.entries(limaMarketTrends.districtTrends).map(([district, data]) => ({
                     district,
-                    avgPrice: data.avgPrice / 1000,
-                    demand: data.demand === 'Muy Alta' ? 4 : data.demand === 'Alta' ? 3 : 2
+                    growth: data.priceGrowth,
+                    avgPrice: data.avgPrice / 1000
                   }))}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="district" angle={-45} textAnchor="end" height={100} />
                     <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="avgPrice" fill="#10B981" />
+                    <Tooltip formatter={(value, name) => [
+                      name === 'growth' ? `${value}%` : `S/ ${value}K`,
+                      name === 'growth' ? 'Crecimiento' : 'Precio Promedio'
+                    ]} />
+                    <Bar dataKey="growth" fill="#F59E0B" />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
 
-            <Card className="bg-white/80 backdrop-blur-sm border-purple-200 lg:col-span-2">
+            <Card className="bg-white/80 backdrop-blur-sm border-red-200 lg:col-span-2">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-purple-600" />
-                  Análisis Estacional Lima
+                  <Activity className="w-5 h-5 text-red-600" />
+                  Tendencias Estacionales Lima
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {limaMarketTrends.seasonalPatterns.map((pattern, index) => (
-                    <div key={index} className="p-4 bg-gradient-to-r from-purple-100 to-blue-100 rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-semibold text-purple-700">
-                          {new Date(2024, pattern.months[0], 1).toLocaleDateString('es-ES', { month: 'long' })}
-                        </span>
-                        <Badge variant={pattern.activity > 1.2 ? "default" : pattern.activity > 1 ? "secondary" : "outline"}>
-                          {(pattern.activity * 100).toFixed(0)}%
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-gray-600">{pattern.description}</p>
-                    </div>
-                  ))}
-                </div>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={limaMarketTrends.seasonalPatterns.map((pattern, index) => ({
+                    month: new Date(2024, pattern.months[0], 1).toLocaleDateString('es-ES', { month: 'short' }),
+                    activity: pattern.activity * 100,
+                    description: pattern.description
+                  }))}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip formatter={(value) => [`${value}%`, 'Actividad']} />
+                    <Line type="monotone" dataKey="activity" stroke="#DC2626" strokeWidth={3} />
+                  </LineChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
           </div>
@@ -462,53 +434,104 @@ const RealLearningEngineSimulator = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Eye className="w-5 h-5 text-blue-600" />
-                  Análisis Detallado por Contacto
+                  Análisis Detallado de Riesgo por Contacto
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {individualContactAnalysis.slice(0, 9).map((contact) => (
-                    <div key={contact.id} className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold text-blue-900">{contact.name}</h3>
-                        <Badge variant={contact.riskLevel === 'Alto' ? 'destructive' : contact.riskLevel === 'Medio' ? 'default' : 'secondary'}>
-                          {contact.riskLevel}
-                        </Badge>
-                      </div>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Etapa:</span>
-                          <span className="font-medium">{contact.stage.replace(/_/g, ' ')}</span>
+                <div className="grid grid-cols-1 gap-6">
+                  {individualContactAnalysis.slice(0, 12).map((contact) => {
+                    const riskScore = 100 - contact.conversionProbability;
+                    const riskFactors = getRiskFactorsExplanation(contact);
+                    const riskExplanation = getRiskExplanation(riskScore, riskFactors);
+                    
+                    return (
+                      <div key={contact.id} className="p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200 shadow-lg">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                              {contact.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                            </div>
+                            <div>
+                              <h3 className="text-xl font-bold text-blue-900">{contact.name}</h3>
+                              <p className="text-gray-600">{contact.stage.replace(/_/g, ' ')}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <Badge variant={contact.riskLevel === 'Alto' ? 'destructive' : contact.riskLevel === 'Medio' ? 'default' : 'secondary'} className="text-sm">
+                              Riesgo {contact.riskLevel}
+                            </Badge>
+                            <p className="text-2xl font-bold mt-1 text-blue-700">{contact.conversionProbability}%</p>
+                            <p className="text-xs text-gray-500">Probabilidad de conversión</p>
+                          </div>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Días en etapa:</span>
-                          <span className="font-medium">{contact.daysInCurrentStage}</span>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                          <div className="bg-white/60 p-3 rounded-lg">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Clock className="w-4 h-4 text-blue-600" />
+                              <span className="text-sm font-medium text-gray-700">Días en Etapa</span>
+                            </div>
+                            <p className="text-lg font-bold text-blue-900">{contact.daysInCurrentStage}</p>
+                          </div>
+                          <div className="bg-white/60 p-3 rounded-lg">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Activity className="w-4 h-4 text-green-600" />
+                              <span className="text-sm font-medium text-gray-700">Interacciones</span>
+                            </div>
+                            <p className="text-lg font-bold text-green-900">{contact.totalInteractions}</p>
+                          </div>
+                          <div className="bg-white/60 p-3 rounded-lg">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Target className="w-4 h-4 text-purple-600" />
+                              <span className="text-sm font-medium text-gray-700">Score Riesgo</span>
+                            </div>
+                            <p className="text-lg font-bold text-purple-900">{riskScore.toFixed(0)}%</p>
+                          </div>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Interacciones:</span>
-                          <span className="font-medium">{contact.totalInteractions}</span>
+
+                        <div className="mb-4">
+                          <Progress value={contact.conversionProbability} className="h-3" />
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Probabilidad:</span>
-                          <span className="font-medium text-green-600">{contact.conversionProbability}%</span>
+
+                        <div className="mb-4">
+                          <h4 className="font-bold text-gray-800 mb-2 flex items-center gap-2">
+                            <AlertCircle className="w-4 h-4 text-red-600" />
+                            {riskExplanation.title}
+                          </h4>
+                          <p className="text-sm text-gray-700 mb-3">{riskExplanation.description}</p>
+                          
+                          {riskFactors.length > 0 && (
+                            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-3">
+                              <h5 className="font-semibold text-red-800 mb-2">Factores de Riesgo Detectados:</h5>
+                              <ul className="text-sm text-red-700 space-y-1">
+                                {riskFactors.map((factor, index) => (
+                                  <li key={index} className="flex items-start gap-2">
+                                    <span className="text-red-500 mt-1">•</span>
+                                    {factor}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
                         </div>
-                        <div className="mt-3">
-                          <Progress value={contact.conversionProbability} className="h-2" />
-                        </div>
-                        <div className="mt-3">
-                          <h4 className="font-medium text-xs text-gray-700 mb-1">Recomendaciones:</h4>
-                          <ul className="text-xs text-gray-600 space-y-1">
-                            {contact.recommendedActions.slice(0, 2).map((action, index) => (
-                              <li key={index} className="flex items-start gap-1">
-                                <CheckCircle className="w-3 h-3 text-green-500 mt-0.5 flex-shrink-0" />
+
+                        <div>
+                          <h4 className="font-semibold text-green-800 mb-2 flex items-center gap-2">
+                            <Lightbulb className="w-4 h-4 text-green-600" />
+                            Acciones Recomendadas:
+                          </h4>
+                          <ul className="text-sm text-green-700 space-y-2">
+                            {contact.recommendedActions.map((action, index) => (
+                              <li key={index} className="flex items-start gap-2">
+                                <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
                                 {action}
                               </li>
                             ))}
                           </ul>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
