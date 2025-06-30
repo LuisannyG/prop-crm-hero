@@ -58,7 +58,7 @@ const NoPurchaseReasonModal = ({ contacts, properties, onReasonAdded }: NoPurcha
 
   // Auto-fill price when property is selected
   useEffect(() => {
-    if (propertyId) {
+    if (propertyId && propertyId !== "none") {
       const selectedProperty = properties.find(p => p.id === propertyId);
       if (selectedProperty && selectedProperty.price) {
         setPriceFeedback(selectedProperty.price.toString());
@@ -88,7 +88,7 @@ const NoPurchaseReasonModal = ({ contacts, properties, onReasonAdded }: NoPurcha
         .insert({
           user_id: user.id,
           contact_id: contactId,
-          property_id: propertyId || null,
+          property_id: propertyId === "none" ? null : propertyId || null,
           reason_category: reasonCategory,
           reason_details: reasonDetails,
           price_feedback: priceFeedback ? parseFloat(priceFeedback) : null,
@@ -164,7 +164,7 @@ const NoPurchaseReasonModal = ({ contacts, properties, onReasonAdded }: NoPurcha
                   <SelectValue placeholder="Seleccionar propiedad" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Ninguna</SelectItem>
+                  <SelectItem value="none">Ninguna</SelectItem>
                   {properties.map((property) => (
                     <SelectItem key={property.id} value={property.id}>
                       {property.title}
@@ -210,7 +210,7 @@ const NoPurchaseReasonModal = ({ contacts, properties, onReasonAdded }: NoPurcha
               value={priceFeedback}
               onChange={(e) => setPriceFeedback(e.target.value)}
             />
-            {propertyId && (
+            {propertyId && propertyId !== "none" && (
               <p className="text-sm text-gray-500 mt-1">
                 Precio de la propiedad seleccionada llenado automáticamente
               </p>

@@ -31,7 +31,7 @@ interface NoPurchaseReason {
   contact_id: string;
   property_id: string | null;
   reason_category: string;
-  reason_details: string | null;
+  reason_details: string | null;  
   price_feedback: number | null;
   will_reconsider: boolean;
   follow_up_date: string | null;
@@ -59,7 +59,7 @@ const EditNoPurchaseReasonModal = ({
   const { user } = useAuth();
   const { toast } = useToast();
   const [contactId, setContactId] = useState(reason.contact_id);
-  const [propertyId, setPropertyId] = useState(reason.property_id || "");
+  const [propertyId, setPropertyId] = useState(reason.property_id || "none");
   const [reasonCategory, setReasonCategory] = useState(reason.reason_category);
   const [reasonDetails, setReasonDetails] = useState(reason.reason_details || "");
   const [priceFeedback, setPriceFeedback] = useState(reason.price_feedback?.toString() || "");
@@ -82,7 +82,7 @@ const EditNoPurchaseReasonModal = ({
 
   // Auto-fill price when property is selected (only if price feedback is empty)
   useEffect(() => {
-    if (propertyId && !priceFeedback) {
+    if (propertyId && propertyId !== "none" && !priceFeedback) {
       const selectedProperty = properties.find(p => p.id === propertyId);
       if (selectedProperty && selectedProperty.price) {
         setPriceFeedback(selectedProperty.price.toString());
@@ -100,7 +100,7 @@ const EditNoPurchaseReasonModal = ({
         .from('no_purchase_reasons')
         .update({
           contact_id: contactId,
-          property_id: propertyId || null,
+          property_id: propertyId === "none" ? null : propertyId || null,
           reason_category: reasonCategory,
           reason_details: reasonDetails,
           price_feedback: priceFeedback ? parseFloat(priceFeedback) : null,
@@ -169,7 +169,7 @@ const EditNoPurchaseReasonModal = ({
                   <SelectValue placeholder="Seleccionar propiedad" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Ninguna</SelectItem>
+                  <SelectItem value="none">Ninguna</SelectItem>
                   {properties.map((property) => (
                     <SelectItem key={property.id} value={property.id}>
                       {property.title}
@@ -215,7 +215,7 @@ const EditNoPurchaseReasonModal = ({
               value={priceFeedback}
               onChange={(e) => setPriceFeedback(e.target.value)}
             />
-            {propertyId && !reason.price_feedback && (
+            {propertyId && propertyId !== "none" && !reason.price_feedback && (
               <p className="text-sm text-gray-500 mt-1">
                 Precio de la propiedad seleccionada llenado automáticamente
               </p>
