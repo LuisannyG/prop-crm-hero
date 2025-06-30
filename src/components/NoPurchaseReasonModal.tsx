@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, AlertCircle } from "lucide-react";
+import { CalendarIcon, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,6 +23,7 @@ interface Contact {
 interface Property {
   id: string;
   title: string;
+  price?: number;
 }
 
 interface NoPurchaseReasonModalProps {
@@ -41,7 +42,7 @@ const NoPurchaseReasonModal = ({ contacts, properties, onReasonAdded }: NoPurcha
   const [reasonDetails, setReasonDetails] = useState("");
   const [priceFeedback, setPriceFeedback] = useState("");
   const [willReconsider, setWillReconsider] = useState(false);
-  const [followUpDate, setFollowUpDate] = useState<Date>();
+  const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -54,6 +55,27 @@ const NoPurchaseReasonModal = ({ contacts, properties, onReasonAdded }: NoPurcha
     { value: "timing", label: "No es el momento adecuado" },
     { value: "competencia", label: "Eligió la competencia" }
   ];
+
+  // Auto-fill price when property is selected
+  useEffect(() => {
+    if (propertyId) {
+      const selectedProperty = properties.find(p => p.id === propertyId);
+      if (selectedProperty && selectedProperty.price) {
+        setPriceFeedback(selectedProperty.price.toString());
+      }
+    }
+  }, [propertyId, properties]);
+
+  const resetForm = () => {
+    setContactId("");
+    setPropertyId("");
+    setReasonCategory("");
+    setReasonDetails("");
+    setPriceFeedback("");
+    setWillReconsider(false);
+    setFollowUpDate(undefined);
+    setNotes("");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,10 +98,10 @@ const NoPurchaseReasonModal = ({ contacts, properties, onReasonAdded }: NoPurcha
         });
 
       if (error) {
-        console.error('Error saving no purchase reason:', error);
+        console.error('Error creating no purchase reason:', error);
         toast({
           title: "Error",
-          description: "No se pudo guardar el motivo de no compra.",
+          description: "No se pudo crear el motivo de no compra.",
           variant: "destructive",
         });
         return;
@@ -90,22 +112,14 @@ const NoPurchaseReasonModal = ({ contacts, properties, onReasonAdded }: NoPurcha
         description: "Motivo de no compra registrado exitosamente.",
       });
 
-      // Reset form
-      setContactId("");
-      setPropertyId("");
-      setReasonCategory("");
-      setReasonDetails("");
-      setPriceFeedback("");
-      setWillReconsider(false);
-      setFollowUpDate(undefined);
-      setNotes("");
+      resetForm();
       setOpen(false);
       onReasonAdded();
     } catch (error) {
       console.error('Unexpected error:', error);
       toast({
         title: "Error",
-        description: "Error inesperado al guardar el motivo.",
+        description: "Error inesperado al crear el motivo.",
         variant: "destructive",
       });
     } finally {
@@ -116,9 +130,9 @@ const NoPurchaseReasonModal = ({ contacts, properties, onReasonAdded }: NoPurcha
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-orange-600 hover:bg-orange-700 text-white">
-          <AlertCircle className="w-4 h-4 mr-2" />
-          Registrar Motivo de No Compra
+        <Button className="bg-blue-600 hover:bg-blue-700">
+          <Plus className="w-4 h-4 mr-2" />
+          Registrar Motivo
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -150,6 +164,7 @@ const NoPurchaseReasonModal = ({ contacts, properties, onReasonAdded }: NoPurcha
                   <SelectValue placeholder="Seleccionar propiedad" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="">Ninguna</SelectItem>
                   {properties.map((property) => (
                     <SelectItem key={property.id} value={property.id}>
                       {property.title}
@@ -186,18 +201,21 @@ const NoPurchaseReasonModal = ({ contacts, properties, onReasonAdded }: NoPurcha
             />
           </div>
 
-          {reasonCategory === "precio" && (
-            <div>
-              <Label htmlFor="price">Precio que consideraría (S/)</Label>
-              <Input
-                id="price"
-                type="number"
-                placeholder="Ej: 250000"
-                value={priceFeedback}
-                onChange={(e) => setPriceFeedback(e.target.value)}
-              />
-            </div>
-          )}
+          <div>
+            <Label htmlFor="price">Precio Sugerido (S/)</Label>
+            <Input
+              id="price"
+              type="number"
+              placeholder="Se llenará automáticamente al seleccionar propiedad"
+              value={priceFeedback}
+              onChange={(e) => setPriceFeedback(e.target.value)}
+            />
+            {propertyId && (
+              <p className="text-sm text-gray-500 mt-1">
+                Precio de la propiedad seleccionada llenado automáticamente
+              </p>
+            )}
+          </div>
 
           <div className="flex items-center space-x-2">
             <Checkbox

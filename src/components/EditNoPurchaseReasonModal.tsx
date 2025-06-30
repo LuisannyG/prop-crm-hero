@@ -23,6 +23,7 @@ interface Contact {
 interface Property {
   id: string;
   title: string;
+  price?: number;
 }
 
 interface NoPurchaseReason {
@@ -78,6 +79,16 @@ const EditNoPurchaseReasonModal = ({
     { value: "timing", label: "No es el momento adecuado" },
     { value: "competencia", label: "Eligió la competencia" }
   ];
+
+  // Auto-fill price when property is selected (only if price feedback is empty)
+  useEffect(() => {
+    if (propertyId && !priceFeedback) {
+      const selectedProperty = properties.find(p => p.id === propertyId);
+      if (selectedProperty && selectedProperty.price) {
+        setPriceFeedback(selectedProperty.price.toString());
+      }
+    }
+  }, [propertyId, properties, priceFeedback]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -195,18 +206,21 @@ const EditNoPurchaseReasonModal = ({
             />
           </div>
 
-          {reasonCategory === "precio" && (
-            <div>
-              <Label htmlFor="price">Precio que consideraría (S/)</Label>
-              <Input
-                id="price"
-                type="number"
-                placeholder="Ej: 250000"
-                value={priceFeedback}
-                onChange={(e) => setPriceFeedback(e.target.value)}
-              />
-            </div>
-          )}
+          <div>
+            <Label htmlFor="price">Precio Sugerido (S/)</Label>
+            <Input
+              id="price"
+              type="number"
+              placeholder="Ej: 250000"
+              value={priceFeedback}
+              onChange={(e) => setPriceFeedback(e.target.value)}
+            />
+            {propertyId && !reason.price_feedback && (
+              <p className="text-sm text-gray-500 mt-1">
+                Precio de la propiedad seleccionada llenado automáticamente
+              </p>
+            )}
+          </div>
 
           <div className="flex items-center space-x-2">
             <Checkbox
