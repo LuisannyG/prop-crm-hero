@@ -1087,7 +1087,7 @@ const RealLearningEngineSimulator = () => {
           ) : (
             <>
               <Brain className="w-4 h-4 mr-2" />
-              Ejecutar Análisis IA
+              Actualizar Análisis IA
             </>
           )}
         </Button>
