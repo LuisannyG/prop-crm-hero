@@ -38,6 +38,9 @@ export interface IndividualContactAnalysis {
 export interface IndividualPropertyAnalysis {
   id: string;
   title: string;
+  district: string;
+  propertyType: string;
+  price: number;
   pricePosition: 'Por encima del mercado' | 'En el mercado' | 'Por debajo del mercado';
   marketComparison: number;
   daysOnMarket: number;
@@ -535,6 +538,9 @@ export const analyzeIndividualProperties = async (userId: string): Promise<Indiv
     return {
       id: property.id,
       title: property.title,
+      district: property.district || 'No especificado',
+      propertyType: property.property_type || 'otro',
+      price: property.price || 0,
       pricePosition,
       marketComparison: ((priceRatio - 1) * 100),
       daysOnMarket,
