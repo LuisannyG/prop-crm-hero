@@ -10,8 +10,7 @@ import {
   AlertCircle, Zap, Calendar, DollarSign,
   BarChart3, PieChart, Activity, Lightbulb,
   MapPin, Clock, Star, Shield, Eye, CheckCircle,
-  TrendingDown, ArrowUp, ArrowDown, Home, Wallet,
-  Line
+  TrendingDown, ArrowUp, ArrowDown, Home, Wallet
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
