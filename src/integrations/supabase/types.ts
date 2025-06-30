@@ -196,6 +196,7 @@ export type Database = {
           property_id: string | null
           reason_category: string
           reason_details: string | null
+          sales_funnel: string | null
           user_id: string
           will_reconsider: boolean | null
         }
@@ -209,6 +210,7 @@ export type Database = {
           property_id?: string | null
           reason_category: string
           reason_details?: string | null
+          sales_funnel?: string | null
           user_id: string
           will_reconsider?: boolean | null
         }
@@ -222,6 +224,7 @@ export type Database = {
           property_id?: string | null
           reason_category?: string
           reason_details?: string | null
+          sales_funnel?: string | null
           user_id?: string
           will_reconsider?: boolean | null
         }

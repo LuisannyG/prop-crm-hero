@@ -12,7 +12,8 @@ import {
   Brain,
   Shield,
   Settings,
-  AlertCircle
+  AlertCircle,
+  TrendingDown
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -78,6 +79,13 @@ const Dashboard = () => {
             <p className="text-gray-600">Gestiona tu negocio inmobiliario de forma inteligente</p>
           </div>
           <div className="flex gap-2">
+            <Button
+              onClick={() => navigate('/purchase-reasons')}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              <TrendingDown className="w-4 h-4 mr-2" />
+              Motivos de No Compra
+            </Button>
             <NoPurchaseReasonModal 
               contacts={contacts}
               properties={properties}

@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BarChart3, Users, TrendingDown, AlertTriangle, Plus } from "lucide-react";
+import { BarChart3, Users, TrendingDown, AlertTriangle } from "lucide-react";
 import DashboardNav from "@/components/DashboardNav";
 import NoPurchaseReasonModal from "@/components/NoPurchaseReasonModal";
 import { supabase } from "@/integrations/supabase/client";
@@ -129,43 +129,6 @@ const PurchaseReasons = () => {
     }
   };
 
-  const handleAddReason = async (contactId: string, propertyId: string | null, category: string, details: string) => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('no_purchase_reasons')
-        .insert({
-          user_id: user.id,
-          contact_id: contactId,
-          property_id: propertyId,
-          reason_category: category,
-          reason_details: details
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error adding no purchase reason:', error);
-        return;
-      }
-
-      console.log('No purchase reason added:', data);
-      
-      // Update contact stage to no_compra
-      await supabase
-        .from('contacts')
-        .update({ sales_stage: 'no_compra' })
-        .eq('id', contactId)
-        .eq('user_id', user.id);
-
-      // Refresh data
-      fetchData();
-    } catch (error) {
-      console.error('Error in handleAddReason:', error);
-    }
-  };
-
   // Calculate statistics
   const totalReasons = noPurchaseReasons.length;
   const uniqueClients = new Set(noPurchaseReasons.map(reason => reason.contact_id)).size;
@@ -197,29 +160,11 @@ const PurchaseReasons = () => {
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Registro de Motivos de No Compra</h1>
               <p className="text-gray-600">Registra y analiza las razones por las que los clientes no compran</p>
             </div>
-            <div className="flex gap-2">
-              <NoPurchaseReasonModal 
-                contacts={contacts}
-                properties={properties}
-                onReasonAdded={fetchData}
-              />
-              <Button
-                onClick={() => {
-                  console.log("Manual add button clicked");
-                  // Test manual addition with Victor Parra if he exists
-                  const victorContact = contacts.find(c => c.full_name.toLowerCase().includes('victor'));
-                  if (victorContact) {
-                    handleAddReason(victorContact.id, null, 'precio', 'Precio muy alto - agregado manualmente');
-                  } else {
-                    console.log("Victor Parra not found in contacts");
-                  }
-                }}
-                className="bg-orange-500 hover:bg-orange-600"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Agregar Manual
-              </Button>
-            </div>
+            <NoPurchaseReasonModal 
+              contacts={contacts}
+              properties={properties}
+              onReasonAdded={fetchData}
+            />
           </div>
         </div>
 
@@ -306,6 +251,9 @@ const PurchaseReasons = () => {
                     <h4 className="text-md font-medium text-blue-800 mb-2">Tip de Debug:</h4>
                     <p className="text-sm text-blue-700">
                       Total contactos: {contacts.length}, Usuario ID: {user?.id?.substring(0, 8)}...
+                    </p>
+                    <p className="text-sm text-blue-700 mt-1">
+                      Usa el botón "Agregar Motivo de No Compra" arriba para crear el primer registro
                     </p>
                   </div>
                 </div>
