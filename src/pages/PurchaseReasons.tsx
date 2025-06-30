@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 interface Contact {
   id: string;
@@ -61,7 +62,6 @@ const PurchaseReasons = () => {
 
       if (contactsError) {
         console.error('Error fetching contacts:', contactsError);
-        throw contactsError;
       }
 
       console.log("Contacts fetched:", contactsData?.length);
@@ -75,24 +75,22 @@ const PurchaseReasons = () => {
 
       if (propertiesError) {
         console.error('Error fetching properties:', propertiesError);
-        throw propertiesError;
       }
 
       console.log("Properties fetched:", propertiesData?.length);
 
-      // Fetch no purchase reasons without joins
+      // Fetch no purchase reasons
       const { data: reasonsData, error: reasonsError } = await supabase
         .from('no_purchase_reasons')
-        .select('id, contact_id, property_id, reason_category, reason_details, created_at')
+        .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (reasonsError) {
         console.error('Error fetching no purchase reasons:', reasonsError);
-        throw reasonsError;
+      } else {
+        console.log("No purchase reasons raw data:", reasonsData);
       }
-
-      console.log("No purchase reasons fetched:", reasonsData?.length);
 
       // Create lookup maps for contacts and properties
       const contactsMap = new Map(contactsData?.map(c => [c.id, c.full_name]) || []);
@@ -110,6 +108,20 @@ const PurchaseReasons = () => {
       setContacts(contactsData || []);
       setProperties(propertiesData || []);
       setNoPurchaseReasons(enrichedReasons);
+
+      // Update contacts to "no_compra" stage when they have purchase reasons
+      if (reasonsData && reasonsData.length > 0) {
+        const contactsWithReasons = reasonsData.map(r => r.contact_id);
+        const uniqueContactIds = [...new Set(contactsWithReasons)];
+        
+        for (const contactId of uniqueContactIds) {
+          await supabase
+            .from('contacts')
+            .update({ sales_stage: 'no_compra' })
+            .eq('id', contactId)
+            .eq('user_id', user.id);
+        }
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -263,7 +275,7 @@ const PurchaseReasons = () => {
                             )}
                           </div>
                           <span className="text-xs text-gray-400">
-                            {format(new Date(reason.created_at), "dd/MM/yyyy")}
+                            {format(new Date(reason.created_at), "dd/MM/yyyy HH:mm", { locale: es })}
                           </span>
                         </div>
                       </div>
