@@ -16,6 +16,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { getLimaMarketData } from '@/utils/limaMarketData';
 import RiskExplanationModal from '@/components/RiskExplanationModal';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface Contact {
   id: string;
@@ -227,6 +228,32 @@ const RealLearningEngineSimulator = () => {
 
   const predictions = generateEnhancedPredictions();
 
+  const generatePriceDistributionData = () => {
+    if (!properties.length) return [];
+    
+    const ranges = [
+      { range: '100k-200k', min: 100000, max: 200000, count: 0 },
+      { range: '200k-300k', min: 200000, max: 300000, count: 0 },
+      { range: '300k-400k', min: 300000, max: 400000, count: 0 },
+      { range: '400k-500k', min: 400000, max: 500000, count: 0 },
+      { range: '500k+', min: 500000, max: Infinity, count: 0 }
+    ];
+
+    properties.forEach(property => {
+      const price = property.price || 0;
+      ranges.forEach(range => {
+        if (price >= range.min && price < range.max) {
+          range.count++;
+        }
+      });
+    });
+
+    return ranges.map(range => ({
+      range: range.range,
+      count: range.count
+    }));
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -403,7 +430,32 @@ const RealLearningEngineSimulator = () => {
         </TabsContent>
 
         <TabsContent value="insights">
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Price Distribution Chart */}
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5" />
+                  Distribución de Precios de las Propiedades Registradas
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={generatePriceDistributionData()}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="range" />
+                    <YAxis />
+                    <Tooltip 
+                      formatter={(value) => [`${value} propiedades`, 'Cantidad']}
+                      labelFormatter={(label) => `Rango: S/ ${label}`}
+                    />
+                    <Bar dataKey="count" fill="#3b82f6" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            {/* Análisis de Clientes */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg font-semibold">
@@ -423,6 +475,7 @@ const RealLearningEngineSimulator = () => {
               </CardContent>
             </Card>
 
+            {/* Análisis de Propiedades */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg font-semibold">
@@ -442,6 +495,7 @@ const RealLearningEngineSimulator = () => {
               </CardContent>
             </Card>
 
+            {/* Análisis de Tiempo */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg font-semibold">
