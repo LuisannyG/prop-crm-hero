@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,6 +14,7 @@ import Properties from "./pages/Properties";
 import Reminders from "./pages/Reminders";
 import LearningEngine from "./pages/LearningEngine";
 import RiskDetection from "./pages/RiskDetection";
+import PurchaseReasons from "./pages/PurchaseReasons";
 
 const queryClient = new QueryClient();
 
@@ -70,6 +72,14 @@ const App = () => (
               element={
                 <PrivateRoute>
                   <RiskDetection />
+                </PrivateRoute>
+              } 
+            />
+            <Route 
+              path="/purchase-reasons" 
+              element={
+                <PrivateRoute>
+                  <PurchaseReasons />
                 </PrivateRoute>
               } 
             />

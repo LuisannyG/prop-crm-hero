@@ -1,34 +1,147 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Save, FileText, BarChart3 } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { FileText, BarChart3, Edit, Trash2, Plus } from "lucide-react";
 import DashboardNav from "@/components/DashboardNav";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import NoPurchaseReasonModal from "@/components/NoPurchaseReasonModal";
+import EditNoPurchaseReasonModal from "@/components/EditNoPurchaseReasonModal";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
+interface Contact {
+  id: string;
+  full_name: string;
+}
+
+interface Property {
+  id: string;
+  title: string;
+}
+
+interface NoPurchaseReason {
+  id: string;
+  contact_id: string;
+  property_id: string | null;
+  reason_category: string;
+  reason_details: string | null;
+  price_feedback: number | null;
+  will_reconsider: boolean;
+  follow_up_date: string | null;
+  notes: string | null;
+  created_at: string;
+  contacts: { full_name: string } | null;
+  properties: { title: string } | null;
+}
 
 const PurchaseReasons = () => {
-  const [selectedReason, setSelectedReason] = useState<string>("");
-  const [selectedClient, setSelectedClient] = useState<string>("");
-  const [priceReason, setPriceReason] = useState<string>("");
-  const [anotherProperty, setAnotherProperty] = useState<boolean>(false);
-  const [customNotes, setCustomNotes] = useState<string>("");
-  const [submitted, setSubmitted] = useState<boolean>(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [reasons, setReasons] = useState<NoPurchaseReason[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editingReason, setEditingReason] = useState<NoPurchaseReason | null>(null);
 
-  const handleSubmit = () => {
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      // Reiniciar formulario
-      setSelectedReason("");
-      setSelectedClient("");
-      setPriceReason("");
-      setAnotherProperty(false);
-      setCustomNotes("");
-    }, 2000);
+  useEffect(() => {
+    fetchData();
+  }, [user]);
+
+  const fetchData = async () => {
+    if (!user) return;
+
+    try {
+      // Fetch contacts
+      const { data: contactsData } = await supabase
+        .from('contacts')
+        .select('id, full_name')
+        .eq('user_id', user.id);
+
+      // Fetch properties
+      const { data: propertiesData } = await supabase
+        .from('properties')
+        .select('id, title')
+        .eq('user_id', user.id);
+
+      // Fetch no purchase reasons with related data
+      const { data: reasonsData } = await supabase
+        .from('no_purchase_reasons')
+        .select(`
+          *,
+          contacts!inner(full_name),
+          properties(title)
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      setContacts(contactsData || []);
+      setProperties(propertiesData || []);
+      setReasons(reasonsData || []);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los datos.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('no_purchase_reasons')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Éxito",
+        description: "Motivo de no compra eliminado.",
+      });
+
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting reason:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el motivo.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('es-ES');
+  };
+
+  const getCategoryLabel = (category: string) => {
+    const labels: { [key: string]: string } = {
+      'precio': 'Precio',
+      'ubicacion': 'Ubicación',
+      'tamano': 'Tamaño',
+      'financiacion': 'Financiación',
+      'otra_propiedad': 'Otra propiedad',
+      'timing': 'Timing',
+      'competencia': 'Competencia'
+    };
+    return labels[category] || category;
   };
 
   return (
@@ -36,155 +149,129 @@ const PurchaseReasons = () => {
       <DashboardNav />
       
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Registro de Motivos de No Compra</h1>
-          <p className="text-gray-600">Registra y analiza las razones por las que los clientes no compran</p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Motivos de No Compra</h1>
+            <p className="text-gray-600">Gestiona y analiza las razones por las que los clientes no compran</p>
+          </div>
+          <NoPurchaseReasonModal 
+            contacts={contacts}
+            properties={properties}
+            onReasonAdded={fetchData}
+          />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6">
           <Card className="shadow-md">
             <CardHeader className="bg-blue-50">
               <CardTitle className="flex items-center text-blue-800">
                 <FileText className="mr-2 h-5 w-5" />
-                Registro de Motivos de No Compra
+                Motivos Registrados
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
-              <form className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="client">Cliente y propiedad</Label>
-                  <Select value={selectedClient} onValueChange={setSelectedClient}>
-                    <SelectTrigger id="client">
-                      <SelectValue placeholder="Selecciona un cliente" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="no-clients" disabled>
-                        No hay clientes registrados
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+              {loading ? (
+                <div className="text-center py-8">Cargando...</div>
+              ) : reasons.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  No hay motivos de no compra registrados
                 </div>
-
-                <div className="space-y-3">
-                  <Label>Razón principal de no compra</Label>
-                  <RadioGroup value={selectedReason} onValueChange={setSelectedReason}>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="precio" id="precio" />
-                      <Label htmlFor="precio" className="cursor-pointer">Precio</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="ubicacion" id="ubicacion" />
-                      <Label htmlFor="ubicacion" className="cursor-pointer">Ubicación</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="tamano" id="tamano" />
-                      <Label htmlFor="tamano" className="cursor-pointer">Tamaño/Distribución</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="financiacion" id="financiacion" />
-                      <Label htmlFor="financiacion" className="cursor-pointer">Problemas de financiación</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="otra" id="otra" />
-                      <Label htmlFor="otra" className="cursor-pointer">Otra propiedad</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="tiempo" id="tiempo" />
-                      <Label htmlFor="tiempo" className="cursor-pointer">Cambio de planes/Timing</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-
-                {selectedReason === "precio" && (
-                  <div className="space-y-2">
-                    <Label>Detalles sobre el precio</Label>
-                    <RadioGroup value={priceReason} onValueChange={setPriceReason}>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="alto" id="alto" />
-                        <Label htmlFor="alto" className="cursor-pointer">Precio demasiado alto</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="negociacion" id="negociacion" />
-                        <Label htmlFor="negociacion" className="cursor-pointer">No acuerdo en negociación</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="competencia" id="competencia" />
-                        <Label htmlFor="competencia" className="cursor-pointer">Mejor precio en competencia</Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
-                )}
-
-                {selectedReason === "otra" && (
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="anotherProperty"
-                      checked={anotherProperty}
-                      onCheckedChange={(checked) => 
-                        setAnotherProperty(checked === true)
-                      }
-                    />
-                    <Label htmlFor="anotherProperty" className="cursor-pointer">
-                      ¿Compró otra propiedad con nosotros?
-                    </Label>
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <Label htmlFor="notes">Notas adicionales</Label>
-                  <Textarea
-                    id="notes"
-                    value={customNotes}
-                    onChange={(e) => setCustomNotes(e.target.value)}
-                    placeholder="Añade información adicional sobre la decisión del cliente..."
-                    className="min-h-[100px]"
-                  />
-                </div>
-
-                <Button
-                  type="button"
-                  className="w-full"
-                  onClick={handleSubmit}
-                  disabled={!selectedReason || submitted}
-                >
-                  {submitted ? (
-                    "Guardando..."
-                  ) : (
-                    <>
-                      <Save className="mr-2 h-4 w-4" /> 
-                      Guardar registro
-                    </>
-                  )}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-md">
-            <CardHeader className="bg-blue-50">
-              <CardTitle className="flex items-center text-blue-800">
-                <BarChart3 className="mr-2 h-5 w-5" />
-                Estadísticas de Motivos de No Compra
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="text-center py-12">
-                <BarChart3 className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Sin datos suficientes</h3>
-                <p className="text-gray-500 mb-4">
-                  Registra algunos motivos de no compra para ver estadísticas detalladas
-                </p>
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h4 className="text-md font-medium text-blue-800 mb-2">Tip de Proptor:</h4>
-                  <p className="text-sm text-blue-700">
-                    Los clientes que rechazan por precio suelen reconsiderar su decisión después de 3-4 meses. 
-                    Programa un recordatorio de seguimiento automático para estos casos.
-                  </p>
-                </div>
-              </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Cliente</TableHead>
+                      <TableHead>Propiedad</TableHead>
+                      <TableHead>Motivo</TableHead>
+                      <TableHead>Precio Sugerido</TableHead>
+                      <TableHead>Reconsideraría</TableHead>
+                      <TableHead>Fecha</TableHead>
+                      <TableHead>Acciones</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {reasons.map((reason) => (
+                      <TableRow key={reason.id}>
+                        <TableCell className="font-medium">
+                          {reason.contacts?.full_name || 'Cliente eliminado'}
+                        </TableCell>
+                        <TableCell>
+                          {reason.properties?.title || 'N/A'}
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{getCategoryLabel(reason.reason_category)}</div>
+                            {reason.reason_details && (
+                              <div className="text-sm text-gray-500">{reason.reason_details}</div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {reason.price_feedback ? `S/ ${reason.price_feedback.toLocaleString()}` : 'N/A'}
+                        </TableCell>
+                        <TableCell>
+                          <span className={`px-2 py-1 rounded-full text-xs ${
+                            reason.will_reconsider 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {reason.will_reconsider ? 'Sí' : 'No'}
+                          </span>
+                        </TableCell>
+                        <TableCell>{formatDate(reason.created_at)}</TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setEditingReason(reason)}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>¿Eliminar motivo?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Esta acción no se puede deshacer. El motivo de no compra será eliminado permanentemente.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleDelete(reason.id)}>
+                                    Eliminar
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </div>
+
+        {editingReason && (
+          <EditNoPurchaseReasonModal
+            reason={editingReason}
+            contacts={contacts}
+            properties={properties}
+            onReasonUpdated={() => {
+              fetchData();
+              setEditingReason(null);
+            }}
+            onClose={() => setEditingReason(null)}
+          />
+        )}
       </main>
     </div>
   );
