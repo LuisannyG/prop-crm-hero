@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -317,7 +316,6 @@ const NoPurchaseHistoryModal = ({ isOpen, onClose, contacts, properties }: NoPur
                           <TableHead>Cliente</TableHead>
                           <TableHead>Propiedad</TableHead>
                           <TableHead>Motivo</TableHead>
-                          <TableHead>Precio Sugerido</TableHead>
                           <TableHead>Reconsideraría</TableHead>
                           <TableHead>Acciones</TableHead>
                         </TableRow>
@@ -339,9 +337,6 @@ const NoPurchaseHistoryModal = ({ isOpen, onClose, contacts, properties }: NoPur
                                   <div className="text-sm text-gray-500">{reason.reason_details}</div>
                                 )}
                               </div>
-                            </TableCell>
-                            <TableCell>
-                              {reason.price_feedback ? `S/ ${reason.price_feedback.toLocaleString()}` : 'N/A'}
                             </TableCell>
                             <TableCell>
                               <span className={`px-2 py-1 rounded-full text-xs ${
