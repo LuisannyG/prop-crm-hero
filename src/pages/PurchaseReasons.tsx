@@ -27,8 +27,8 @@ interface NoPurchaseReason {
   reason_category: string;
   reason_details?: string;
   created_at: string;
-  contacts?: Contact;
-  properties?: Property;
+  contact_name?: string;
+  property_title?: string;
 }
 
 const PurchaseReasons = () => {
@@ -80,19 +80,10 @@ const PurchaseReasons = () => {
 
       console.log("Properties fetched:", propertiesData?.length);
 
-      // Fetch no purchase reasons with contact and property info
+      // Fetch no purchase reasons without joins
       const { data: reasonsData, error: reasonsError } = await supabase
         .from('no_purchase_reasons')
-        .select(`
-          id,
-          contact_id,
-          property_id,
-          reason_category,
-          reason_details,
-          created_at,
-          contacts!no_purchase_reasons_contact_id_fkey(id, full_name),
-          properties!no_purchase_reasons_property_id_fkey(id, title)
-        `)
+        .select('id, contact_id, property_id, reason_category, reason_details, created_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -102,11 +93,23 @@ const PurchaseReasons = () => {
       }
 
       console.log("No purchase reasons fetched:", reasonsData?.length);
-      console.log("Raw reasons data:", reasonsData);
+
+      // Create lookup maps for contacts and properties
+      const contactsMap = new Map(contactsData?.map(c => [c.id, c.full_name]) || []);
+      const propertiesMap = new Map(propertiesData?.map(p => [p.id, p.title]) || []);
+
+      // Manually join the data
+      const enrichedReasons: NoPurchaseReason[] = (reasonsData || []).map(reason => ({
+        ...reason,
+        contact_name: contactsMap.get(reason.contact_id) || 'Cliente no encontrado',
+        property_title: reason.property_id ? propertiesMap.get(reason.property_id) : undefined
+      }));
+
+      console.log("Enriched reasons:", enrichedReasons);
 
       setContacts(contactsData || []);
       setProperties(propertiesData || []);
-      setNoPurchaseReasons(reasonsData || []);
+      setNoPurchaseReasons(enrichedReasons);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -237,22 +240,20 @@ const PurchaseReasons = () => {
                 <div className="space-y-4 max-h-96 overflow-y-auto">
                   {noPurchaseReasons.map((reason) => {
                     console.log("Rendering reason:", reason);
-                    const contactName = reason.contacts?.full_name || 'Cliente no encontrado';
-                    const propertyTitle = reason.properties?.title;
                     
                     return (
                       <div key={reason.id} className="border-l-4 border-red-300 pl-4 py-2">
                         <div className="flex justify-between items-start">
                           <div>
                             <h4 className="font-medium text-gray-900">
-                              {contactName}
+                              {reason.contact_name}
                             </h4>
                             <Badge variant="outline" className="mt-1">
                               {reasonLabels[reason.reason_category] || reason.reason_category}
                             </Badge>
-                            {propertyTitle && (
+                            {reason.property_title && (
                               <p className="text-sm text-gray-600 mt-1">
-                                <strong>Propiedad:</strong> {propertyTitle}
+                                <strong>Propiedad:</strong> {reason.property_title}
                               </p>
                             )}
                             {reason.reason_details && (
