@@ -391,6 +391,9 @@ const MarketTrendsComponent = () => {
               <Area type="monotone" dataKey="avgPrice" stackId="1" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.6} />
             </AreaChart>
           </ResponsiveContainer>
+          <div className="mt-3 text-xs text-gray-500 text-center">
+            <p>Fuente: Análisis basado en datos de CAPECO, SBS y reportes inmobiliarios de Lima Metropolitana 2024</p>
+          </div>
         </CardContent>
       </Card>
 
@@ -412,6 +415,9 @@ const MarketTrendsComponent = () => {
               <Line type="monotone" dataKey="conversions" stroke="#F59E0B" strokeWidth={3} name="Conversiones" />
             </ComposedChart>
           </ResponsiveContainer>
+          <div className="mt-3 text-xs text-gray-500 text-center">
+            <p>Fuente: Datos agregados del sector inmobiliario peruano - Asociación de Empresas Inmobiliarias del Perú (ASEI)</p>
+          </div>
         </CardContent>
       </Card>
 
@@ -445,6 +451,9 @@ const MarketTrendsComponent = () => {
               <Tooltip />
             </RechartsPieChart>
           </ResponsiveContainer>
+          <div className="mt-3 text-xs text-gray-500 text-center">
+            <p>Fuente: Estudio de mercado inmobiliario Lima Norte, Sur, Este - Colliers International Perú 2024</p>
+          </div>
         </CardContent>
       </Card>
 
@@ -472,6 +481,9 @@ const MarketTrendsComponent = () => {
               <Bar dataKey="growth" fill="#F59E0B" />
             </BarChart>
           </ResponsiveContainer>
+          <div className="mt-3 text-xs text-gray-500 text-center">
+            <p>Fuente: Índice de Precios de Vivienda - Banco Central de Reserva del Perú (BCRP) y INEI</p>
+          </div>
         </CardContent>
       </Card>
 
@@ -496,6 +508,9 @@ const MarketTrendsComponent = () => {
               <Line type="monotone" dataKey="activity" stroke="#DC2626" strokeWidth={3} />
             </LineChart>
           </ResponsiveContainer>
+          <div className="mt-3 text-xs text-gray-500 text-center">
+            <p>Fuente: Análisis histórico de patrones estacionales - Ministerio de Vivienda, Construcción y Saneamiento (MVCS)</p>
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -507,6 +522,9 @@ const PredictiveInsightsComponent = ({
 }: {
   predictiveInsights: PredictiveInsights;
 }) => {
+  const marketGrowthValue = limaMarketTrends.marketTrends.priceGrowth * 100;
+  const demandGrowthValue = limaMarketTrends.marketTrends.demandGrowth * 100;
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -566,10 +584,10 @@ const PredictiveInsightsComponent = ({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{(limaMarketTrends.marketTrends.priceGrowth * 100).toFixed(1)}%</div>
+            <div className="text-2xl font-bold">{marketGrowthValue.toFixed(1)}%</div>
             <p className="text-xs opacity-80">Crecimiento anual</p>
             <div className="mt-2 text-xs opacity-90">
-              Demanda: +{(limaMarketTrends.marketTrends.demandGrowth * 100).toFixed(1)}%
+              Demanda: +{demandGrowthValue.toFixed(1)}%
             </div>
           </CardContent>
         </Card>
@@ -625,6 +643,9 @@ const PredictiveInsightsComponent = ({
                 </div>
               </div>
             </div>
+            <div className="mt-4 text-xs text-gray-500 text-center">
+              <p>Fuente: Análisis predictivo basado en Machine Learning y datos históricos del mercado inmobiliario peruano</p>
+            </div>
           </CardContent>
         </Card>
 
@@ -655,6 +676,9 @@ const PredictiveInsightsComponent = ({
                 </div>
               ))}
             </div>
+            <div className="mt-4 text-xs text-gray-500 text-center">
+              <p>Fuente: Algoritmos de IA entrenados con datos de comportamiento de compradores inmobiliarios en Latinoamérica</p>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -677,7 +701,7 @@ const PredictiveInsightsComponent = ({
               <XAxis dataKey="mes" />
               <YAxis />
               <Tooltip formatter={(value, name) => [
-                name === 'ingresosMiles' ? `S/ ${(value * 1000).toLocaleString()}` : value,
+                name === 'ingresosMiles' ? `S/ ${(Number(value) * 1000).toLocaleString()}` : value,
                 name === 'contactosPredichos' ? 'Contactos' : name === 'ventasPredichas' ? 'Ventas' : 'Ingresos'
               ]} />
               <Bar dataKey="contactosPredichos" fill="#3B82F6" name="Contactos Predichos" />
@@ -685,6 +709,9 @@ const PredictiveInsightsComponent = ({
               <Line type="monotone" dataKey="ingresosMiles" stroke="#F59E0B" strokeWidth={3} name="Ingresos (Miles)" />
             </ComposedChart>
           </ResponsiveContainer>
+          <div className="mt-3 text-xs text-gray-500 text-center">
+            <p>Fuente: Modelo predictivo basado en redes neuronales y datos históricos de ventas inmobiliarias 2019-2024</p>
+          </div>
         </CardContent>
       </Card>
     </div>
