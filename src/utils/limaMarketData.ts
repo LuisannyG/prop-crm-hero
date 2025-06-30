@@ -27,20 +27,86 @@ export const limaMarketTrends = {
     'Pueblo Libre': { demand: 'Media', priceGrowth: 4.2, avgPrice: 250000 }
   },
 
-  seasonalPatterns: {
-    'Enero': 'Inicio de año, demanda moderada',
-    'Febrero': 'Incremento por bonos de gratificación',
-    'Marzo': 'Pico de actividad pre-escolar',
-    'Abril': 'Descenso post-Semana Santa',
-    'Mayo': 'Mes del trabajo, actividad estable',
-    'Junio': 'Pico por bonos de medio año',
-    'Julio': 'Vacaciones, menor actividad',
-    'Agosto': 'Regreso de vacaciones, repunte',
-    'Septiembre': 'Actividad escolar, estabilidad',
-    'Octubre': 'Preparación fin de año',
-    'Noviembre': 'Pico pre-navideño, bonos',
-    'Diciembre': 'Descenso por fiestas'
-  }
+  seasonalPatterns: [
+    { 
+      months: [0], 
+      activity: 0.9, 
+      description: 'Inicio de año, demanda moderada' 
+    },
+    { 
+      months: [1], 
+      activity: 1.1, 
+      description: 'Incremento por bonos de gratificación' 
+    },
+    { 
+      months: [2], 
+      activity: 1.3, 
+      description: 'Pico de actividad pre-escolar' 
+    },
+    { 
+      months: [3], 
+      activity: 0.8, 
+      description: 'Descenso post-Semana Santa' 
+    },
+    { 
+      months: [4], 
+      activity: 0.9, 
+      description: 'Mes del trabajo, actividad estable' 
+    },
+    { 
+      months: [5], 
+      activity: 1.2, 
+      description: 'Pico por bonos de medio año' 
+    },
+    { 
+      months: [6], 
+      activity: 0.7, 
+      description: 'Vacaciones, menor actividad' 
+    },
+    { 
+      months: [7], 
+      activity: 0.8, 
+      description: 'Regreso de vacaciones, repunte' 
+    },
+    { 
+      months: [8], 
+      activity: 1.0, 
+      description: 'Actividad escolar, estabilidad' 
+    },
+    { 
+      months: [9], 
+      activity: 1.1, 
+      description: 'Preparación fin de año' 
+    },
+    { 
+      months: [10], 
+      activity: 1.4, 
+      description: 'Pico pre-navideño, bonos' 
+    },
+    { 
+      months: [11], 
+      activity: 0.8, 
+      description: 'Descenso por fiestas' 
+    }
+  ],
+
+  marketTrends: {
+    priceGrowth: 0.068,
+    demandGrowth: 0.12,
+    averageTimeToSell: 45
+  },
+
+  districtActivity: [
+    { district: 'Miraflores', activity: 1.5 },
+    { district: 'San Isidro', activity: 1.4 },
+    { district: 'Barranco', activity: 1.3 },
+    { district: 'Surco', activity: 1.2 },
+    { district: 'La Molina', activity: 1.1 }
+  ]
+};
+
+export const getLimaMarketData = () => {
+  return limaMarketTrends;
 };
 
 export const getRiskExplanation = (riskScore: number, factors: string[]) => {

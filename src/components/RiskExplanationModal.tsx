@@ -18,7 +18,7 @@ import { getRiskExplanation } from "@/utils/limaMarketData";
 interface RiskExplanationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  clientData: {
+  clientData?: {
     name: string;
     riskScore: number;
     lastContactDays: number;
@@ -31,7 +31,29 @@ interface RiskExplanationModalProps {
 }
 
 const RiskExplanationModal = ({ isOpen, onClose, clientData }: RiskExplanationModalProps) => {
-  const riskExplanation = getRiskExplanation(clientData.riskScore, clientData.riskFactors);
+  // Default data if no clientData is provided
+  const defaultClientData = {
+    name: "Cliente Ejemplo",
+    riskScore: 65,
+    lastContactDays: 8,
+    interactionFrequency: 2.5,
+    engagementScore: 70,
+    salesStage: "Interesado",
+    riskFactors: [
+      "8 días sin contacto directo",
+      "Frecuencia de comunicación por debajo del promedio",
+      "Estancamiento en etapa de interés por más de 2 semanas"
+    ],
+    recommendations: [
+      "Realizar llamada de seguimiento inmediata",
+      "Enviar información adicional sobre financiamiento",
+      "Agendar visita presencial a la propiedad",
+      "Ofrecer descuento por pronto pago"
+    ]
+  };
+
+  const client = clientData || defaultClientData;
+  const riskExplanation = getRiskExplanation(client.riskScore, client.riskFactors);
 
   const getRiskColor = (score: number) => {
     if (score >= 80) return "text-red-600 bg-red-50 border-red-200";
@@ -52,28 +74,28 @@ const RiskExplanationModal = ({ isOpen, onClose, clientData }: RiskExplanationMo
     const components = [
       {
         name: "Días sin contacto",
-        value: Math.min(100, clientData.lastContactDays * 3),
-        description: `${clientData.lastContactDays} días desde el último contacto`,
+        value: Math.min(100, client.lastContactDays * 3),
+        description: `${client.lastContactDays} días desde el último contacto`,
         weight: 30
       },
       {
         name: "Frecuencia de comunicación",
-        value: Math.max(0, 100 - (clientData.interactionFrequency * 20)),
-        description: `${clientData.interactionFrequency.toFixed(1)} interacciones por semana`,
+        value: Math.max(0, 100 - (client.interactionFrequency * 20)),
+        description: `${client.interactionFrequency.toFixed(1)} interacciones por semana`,
         weight: 25
       },
       {
         name: "Engagement general",
-        value: 100 - clientData.engagementScore,
-        description: `${clientData.engagementScore}% de engagement actual`,
+        value: 100 - client.engagementScore,
+        description: `${client.engagementScore}% de engagement actual`,
         weight: 25
       },
       {
         name: "Progreso en etapa de ventas",
-        value: clientData.salesStage === 'Primer contacto' ? 60 : 
-               clientData.salesStage === 'Interesado' ? 40 :
-               clientData.salesStage === 'Visita agendada' ? 20 : 10,
-        description: `Actualmente en: ${clientData.salesStage}`,
+        value: client.salesStage === 'Primer contacto' ? 60 : 
+               client.salesStage === 'Interesado' ? 40 :
+               client.salesStage === 'Visita agendada' ? 20 : 10,
+        description: `Actualmente en: ${client.salesStage}`,
         weight: 20
       }
     ];
@@ -89,13 +111,13 @@ const RiskExplanationModal = ({ isOpen, onClose, clientData }: RiskExplanationMo
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Target className="w-5 h-5" />
-            Análisis Detallado de Riesgo - {clientData.name}
+            Análisis Detallado de Riesgo - {client.name}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* Score principal */}
-          <Card className={`border-2 ${getRiskColor(clientData.riskScore)}`}>
+          <Card className={`border-2 ${getRiskColor(client.riskScore)}`}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
@@ -103,17 +125,17 @@ const RiskExplanationModal = ({ isOpen, onClose, clientData }: RiskExplanationMo
                   <p className="text-sm mt-1">{riskExplanation.description}</p>
                 </div>
                 <div className="text-right">
-                  <div className="text-4xl font-bold">{clientData.riskScore}%</div>
+                  <div className="text-4xl font-bold">{client.riskScore}%</div>
                   <div className="text-sm">Probabilidad de abandono</div>
                 </div>
               </div>
               <Progress 
-                value={clientData.riskScore} 
+                value={client.riskScore} 
                 className="h-3"
                 indicatorClassName={`${
-                  clientData.riskScore >= 80 ? "bg-red-500" :
-                  clientData.riskScore >= 60 ? "bg-orange-500" :
-                  clientData.riskScore >= 40 ? "bg-yellow-500" :
+                  client.riskScore >= 80 ? "bg-red-500" :
+                  client.riskScore >= 60 ? "bg-orange-500" :
+                  client.riskScore >= 40 ? "bg-yellow-500" :
                   "bg-green-500"
                 }`}
               />
@@ -166,11 +188,11 @@ const RiskExplanationModal = ({ isOpen, onClose, clientData }: RiskExplanationMo
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {clientData.riskFactors.length === 0 ? (
+              {client.riskFactors.length === 0 ? (
                 <p className="text-gray-500 text-center py-4">No se han identificado factores de riesgo específicos</p>
               ) : (
                 <div className="space-y-3">
-                  {clientData.riskFactors.map((factor, index) => (
+                  {client.riskFactors.map((factor, index) => (
                     <div key={index} className="flex items-start gap-3 p-3 bg-red-50 rounded-lg border border-red-200">
                       <div className="text-red-600 mt-0.5">
                         {getFactorIcon(factor)}
@@ -195,7 +217,7 @@ const RiskExplanationModal = ({ isOpen, onClose, clientData }: RiskExplanationMo
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {clientData.recommendations.map((rec, index) => (
+                {client.recommendations.map((rec, index) => (
                   <div key={index} className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
                     <div className="text-blue-600 mt-0.5">
                       <Target className="w-4 h-4" />
