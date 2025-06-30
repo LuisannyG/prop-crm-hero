@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -76,12 +75,12 @@ const PurchaseReasons = () => {
         .select('id, title')
         .eq('user_id', user.id);
 
-      // Fetch no purchase reasons with related data
+      // Fetch no purchase reasons with related data - using left join instead of inner join
       const { data: reasonsData } = await supabase
         .from('no_purchase_reasons')
         .select(`
           *,
-          contacts!inner(full_name),
+          contacts(full_name),
           properties(title)
         `)
         .eq('user_id', user.id)
