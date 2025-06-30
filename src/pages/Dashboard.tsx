@@ -12,13 +12,15 @@ import {
   Brain,
   Shield,
   Settings,
-  AlertCircle
+  AlertCircle,
+  TrendingDown
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import DashboardNav from "@/components/DashboardNav";
 import EnhancedDashboardSimulator from "@/components/simulators/EnhancedDashboardSimulator";
 import NoPurchaseReasonModal from "@/components/NoPurchaseReasonModal";
+import NoPurchaseHistoryModal from "@/components/NoPurchaseHistoryModal";
 import ExcelExportButton from "@/components/ExcelExportButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -39,6 +41,7 @@ const Dashboard = () => {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   useEffect(() => {
     const fetchContactsAndProperties = async () => {
@@ -78,6 +81,14 @@ const Dashboard = () => {
             <p className="text-gray-600">Gestiona tu negocio inmobiliario de forma inteligente</p>
           </div>
           <div className="flex gap-2">
+            <Button
+              onClick={() => setShowHistoryModal(true)}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <TrendingDown className="w-4 h-4" />
+              Historial No Compras
+            </Button>
             <NoPurchaseReasonModal 
               contacts={contacts}
               properties={properties}
@@ -92,6 +103,13 @@ const Dashboard = () => {
           <EnhancedDashboardSimulator key={refreshKey} />
         </div>
       </main>
+
+      <NoPurchaseHistoryModal
+        isOpen={showHistoryModal}
+        onClose={() => setShowHistoryModal(false)}
+        contacts={contacts}
+        properties={properties}
+      />
     </div>
   );
 };
