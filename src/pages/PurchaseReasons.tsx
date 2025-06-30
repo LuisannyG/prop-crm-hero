@@ -64,19 +64,27 @@ const PurchaseReasons = () => {
 
     try {
       // Fetch contacts
-      const { data: contactsData } = await supabase
+      const { data: contactsData, error: contactsError } = await supabase
         .from('contacts')
         .select('id, full_name')
         .eq('user_id', user.id);
 
+      if (contactsError) {
+        console.error('Error fetching contacts:', contactsError);
+      }
+
       // Fetch properties
-      const { data: propertiesData } = await supabase
+      const { data: propertiesData, error: propertiesError } = await supabase
         .from('properties')
         .select('id, title')
         .eq('user_id', user.id);
 
+      if (propertiesError) {
+        console.error('Error fetching properties:', propertiesError);
+      }
+
       // Fetch no purchase reasons with related data - using left join instead of inner join
-      const { data: reasonsData } = await supabase
+      const { data: reasonsData, error: reasonsError } = await supabase
         .from('no_purchase_reasons')
         .select(`
           *,
@@ -85,6 +93,15 @@ const PurchaseReasons = () => {
         `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
+
+      if (reasonsError) {
+        console.error('Error fetching reasons:', reasonsError);
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los motivos de no compra.",
+          variant: "destructive",
+        });
+      }
 
       setContacts(contactsData || []);
       setProperties(propertiesData || []);
