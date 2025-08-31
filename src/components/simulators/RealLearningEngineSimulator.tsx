@@ -535,20 +535,170 @@ const MarketTrendsComponent = () => {
               </div>
             </div>
           </div>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={q3Analysis}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip formatter={(value, name) => [
-                name === 'avgPrice' ? `S/ ${Number(value).toLocaleString()}` : value,
-                name === 'avgPrice' ? 'Precio Promedio' : name === 'contacts' ? 'Contactos' : 'Conversiones'
-              ]} />
-              <Line type="monotone" dataKey="contacts" stroke="#3B82F6" strokeWidth={3} name="Contactos" />
-              <Line type="monotone" dataKey="conversions" stroke="#10B981" strokeWidth={3} name="Conversiones" />
-              <Line type="monotone" dataKey="avgPrice" stroke="#DC2626" strokeWidth={2} name="Precio Promedio" />
-            </LineChart>
+          <ResponsiveContainer width="100%" height={350}>
+            <ComposedChart data={q3Analysis} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ff" />
+              <XAxis 
+                dataKey="month" 
+                tick={{ fontSize: 12 }}
+                tickFormatter={(value) => value.replace(' 2025', '')}
+              />
+              <YAxis yAxisId="left" tick={{ fontSize: 11 }} />
+              <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} />
+              <Tooltip 
+                contentStyle={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                }}
+                formatter={(value, name, props) => {
+                  const month = props.payload.month;
+                  let context = '';
+                  let activity = '';
+                  
+                  if (month === 'Jul 2025') {
+                    context = '❄️ Vacaciones de invierno';
+                    activity = 'Baja actividad (-22%)';
+                  } else if (month === 'Ago 2025') {
+                    context = '📈 Reactivación gradual';
+                    activity = 'Recuperación del mercado';
+                  } else if (month === 'Sep 2025') {
+                    context = '🎯 Preparación fin de año';
+                    activity = 'Alta actividad (+12%)';
+                  }
+                  
+                  if (name === 'contacts') {
+                    return [`${value} contactos`, `📞 Leads del mes`];
+                  } else if (name === 'conversions') {
+                    return [`${value} ventas`, `✅ Conversiones`];
+                  } else if (name === 'avgPrice') {
+                    return [`S/ ${Number(value).toLocaleString()}`, `💰 Precio Promedio`];
+                  }
+                  return [value, name];
+                }}
+                labelFormatter={(label) => {
+                  const month = label;
+                  let context = '';
+                  
+                  if (month === 'Jul 2025') {
+                    context = '❄️ Julio 2025 - Vacaciones de invierno';
+                  } else if (month === 'Ago 2025') {
+                    context = '📈 Agosto 2025 - Reactivación del mercado';
+                  } else if (month === 'Sep 2025') {
+                    context = '🎯 Septiembre 2025 - Preparación fin de año';
+                  }
+                  
+                  return context;
+                }}
+              />
+              
+              {/* Barras para contactos con colores estacionales */}
+              <Bar 
+                yAxisId="left" 
+                dataKey="contacts" 
+                name="contacts"
+                radius={[4, 4, 0, 0]}
+              >
+                {q3Analysis.map((entry, index) => {
+                  let color = '#3B82F6'; // Default blue
+                  if (entry.month === 'Jul 2025') color = '#DC2626'; // Red for low season
+                  if (entry.month === 'Ago 2025') color = '#F59E0B'; // Orange for recovery
+                  if (entry.month === 'Sep 2025') color = '#10B981'; // Green for high season
+                  
+                  return <Cell key={`cell-${index}`} fill={color} />;
+                })}
+              </Bar>
+              
+              {/* Área para conversiones */}
+              <Area
+                yAxisId="left"
+                type="monotone"
+                dataKey="conversions"
+                stroke="#8B5CF6"
+                strokeWidth={3}
+                fill="url(#conversionGradient)"
+                name="conversions"
+              />
+              
+              {/* Línea para precio promedio */}
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="avgPrice"
+                stroke="#EC4899"
+                strokeWidth={3}
+                strokeDasharray="5 5"
+                name="avgPrice"
+                dot={{ fill: '#EC4899', strokeWidth: 2, r: 5 }}
+              />
+              
+              {/* Gradiente para el área de conversiones */}
+              <defs>
+                <linearGradient id="conversionGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.1}/>
+                </linearGradient>
+              </defs>
+            </ComposedChart>
           </ResponsiveContainer>
+          
+          {/* Leyenda personalizada */}
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+            <div className="flex items-center gap-2 p-2 bg-red-50 rounded-lg">
+              <div className="w-4 h-4 bg-red-600 rounded"></div>
+              <div>
+                <span className="font-semibold text-red-800">❄️ Julio</span>
+                <p className="text-xs text-red-600">Vacaciones (-22%)</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 p-2 bg-orange-50 rounded-lg">
+              <div className="w-4 h-4 bg-orange-500 rounded"></div>
+              <div>
+                <span className="font-semibold text-orange-800">📈 Agosto</span>
+                <p className="text-xs text-orange-600">Reactivación</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
+              <div className="w-4 h-4 bg-green-600 rounded"></div>
+              <div>
+                <span className="font-semibold text-green-800">🎯 Septiembre</span>
+                <p className="text-xs text-green-600">Alta actividad (+12%)</p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Métricas clave del trimestre */}
+          <div className="mt-4 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200">
+            <h4 className="font-semibold text-purple-900 mb-3">📊 Resumen Q3 2025</h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div className="text-center">
+                <div className="text-lg font-bold text-blue-700">
+                  {q3Analysis.reduce((sum, month) => sum + month.contacts, 0)}
+                </div>
+                <div className="text-xs text-gray-600">Total Contactos</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-purple-700">
+                  {q3Analysis.reduce((sum, month) => sum + month.conversions, 0)}
+                </div>
+                <div className="text-xs text-gray-600">Total Ventas</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-green-700">
+                  {((q3Analysis.reduce((sum, month) => sum + month.conversions, 0) / 
+                     q3Analysis.reduce((sum, month) => sum + month.contacts, 0)) * 100).toFixed(1)}%
+                </div>
+                <div className="text-xs text-gray-600">Tasa Conversión</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-pink-700">
+                  S/ {Math.round(q3Analysis.reduce((sum, month) => sum + month.avgPrice, 0) / 3).toLocaleString()}
+                </div>
+                <div className="text-xs text-gray-600">Precio Promedio</div>
+              </div>
+            </div>
+          </div>
           <div className="mt-3 text-xs text-gray-500 text-center space-y-1">
             <p><strong>Fuente:</strong> Análisis de ciclos estacionales del mercado inmobiliario peruano - MVCS 2025</p>
             <p>Patrones de demanda histórica Q3 (2019-2024) - Asociación de Desarrolladores Inmobiliarios del Perú (ADI)</p>
