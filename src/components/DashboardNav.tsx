@@ -10,7 +10,7 @@ import {
   Building, 
   Bell, 
   Brain, 
-  Shield,
+  
   LogOut,
   User,
   Edit
@@ -32,7 +32,7 @@ const DashboardNav = () => {
     { path: '/properties', icon: Building, label: 'Propiedades', color: 'text-purple-600' },
     { path: '/reminders', icon: Bell, label: 'Recordatorios', color: 'text-orange-600' },
     { path: '/learning-engine', icon: Brain, label: 'Motor IA', color: 'text-pink-600', isPaid: true },
-    { path: '/risk-detection', icon: Shield, label: 'Detección Riesgo', color: 'text-red-600', isPaid: true },
+    
   ];
 
   return (

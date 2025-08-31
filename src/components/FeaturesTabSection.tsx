@@ -6,11 +6,9 @@ import { LucideIcon, Calendar, ChartBar, FileText, FileUser, Brain, BadgeInfo, U
 // Importamos los componentes de simulación de funcionalidades
 import AgendaSimulator from "@/components/simulators/AgendaSimulator";
 import DashboardSimulator from "@/components/simulators/DashboardSimulator";
-import RecordSimulator from "@/components/simulators/RecordSimulator";
 import ReportsSimulator from "@/components/simulators/ReportsSimulator";
 import ClientFileSimulator from "@/components/simulators/ClientFileSimulator";
 import LearningEngineSimulator from "@/components/simulators/LearningEngineSimulator";
-import RiskDetectionSimulator from "@/components/simulators/RiskDetectionSimulator";
 
 interface Feature {
   id: string;
@@ -46,16 +44,6 @@ const FeaturesTabSection = () => {
       emoji: "📊"
     },
     {
-      id: "registro",
-      title: "Registro de Motivos de No Compra",
-      description: [
-        "Formulario interno con opciones seleccionables y campo de texto libre.",
-        "Al final del ciclo de seguimiento permite documentar razones de pérdida."
-      ],
-      icon: FileText,
-      emoji: "📝"
-    },
-    {
       id: "reportes",
       title: "Reportes Automáticos",
       description: [
@@ -84,15 +72,6 @@ const FeaturesTabSection = () => {
       ],
       icon: Brain,
       emoji: "🧠"
-    },
-    {
-      id: "deteccion",
-      title: "Detección de Riesgo de No Compra",
-      description: [
-        "Considera interacción previa, tiempo sin respuesta y etapa actual en el proceso de venta."
-      ],
-      icon: BadgeInfo,
-      emoji: "🚨"
     }
   ];
 
@@ -123,9 +102,6 @@ const FeaturesTabSection = () => {
           <TabsContent value="panel">
             <DashboardSimulator />
           </TabsContent>
-          <TabsContent value="registro">
-            <RecordSimulator />
-          </TabsContent>
           <TabsContent value="reportes">
             <ReportsSimulator />
           </TabsContent>
@@ -134,9 +110,6 @@ const FeaturesTabSection = () => {
           </TabsContent>
           <TabsContent value="motor">
             <LearningEngineSimulator />
-          </TabsContent>
-          <TabsContent value="deteccion">
-            <RiskDetectionSimulator />
           </TabsContent>
         </div>
       </Tabs>

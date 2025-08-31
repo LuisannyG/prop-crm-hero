@@ -3,7 +3,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Lock, Star, TrendingUp, Zap, BarChart, Brain, Target } from 'lucide-react';
 import AdvancedLearningEngineSimulator from '@/components/simulators/AdvancedLearningEngineSimulator';
-import RiskDetectionSimulator from '@/components/simulators/RiskDetectionSimulator';
 
 interface PaidFeatureAlertProps {
   title: string;
@@ -11,7 +10,7 @@ interface PaidFeatureAlertProps {
   features: string[];
   icon?: React.ReactNode;
   previewImage?: string;
-  simulatorType?: 'learning-engine' | 'risk-detection';
+  simulatorType?: 'learning-engine';
 }
 
 const PaidFeatureAlert = ({ title, description, features, icon, simulatorType }: PaidFeatureAlertProps) => {
@@ -95,19 +94,6 @@ const PaidFeatureAlert = ({ title, description, features, icon, simulatorType }:
               <p className="text-gray-600">Experimenta el poder del análisis predictivo y reportes automáticos inteligentes</p>
             </div>
             <AdvancedLearningEngineSimulator />
-          </>
-        )}
-        
-        {simulatorType === 'risk-detection' && (
-          <>
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-2">
-                <Target className="w-6 h-6 text-red-600" />
-                Vista Previa del Sistema de Detección de Riesgo
-              </h2>
-              <p className="text-gray-600">Identifica clientes en riesgo y aplica estrategias de recuperación efectivas</p>
-            </div>
-            <RiskDetectionSimulator />
           </>
         )}
       </div>
