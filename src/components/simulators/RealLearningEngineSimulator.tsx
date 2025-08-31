@@ -106,7 +106,7 @@ const ContactAnalysisComponent = ({
                     </div>
                   </div>
                   <div className="text-right">
-                    <Badge variant={contact.riskLevel === 'Alto' ? 'destructive' : contact.riskLevel === 'Medio' ? 'default' : 'secondary'} className="text-sm">
+                    <Badge variant={contact.riskLevel === 'Alto' ? 'destructive' : contact.riskLevel === 'Medio' ? 'default' : 'secondary'} className="text-sm mb-1">
                       Riesgo {contact.riskLevel}
                     </Badge>
                     <p className="text-2xl font-bold mt-1 text-blue-700">{contact.conversionProbability}%</p>
@@ -114,7 +114,8 @@ const ContactAnalysisComponent = ({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                {/* Métricas principales en una fila */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                   <div className="bg-white/60 p-3 rounded-lg">
                     <div className="flex items-center gap-2 mb-1">
                       <Clock className="w-4 h-4 text-blue-600" />
@@ -132,16 +133,93 @@ const ContactAnalysisComponent = ({
                   <div className="bg-white/60 p-3 rounded-lg">
                     <div className="flex items-center gap-2 mb-1">
                       <Target className="w-4 h-4 text-purple-600" />
-                      <span className="text-sm font-medium text-gray-700">Score Riesgo</span>
+                      <span className="text-sm font-medium text-gray-700">Score Calificación</span>
                     </div>
-                    <p className="text-lg font-bold text-purple-900">{riskScore.toFixed(0)}%</p>
+                    <p className="text-lg font-bold text-purple-900">{contact.qualificationScore}/10</p>
+                  </div>
+                  <div className="bg-white/60 p-3 rounded-lg">
+                    <div className="flex items-center gap-2 mb-1">
+                      <AlertCircle className="w-4 h-4 text-orange-600" />
+                      <span className="text-sm font-medium text-gray-700">Urgencia</span>
+                    </div>
+                    <p className="text-sm font-bold text-orange-900">{contact.urgencyLevel}</p>
                   </div>
                 </div>
 
+                {/* Información adicional detallada */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div className="space-y-3">
+                    <div className="bg-white/60 p-3 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Wallet className="w-4 h-4 text-green-600" />
+                        <span className="text-sm font-semibold text-gray-700">Presupuesto Estimado</span>
+                      </div>
+                      <p className="text-sm font-medium text-gray-800">{contact.estimatedBudget}</p>
+                    </div>
+                    <div className="bg-white/60 p-3 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <TrendingUp className="w-4 h-4 text-blue-600" />
+                        <span className="text-sm font-semibold text-gray-700">Fuente del Lead</span>
+                      </div>
+                      <p className="text-sm font-medium text-gray-800">{contact.leadSource}</p>
+                    </div>
+                    <div className="bg-white/60 p-3 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Home className="w-4 h-4 text-purple-600" />
+                        <span className="text-sm font-semibold text-gray-700">Interés Inmobiliario</span>
+                      </div>
+                      <p className="text-sm font-medium text-gray-800">{contact.propertyInterest}</p>
+                    </div>
+                    <div className="bg-white/60 p-3 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <MapPin className="w-4 h-4 text-red-600" />
+                        <span className="text-sm font-semibold text-gray-700">Distrito Preferido</span>
+                      </div>
+                      <p className="text-sm font-medium text-gray-800">{contact.preferredDistrict}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="bg-white/60 p-3 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Activity className="w-4 h-4 text-orange-600" />
+                        <span className="text-sm font-semibold text-gray-700">Preferencia Comunicación</span>
+                      </div>
+                      <p className="text-sm font-medium text-gray-800">{contact.communicationPreference}</p>
+                    </div>
+                    <div className="bg-white/60 p-3 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Clock className="w-4 h-4 text-indigo-600" />
+                        <span className="text-sm font-semibold text-gray-700">Días Sin Interacción</span>
+                      </div>
+                      <p className="text-sm font-medium text-gray-800">{contact.daysSinceLastInteraction} días</p>
+                    </div>
+                    <div className="bg-white/60 p-3 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Users className="w-4 h-4 text-cyan-600" />
+                        <span className="text-sm font-semibold text-gray-700">Tamaño Familiar</span>
+                      </div>
+                      <p className="text-sm font-medium text-gray-800">{contact.familySize} persona{contact.familySize > 1 ? 's' : ''}</p>
+                    </div>
+                    <div className="bg-white/60 p-3 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <DollarSign className="w-4 h-4 text-emerald-600" />
+                        <span className="text-sm font-semibold text-gray-700">Tipo de Financiamiento</span>
+                      </div>
+                      <p className="text-sm font-medium text-gray-800">{contact.financingType}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Barra de progreso de conversión */}
                 <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-700">Probabilidad de Conversión</span>
+                    <span className="text-sm font-bold text-blue-700">{contact.conversionProbability}%</span>
+                  </div>
                   <Progress value={contact.conversionProbability} className="h-3" />
                 </div>
 
+                {/* Explicación del riesgo */}
                 <div className="mb-4">
                   <h4 className="font-bold text-gray-800 mb-2 flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 text-red-600" />
@@ -164,6 +242,7 @@ const ContactAnalysisComponent = ({
                   )}
                 </div>
 
+                {/* Acciones recomendadas */}
                 <div>
                   <h4 className="font-semibold text-green-800 mb-2 flex items-center gap-2">
                     <Lightbulb className="w-4 h-4 text-green-600" />
