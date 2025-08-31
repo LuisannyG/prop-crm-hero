@@ -862,28 +862,47 @@ export const analyzeIndividualProperties = async (userId: string): Promise<Indiv
     // Calcular precio recomendado basado en análisis de mercado
     let recommendedPrice = property.price || 0;
     const avgMarketPrice = marketPrices[property.property_type || 'otro'] || 0;
+    const currentPrice = property.price || 0;
     
     if (avgMarketPrice > 0) {
-      const priceDeviation = ((property.price || 0) - avgMarketPrice) / avgMarketPrice;
+      const priceDeviation = ((currentPrice) - avgMarketPrice) / avgMarketPrice;
       
       if (pricePosition === 'Por encima del mercado') {
         // Si está costosa, sugerir precio menor
         if (priceDeviation > 0.15) {
           recommendedPrice = avgMarketPrice * 1.05; // Reducir significativamente pero mantener premium del 5%
         } else {
-          recommendedPrice = avgMarketPrice * 0.98; // Reducir ligeramente
+          recommendedPrice = currentPrice * 0.95; // Reducir 5% del precio actual
         }
       } else if (pricePosition === 'Por debajo del mercado') {
         // Si está económica, sugerir precio mayor
         if (priceDeviation < -0.15) {
-          recommendedPrice = avgMarketPrice * 0.95; // Aumentar significativamente pero mantener descuento del 5%
+          recommendedPrice = avgMarketPrice * 0.95; // Aumentar significativamente
         } else {
-          recommendedPrice = avgMarketPrice * 1.02; // Aumentar ligeramente
+          recommendedPrice = currentPrice * 1.08; // Aumentar 8% del precio actual
         }
       } else {
-        // Si está en el mercado, mantener precio similar con ajuste mínimo
-        recommendedPrice = avgMarketPrice;
+        // Si está en el mercado, hacer ajuste mínimo pero diferente
+        if (propertyInteractions.length > 3) {
+          recommendedPrice = currentPrice * 1.03; // Aumentar 3% si hay buen interés
+        } else {
+          recommendedPrice = currentPrice * 0.97; // Reducir 3% si hay poco interés
+        }
       }
+    } else {
+      // Si no hay datos de mercado, hacer ajuste basado en interacciones
+      if (propertyInteractions.length > 3) {
+        recommendedPrice = currentPrice * 1.05; // Aumentar 5%
+      } else {
+        recommendedPrice = currentPrice * 0.93; // Reducir 7%
+      }
+    }
+    
+    // Asegurar que el precio recomendado sea siempre diferente al actual
+    if (Math.abs(recommendedPrice - currentPrice) < 1000) {
+      recommendedPrice = currentPrice > avgMarketPrice 
+        ? currentPrice * 0.92  // Reducir más si está por encima
+        : currentPrice * 1.08; // Aumentar más si está por debajo
     }
 
     return {
