@@ -29,7 +29,7 @@ const Dashboard = () => {
 
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white/90">
       <DashboardNav />
       
       <main className="container mx-auto px-4 py-8">
