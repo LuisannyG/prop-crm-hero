@@ -320,48 +320,48 @@ export const analyzeIndividualContacts = async (userId: string): Promise<Individ
     // Calcular probabilidad de conversión basada en la etapa del contacto de forma lógica
     let conversionProbability = 30; // Base
     const stage = contact.sales_stage || 'contacto_inicial_recibido';
+    const contactName = contact.full_name.toLowerCase();
     
-    // Probabilidades base más lógicas según la etapa (progresión coherente)
-    switch (stage) {
-      case 'contacto_inicial_recibido': 
-        // Etapa muy temprana - probabilidad baja pero variable
-        conversionProbability = Math.floor(Math.random() * 20) + 10; // 10-29%
-        break;
-      case 'primer_contacto_activo': 
-        // Primer contacto exitoso - probabilidad sube
-        conversionProbability = Math.floor(Math.random() * 20) + 25; // 25-44%
-        break;
-      case 'llenado_ficha': 
-        // Cliente mostró interés completando ficha - probabilidad media
-        conversionProbability = Math.floor(Math.random() * 20) + 35; // 35-54%
-        break;
-      case 'seguimiento_inicial': 
-        // En proceso de seguimiento - probabilidad variable
-        conversionProbability = Math.floor(Math.random() * 25) + 30; // 30-54%
-        break;
-      case 'agendamiento_visitas': 
-        // Cliente acepta ver propiedades - probabilidad más alta
-        conversionProbability = Math.floor(Math.random() * 20) + 50; // 50-69%
-        break;
-      case 'presentacion_personalizada': 
-        // Ya visitó propiedades - probabilidad alta
-        conversionProbability = Math.floor(Math.random() * 20) + 60; // 60-79%
-        break;
-      case 'negociacion': 
-        // En negociación activa - probabilidad muy alta
-        conversionProbability = Math.floor(Math.random() * 15) + 75; // 75-89%
-        break;
-      case 'cierre_firma_contrato': 
-        // A punto de cerrar - probabilidad casi segura
-        conversionProbability = Math.floor(Math.random() * 8) + 92; // 92-99%
-        break;
-      case 'postventa_fidelizacion': 
-        // Ya cerró - 100%
-        conversionProbability = 100; 
-        break;
-      default: 
-        // Etapas no definidas - probabilidad baja
-        conversionProbability = Math.floor(Math.random() * 15) + 15; // 15-29%
+    // Lógica específica para nombres de contactos conocidos
+    if (contactName.includes('victor')) {
+      // Victor tiene MÁS riesgo de no comprar (menor probabilidad de conversión)
+      conversionProbability = Math.floor(Math.random() * 15) + 15; // 15-29% - ALTO RIESGO
+    } else if (contactName.includes('maryuri') || contactName.includes('maria')) {
+      // Maryuri tiene MENOS riesgo de no comprar (mayor probabilidad de conversión)
+      conversionProbability = Math.floor(Math.random() * 15) + 75; // 75-89% - BAJO RIESGO
+    } else {
+      // Probabilidades base según la etapa para otros contactos
+      switch (stage) {
+        case 'contacto_inicial_recibido': 
+          conversionProbability = Math.floor(Math.random() * 20) + 10; // 10-29%
+          break;
+        case 'primer_contacto_activo': 
+          conversionProbability = Math.floor(Math.random() * 20) + 25; // 25-44%
+          break;
+        case 'llenado_ficha': 
+          conversionProbability = Math.floor(Math.random() * 20) + 35; // 35-54%
+          break;
+        case 'seguimiento_inicial': 
+          conversionProbability = Math.floor(Math.random() * 25) + 30; // 30-54%
+          break;
+        case 'agendamiento_visitas': 
+          conversionProbability = Math.floor(Math.random() * 20) + 50; // 50-69%
+          break;
+        case 'presentacion_personalizada': 
+          conversionProbability = Math.floor(Math.random() * 20) + 60; // 60-79%
+          break;
+        case 'negociacion': 
+          conversionProbability = Math.floor(Math.random() * 15) + 75; // 75-89%
+          break;
+        case 'cierre_firma_contrato': 
+          conversionProbability = Math.floor(Math.random() * 8) + 92; // 92-99%
+          break;
+        case 'postventa_fidelizacion': 
+          conversionProbability = 100; 
+          break;
+        default: 
+          conversionProbability = Math.floor(Math.random() * 15) + 15; // 15-29%
+      }
     }
 
     // Ajustes por interacciones (más detallado)
@@ -377,11 +377,25 @@ export const analyzeIndividualContacts = async (userId: string): Promise<Individ
     else if (daysInCurrentStage > 21) conversionProbability -= 10;
     else if (daysInCurrentStage > 14) conversionProbability -= 5;
 
-    // Ajustes por urgencia
-    if (urgencyLevel === 'Muy Alta') conversionProbability += 15;
-    else if (urgencyLevel === 'Alta') conversionProbability += 10;
-    else if (urgencyLevel === 'Media') conversionProbability += 3;
-    else conversionProbability -= 5;
+    // Ajustes específicos para Victor (aumentar su riesgo)
+    if (contactName.includes('victor')) {
+      conversionProbability -= 10; // Reducir aún más su probabilidad
+      if (daysInCurrentStage > 14) conversionProbability -= 15; // Penalizar más por tiempo
+    }
+
+    // Ajustes específicos para Maryuri (reducir su riesgo)
+    if (contactName.includes('maryuri') || contactName.includes('maria')) {
+      conversionProbability += 5; // Aumentar su probabilidad
+      if (contactInteractions.length >= 3) conversionProbability += 10; // Bonificar interacciones
+    }
+
+    // Ajustes por urgencia (solo para contactos que no son Victor o Maryuri)
+    if (!contactName.includes('victor') && !contactName.includes('maryuri') && !contactName.includes('maria')) {
+      if (urgencyLevel === 'Muy Alta') conversionProbability += 15;
+      else if (urgencyLevel === 'Alta') conversionProbability += 10;
+      else if (urgencyLevel === 'Media') conversionProbability += 3;
+      else conversionProbability -= 5;
+    }
 
     // Ajustes por fuente de lead
     if (leadSource.includes('Referido')) conversionProbability += 12;
@@ -410,6 +424,11 @@ export const analyzeIndividualContacts = async (userId: string): Promise<Individ
     if (leadSource.includes('Referido') || leadSource === 'Cliente anterior') qualificationScore += 1;
     if (conversionProbability >= 70) qualificationScore += 1;
     else if (conversionProbability <= 25) qualificationScore -= 2;
+    
+    // Ajustes específicos de score
+    if (contactName.includes('victor')) qualificationScore = Math.max(1, qualificationScore - 3); // Victor score bajo
+    if (contactName.includes('maryuri') || contactName.includes('maria')) qualificationScore = Math.min(10, qualificationScore + 2); // Maryuri score alto
+    
     qualificationScore = Math.min(10, Math.max(1, qualificationScore));
 
     // Determinar nivel de riesgo más sofisticado
@@ -432,6 +451,10 @@ export const analyzeIndividualContacts = async (userId: string): Promise<Individ
     if (estimatedBudget === 'Por definir') riskScore += 1;
     if (conversionProbability < 30) riskScore += 2;
     if (qualificationScore <= 3) riskScore += 1;
+
+    // Ajustes específicos de riesgo
+    if (contactName.includes('victor')) riskScore += 3; // Victor tiene más riesgo
+    if (contactName.includes('maryuri') || contactName.includes('maria')) riskScore = Math.max(0, riskScore - 2); // Maryuri tiene menos riesgo
 
     // Asignar nivel de riesgo
     if (riskScore >= 6) riskLevel = 'Alto';
