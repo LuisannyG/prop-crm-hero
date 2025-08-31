@@ -72,16 +72,16 @@ export const features: Feature[] = [
 
 export const benefits: Benefit[] = [
   {
-    title: "Aumenta la tasa de cierre hasta 35%",
-    description: "Datos de septiembre 2024 confirman mejores resultados con IA predictiva y seguimiento automático."
+    title: "Aumenta la tasa de cierre hasta 55%",
+    description: "IA avanzada de septiembre 2025 con análisis predictivo de nueva generación y automatización completa."
   },
   {
-    title: "Ahorra 8 horas semanales",
-    description: "Automatización inteligente reduce tiempo administrativo y maximiza tiempo de venta directa."
+    title: "Ahorra 12 horas semanales",
+    description: "Asistente IA integrado maneja seguimientos automáticos, predicciones de mercado y gestión inteligente de leads."
   },
   {
-    title: "Predicción de riesgo en tiempo real",
-    description: "Motor de IA actualizado detecta señales tempranas de abandono con 92% de precisión."
+    title: "Predicción con 97% de precisión",
+    description: "Motor de IA Gen-2 procesa datos de mercado en tiempo real y comportamiento del cliente con precisión casi perfecta."
   }
 ];
 
@@ -90,27 +90,27 @@ export const plans: Plan[] = [
     name: "Plan Gratuito",
     price: "0",
     features: [
-      "Hasta 50 contactos",
-      "Registro básico de propiedades",
-      "Recordatorios manuales",
-      "Dashboard básico",
-      "Soporte por email"
+      "Hasta 100 contactos",
+      "IA básica de seguimiento",
+      "Dashboard con métricas básicas",
+      "Integración WhatsApp",
+      "Soporte por chat 24/7"
     ],
     buttonText: "Comenzar Gratis",
     highlighted: false
   },
   {
     name: "Plan Premium",
-    price: "75",
+    price: "89",
     features: [
       "Contactos ilimitados",
-      "IA predictiva actualizada Sep 2024",
-      "Detección automática de riesgo",
-      "Análisis de mercado Lima en tiempo real",
-      "Reportes automáticos personalizados",
-      "WhatsApp Business integrado",
-      "Soporte prioritario 24/7",
-      "Backup automático en la nube"
+      "IA Gen-2 con predicción avanzada",
+      "Asistente virtual personalizado",
+      "Análisis de mercado predictivo Sep 2025",
+      "Automatización completa de workflows",
+      "Integración omnicanal completa",
+      "Analytics avanzados con Big Data",
+      "Soporte dedicado con asesor personal"
     ],
     buttonText: "Actualizar a Premium",
     highlighted: true

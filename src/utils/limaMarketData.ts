@@ -1,30 +1,30 @@
 
-// Datos reales del mercado inmobiliario de Lima basados en tendencias 2024
+// Datos proyectados del mercado inmobiliario de Lima para septiembre 2025
 export const limaMarketTrends = {
   monthlyData: [
-    { month: 'Ene 2024', contacts: 145, conversions: 23, avgPrice: 285000, marketActivity: 'Alta' },
-    { month: 'Feb 2024', contacts: 162, conversions: 28, avgPrice: 290000, marketActivity: 'Alta' },
-    { month: 'Mar 2024', contacts: 178, conversions: 31, avgPrice: 295000, marketActivity: 'Muy Alta' },
-    { month: 'Abr 2024', contacts: 156, conversions: 25, avgPrice: 288000, marketActivity: 'Media' },
-    { month: 'May 2024', contacts: 134, conversions: 19, avgPrice: 280000, marketActivity: 'Media' },
-    { month: 'Jun 2024', contacts: 189, conversions: 35, avgPrice: 305000, marketActivity: 'Muy Alta' },
-    { month: 'Jul 2024', contacts: 198, conversions: 38, avgPrice: 310000, marketActivity: 'Muy Alta' },
-    { month: 'Ago 2024', contacts: 142, conversions: 22, avgPrice: 285000, marketActivity: 'Baja' },
-    { month: 'Sep 2024', contacts: 201, conversions: 42, avgPrice: 320000, marketActivity: 'Muy Alta' },
-    { month: 'Oct 2024', contacts: 188, conversions: 36, avgPrice: 315000, marketActivity: 'Alta' },
-    { month: 'Nov 2024', contacts: 205, conversions: 41, avgPrice: 325000, marketActivity: 'Muy Alta' },
-    { month: 'Dic 2024', contacts: 170, conversions: 30, avgPrice: 305000, marketActivity: 'Media' }
+    { month: 'Ene 2025', contacts: 215, conversions: 52, avgPrice: 350000, marketActivity: 'Muy Alta' },
+    { month: 'Feb 2025', contacts: 228, conversions: 58, avgPrice: 360000, marketActivity: 'Muy Alta' },
+    { month: 'Mar 2025', contacts: 245, conversions: 65, avgPrice: 375000, marketActivity: 'Excepcional' },
+    { month: 'Abr 2025', contacts: 232, conversions: 55, avgPrice: 365000, marketActivity: 'Muy Alta' },
+    { month: 'May 2025', contacts: 198, conversions: 42, avgPrice: 340000, marketActivity: 'Alta' },
+    { month: 'Jun 2025', contacts: 267, conversions: 71, avgPrice: 385000, marketActivity: 'Excepcional' },
+    { month: 'Jul 2025', contacts: 278, conversions: 75, avgPrice: 395000, marketActivity: 'Excepcional' },
+    { month: 'Ago 2025', contacts: 189, conversions: 38, avgPrice: 355000, marketActivity: 'Media' },
+    { month: 'Sep 2025', contacts: 289, conversions: 82, avgPrice: 410000, marketActivity: 'Excepcional' },
+    { month: 'Oct 2025', contacts: 265, conversions: 68, avgPrice: 400000, marketActivity: 'Muy Alta' },
+    { month: 'Nov 2025', contacts: 295, conversions: 85, avgPrice: 420000, marketActivity: 'Excepcional' },
+    { month: 'Dic 2025', contacts: 245, conversions: 58, avgPrice: 390000, marketActivity: 'Alta' }
   ],
   
   districtTrends: {
-    'Miraflores': { demand: 'Muy Alta', priceGrowth: 9.2, avgPrice: 485000 },
-    'San Isidro': { demand: 'Muy Alta', priceGrowth: 8.1, avgPrice: 550000 },
-    'Surco': { demand: 'Muy Alta', priceGrowth: 7.5, avgPrice: 395000 },
-    'La Molina': { demand: 'Alta', priceGrowth: 6.8, avgPrice: 440000 },
-    'Barranco': { demand: 'Muy Alta', priceGrowth: 10.1, avgPrice: 410000 },
-    'San Borja': { demand: 'Alta', priceGrowth: 6.2, avgPrice: 370000 },
-    'Jesús María': { demand: 'Alta', priceGrowth: 5.5, avgPrice: 295000 },
-    'Pueblo Libre': { demand: 'Media', priceGrowth: 4.8, avgPrice: 265000 }
+    'Miraflores': { demand: 'Excepcional', priceGrowth: 12.8, avgPrice: 620000 },
+    'San Isidro': { demand: 'Excepcional', priceGrowth: 11.5, avgPrice: 705000 },
+    'Surco': { demand: 'Muy Alta', priceGrowth: 10.2, avgPrice: 510000 },
+    'La Molina': { demand: 'Muy Alta', priceGrowth: 9.1, avgPrice: 565000 },
+    'Barranco': { demand: 'Excepcional', priceGrowth: 13.5, avgPrice: 550000 },
+    'San Borja': { demand: 'Muy Alta', priceGrowth: 8.8, avgPrice: 480000 },
+    'Jesús María': { demand: 'Alta', priceGrowth: 7.2, avgPrice: 385000 },
+    'Pueblo Libre': { demand: 'Alta', priceGrowth: 6.5, avgPrice: 345000 }
   },
 
   seasonalPatterns: [

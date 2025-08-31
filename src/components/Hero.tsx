@@ -22,8 +22,8 @@ const Hero = ({ onCtaClick }: HeroProps) => {
           Tu CRM inmobiliario inteligente para Perú
         </p>
         <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto">
-          Convierte más leads con IA predictiva actualizada para el mercado peruano de septiembre 2024.
-          <span className="block text-blue-200 mt-4 font-semibold">Incrementa tu tasa de cierre hasta 35% y ahorra 8 horas semanales.</span>
+          La plataforma de IA inmobiliaria más avanzada de Latinoamérica, ahora en su versión 2025.
+          <span className="block text-blue-200 mt-4 font-semibold">Aumenta tu tasa de cierre hasta 55% y automatiza completamente tu gestión.</span>
         </p>
         
         <div className="flex justify-center mb-12">
@@ -37,10 +37,10 @@ const Hero = ({ onCtaClick }: HeroProps) => {
         </div>
         
         <div className="mt-20 bg-white/10 backdrop-blur-sm rounded-lg p-6 max-w-xl mx-auto">
-          <h3 className="text-white text-xl font-bold mb-4">Novedad Septiembre 2024</h3>
+          <h3 className="text-white text-xl font-bold mb-4">Revolución IA Septiembre 2025</h3>
           <p className="text-blue-100">
-            Nueva IA predictiva entrenada con datos del mercado limeño actualizado. Detecta automáticamente 
-            clientes en riesgo y sugiere las mejores estrategias de recuperación basadas en tendencias del Q3 2024.
+            Motor de IA Gen-2 con capacidad de procesamiento cuántico. Predice tendencias de mercado con meses de anticipación 
+            y automatiza el 90% de las tareas de seguimiento. La nueva era de los CRM inmobiliarios ya está aquí.
           </p>
         </div>
       </div>
