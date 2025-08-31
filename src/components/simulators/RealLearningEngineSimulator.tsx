@@ -78,43 +78,6 @@ const ContactAnalysisComponent = ({
   individualContactAnalysis: IndividualContactAnalysis[];
   getRiskFactorsExplanation: (contact: IndividualContactAnalysis) => string[];
 }) => {
-  
-  // Generate more realistic and varied conversion probabilities
-  const getRealisticConversionProbability = (contact: IndividualContactAnalysis, index: number) => {
-    const stageProbabilities = {
-      'contacto_inicial': [15, 25, 35, 18, 42, 28, 31, 22, 19, 38, 26, 33][index % 12],
-      'seguimiento': [45, 62, 55, 48, 71, 58, 52, 49, 66, 59, 47, 68][index % 12],
-      'visita_realizada': [75, 68, 82, 71, 59, 77, 73, 85, 64, 79, 69, 81][index % 12],
-      'negociacion': [88, 92, 83, 95, 87, 91, 89, 85, 94, 86, 90, 93][index % 12],
-      'cierre': [98, 96, 99, 97, 95, 98, 99, 96, 97, 98, 94, 99][index % 12]
-    };
-    
-    return stageProbabilities[contact.stage as keyof typeof stageProbabilities] || contact.conversionProbability;
-  };
-  
-  // Generate additional contact information
-  const getContactAdditionalInfo = (contact: IndividualContactAnalysis, index: number) => {
-    const budgetRanges = ['S/ 200K-300K', 'S/ 300K-450K', 'S/ 450K-600K', 'S/ 600K-800K', 'S/ 800K+'];
-    const sources = ['Portal Web', 'Facebook Ads', 'Referido', 'Google Ads', 'WhatsApp', 'Inmobiliaria'];
-    const interests = ['Departamento', 'Casa', 'Dúplex', 'Oficina', 'Local Comercial'];
-    const districts = ['Miraflores', 'San Isidro', 'Surco', 'La Molina', 'San Borja', 'Barranco', 'Magdalena'];
-    const urgencyLevels = ['Baja', 'Media', 'Alta', 'Muy Alta'];
-    const communicationPrefs = ['WhatsApp', 'Email', 'Llamada', 'Presencial'];
-    
-    return {
-      budget: budgetRanges[index % budgetRanges.length],
-      source: sources[index % sources.length],
-      propertyInterest: interests[index % interests.length],
-      preferredDistrict: districts[index % districts.length],
-      urgency: urgencyLevels[index % urgencyLevels.length],
-      communicationPref: communicationPrefs[index % communicationPrefs.length],
-      lastInteraction: Math.floor(Math.random() * 15) + 1, // Days since last interaction
-      score: Math.floor(Math.random() * 40) + 60, // Score between 60-100
-      familySize: Math.floor(Math.random() * 4) + 1,
-      financing: Math.random() > 0.3 ? 'Crédito Hipotecario' : 'Contado'
-    };
-  };
-
   return (
     <Card className="bg-white/80 backdrop-blur-sm border-blue-200">
       <CardHeader>
@@ -125,21 +88,10 @@ const ContactAnalysisComponent = ({
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 gap-6">
-          {individualContactAnalysis.slice(0, 12).map((contact, index) => {
-            const realisticProbability = getRealisticConversionProbability(contact, index);
-            const riskScore = 100 - realisticProbability;
+          {individualContactAnalysis.slice(0, 12).map((contact) => {
+            const riskScore = 100 - contact.conversionProbability;
             const riskFactors = getRiskFactorsExplanation(contact);
             const riskExplanation = getRiskExplanation(riskScore, riskFactors);
-            const additionalInfo = getContactAdditionalInfo(contact, index);
-            
-            // Determine risk level based on realistic probability
-            const getRiskLevel = (probability: number) => {
-              if (probability >= 80) return 'Bajo';
-              if (probability >= 60) return 'Medio';
-              return 'Alto';
-            };
-            
-            const riskLevel = getRiskLevel(realisticProbability);
             
             return (
               <div key={contact.id} className="p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200 shadow-lg">
@@ -151,27 +103,18 @@ const ContactAnalysisComponent = ({
                     <div>
                       <h3 className="text-xl font-bold text-blue-900">{contact.name}</h3>
                       <p className="text-gray-600">{contact.stage.replace(/_/g, ' ')}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="outline" className="text-xs">
-                          {additionalInfo.source}
-                        </Badge>
-                        <Badge variant="outline" className="text-xs">
-                          Score: {additionalInfo.score}
-                        </Badge>
-                      </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <Badge variant={riskLevel === 'Alto' ? 'destructive' : riskLevel === 'Medio' ? 'default' : 'secondary'} className="text-sm">
-                      Riesgo {riskLevel}
+                    <Badge variant={contact.riskLevel === 'Alto' ? 'destructive' : contact.riskLevel === 'Medio' ? 'default' : 'secondary'} className="text-sm">
+                      Riesgo {contact.riskLevel}
                     </Badge>
-                    <p className="text-2xl font-bold mt-1 text-blue-700">{realisticProbability}%</p>
+                    <p className="text-2xl font-bold mt-1 text-blue-700">{contact.conversionProbability}%</p>
                     <p className="text-xs text-gray-500">Probabilidad de conversión</p>
                   </div>
                 </div>
 
-                {/* First row of metrics */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <div className="bg-white/60 p-3 rounded-lg">
                     <div className="flex items-center gap-2 mb-1">
                       <Clock className="w-4 h-4 text-blue-600" />
@@ -188,54 +131,15 @@ const ContactAnalysisComponent = ({
                   </div>
                   <div className="bg-white/60 p-3 rounded-lg">
                     <div className="flex items-center gap-2 mb-1">
-                      <Wallet className="w-4 h-4 text-purple-600" />
-                      <span className="text-sm font-medium text-gray-700">Presupuesto</span>
+                      <Target className="w-4 h-4 text-purple-600" />
+                      <span className="text-sm font-medium text-gray-700">Score Riesgo</span>
                     </div>
-                    <p className="text-sm font-bold text-purple-900">{additionalInfo.budget}</p>
-                  </div>
-                  <div className="bg-white/60 p-3 rounded-lg">
-                    <div className="flex items-center gap-2 mb-1">
-                      <MapPin className="w-4 h-4 text-orange-600" />
-                      <span className="text-sm font-medium text-gray-700">Distrito</span>
-                    </div>
-                    <p className="text-sm font-bold text-orange-900">{additionalInfo.preferredDistrict}</p>
-                  </div>
-                </div>
-
-                {/* Second row of metrics */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
-                  <div className="bg-white/60 p-3 rounded-lg">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Home className="w-4 h-4 text-teal-600" />
-                      <span className="text-sm font-medium text-gray-700">Interés</span>
-                    </div>
-                    <p className="text-sm font-bold text-teal-900">{additionalInfo.propertyInterest}</p>
-                  </div>
-                  <div className="bg-white/60 p-3 rounded-lg">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Zap className="w-4 h-4 text-red-600" />
-                      <span className="text-sm font-medium text-gray-700">Urgencia</span>
-                    </div>
-                    <p className="text-sm font-bold text-red-900">{additionalInfo.urgency}</p>
-                  </div>
-                  <div className="bg-white/60 p-3 rounded-lg">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Calendar className="w-4 h-4 text-indigo-600" />
-                      <span className="text-sm font-medium text-gray-700">Últ. Contacto</span>
-                    </div>
-                    <p className="text-sm font-bold text-indigo-900">{additionalInfo.lastInteraction} días</p>
-                  </div>
-                  <div className="bg-white/60 p-3 rounded-lg">
-                    <div className="flex items-center gap-2 mb-1">
-                      <DollarSign className="w-4 h-4 text-green-600" />
-                      <span className="text-sm font-medium text-gray-700">Financiamiento</span>
-                    </div>
-                    <p className="text-sm font-bold text-green-900">{additionalInfo.financing}</p>
+                    <p className="text-lg font-bold text-purple-900">{riskScore.toFixed(0)}%</p>
                   </div>
                 </div>
 
                 <div className="mb-4">
-                  <Progress value={realisticProbability} className="h-3" />
+                  <Progress value={contact.conversionProbability} className="h-3" />
                 </div>
 
                 <div className="mb-4">
@@ -245,23 +149,12 @@ const ContactAnalysisComponent = ({
                   </h4>
                   <p className="text-sm text-gray-700 mb-3">{riskExplanation.description}</p>
                   
-                  {/* Additional insights based on new data */}
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
-                    <h5 className="font-semibold text-blue-800 mb-2">💡 Insights Adicionales:</h5>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-blue-700">
-                      <div>• Familia de {additionalInfo.familySize} personas</div>
-                      <div>• Prefiere comunicación por {additionalInfo.communicationPref}</div>
-                      <div>• Última interacción hace {additionalInfo.lastInteraction} días</div>
-                      <div>• Score de calificación: {additionalInfo.score}/100</div>
-                    </div>
-                  </div>
-                  
                   {riskFactors.length > 0 && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-3">
-                      <h5 className="font-semibold text-red-800 mb-2">⚠️ Factores de Riesgo Detectados:</h5>
+                      <h5 className="font-semibold text-red-800 mb-2">Factores de Riesgo Detectados:</h5>
                       <ul className="text-sm text-red-700 space-y-1">
-                        {riskFactors.map((factor, factorIndex) => (
-                          <li key={factorIndex} className="flex items-start gap-2">
+                        {riskFactors.map((factor, index) => (
+                          <li key={index} className="flex items-start gap-2">
                             <span className="text-red-500 mt-1">•</span>
                             {factor}
                           </li>
@@ -277,26 +170,12 @@ const ContactAnalysisComponent = ({
                     Acciones Recomendadas:
                   </h4>
                   <ul className="text-sm text-green-700 space-y-2">
-                    {contact.recommendedActions.map((action, actionIndex) => (
-                      <li key={actionIndex} className="flex items-start gap-2">
+                    {contact.recommendedActions.map((action, index) => (
+                      <li key={index} className="flex items-start gap-2">
                         <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
                         {action}
                       </li>
                     ))}
-                    
-                    {/* Additional recommendations based on new data */}
-                    {additionalInfo.urgency === 'Alta' && (
-                      <li className="flex items-start gap-2">
-                        <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                        Priorizar contacto inmediato debido a alta urgencia
-                      </li>
-                    )}
-                    {additionalInfo.lastInteraction > 7 && (
-                      <li className="flex items-start gap-2">
-                        <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                        Reactivar comunicación - han pasado {additionalInfo.lastInteraction} días sin contacto
-                      </li>
-                    )}
                   </ul>
                 </div>
               </div>
@@ -491,20 +370,20 @@ const PropertyAnalysisComponent = ({
 };
 
 const MarketTrendsComponent = () => {
-  // Updated 2025 market data for Lima with real estate metrics
+  // Updated 2025 market data for Lima
   const lima2025Data = [
-    { month: 'Ene 2025', inventory: 9200, avgSaleTime: 48, avgPrice: 318000, pricePerM2: 4240, marketActivity: 'Media' },
-    { month: 'Feb 2025', inventory: 8950, avgSaleTime: 45, avgPrice: 325000, pricePerM2: 4330, marketActivity: 'Alta' },
-    { month: 'Mar 2025', inventory: 8670, avgSaleTime: 42, avgPrice: 332000, pricePerM2: 4420, marketActivity: 'Muy Alta' },
-    { month: 'Abr 2025', inventory: 8890, avgSaleTime: 44, avgPrice: 328000, pricePerM2: 4370, marketActivity: 'Alta' },
-    { month: 'May 2025', inventory: 9100, avgSaleTime: 47, avgPrice: 320000, pricePerM2: 4270, marketActivity: 'Media' },
-    { month: 'Jun 2025', inventory: 8540, avgSaleTime: 40, avgPrice: 340000, pricePerM2: 4530, marketActivity: 'Muy Alta' },
-    { month: 'Jul 2025', inventory: 8450, avgSaleTime: 52, avgPrice: 335000, pricePerM2: 4460, marketActivity: 'Baja' },
-    { month: 'Ago 2025', inventory: 7890, avgSaleTime: 45, avgPrice: 338000, pricePerM2: 4500, marketActivity: 'Media' },
-    { month: 'Sep 2025', inventory: 7320, avgSaleTime: 38, avgPrice: 345000, pricePerM2: 4590, marketActivity: 'Alta' },
-    { month: 'Oct 2025', inventory: 6980, avgSaleTime: 35, avgPrice: 352000, pricePerM2: 4680, marketActivity: 'Muy Alta' },
-    { month: 'Nov 2025', inventory: 6650, avgSaleTime: 32, avgPrice: 358000, pricePerM2: 4760, marketActivity: 'Muy Alta' },
-    { month: 'Dec 2025', inventory: 7200, avgSaleTime: 43, avgPrice: 350000, pricePerM2: 4650, marketActivity: 'Media' }
+    { month: 'Ene 2025', contacts: 168, conversions: 31, avgPrice: 318000, marketActivity: 'Media' },
+    { month: 'Feb 2025', contacts: 195, conversions: 38, avgPrice: 325000, marketActivity: 'Alta' },
+    { month: 'Mar 2025', contacts: 234, conversions: 47, avgPrice: 332000, marketActivity: 'Muy Alta' },
+    { month: 'Abr 2025', contacts: 201, conversions: 35, avgPrice: 328000, marketActivity: 'Alta' },
+    { month: 'May 2025', contacts: 178, conversions: 28, avgPrice: 320000, marketActivity: 'Media' },
+    { month: 'Jun 2025', contacts: 212, conversions: 42, avgPrice: 340000, marketActivity: 'Muy Alta' },
+    { month: 'Jul 2025', contacts: 156, conversions: 23, avgPrice: 335000, marketActivity: 'Baja' },
+    { month: 'Ago 2025', contacts: 189, conversions: 31, avgPrice: 338000, marketActivity: 'Media' },
+    { month: 'Sep 2025', contacts: 223, conversions: 44, avgPrice: 345000, marketActivity: 'Alta' },
+    { month: 'Oct 2025', contacts: 247, conversions: 51, avgPrice: 352000, marketActivity: 'Muy Alta' },
+    { month: 'Nov 2025', contacts: 268, conversions: 58, avgPrice: 358000, marketActivity: 'Muy Alta' },
+    { month: 'Dec 2025', contacts: 201, conversions: 38, avgPrice: 350000, marketActivity: 'Media' }
   ];
 
   const q3Analysis = lima2025Data.slice(6, 9); // Jul, Aug, Sep 2025
@@ -640,19 +519,19 @@ const MarketTrendsComponent = () => {
         </CardHeader>
         <CardContent>
           <div className="mb-4 p-4 bg-blue-50 rounded-lg">
-            <h3 className="font-semibold text-blue-900 mb-2">Mercado Inmobiliario Q3 2025 - Datos Reales</h3>
+            <h3 className="font-semibold text-blue-900 mb-2">Contexto Q3 2025 (Julio - Septiembre)</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div>
-                <p><strong>Julio:</strong> Temporada baja de invierno</p>
-                <p><strong>Propiedades disponibles:</strong> 8,450 | <strong>Tiempo prom. venta:</strong> 52 días</p>
+                <p><strong>Julio:</strong> Vacaciones de invierno, menor actividad (-22% vs promedio)</p>
+                <p><strong>Contactos esperados:</strong> 156 | <strong>Conversiones:</strong> 23</p>
               </div>
               <div>
-                <p><strong>Agosto:</strong> Reactivación del mercado</p>
-                <p><strong>Propiedades disponibles:</strong> 7,890 | <strong>Tiempo prom. venta:</strong> 45 días</p>
+                <p><strong>Agosto:</strong> Regreso gradual, reactivación del mercado</p>
+                <p><strong>Contactos esperados:</strong> 189 | <strong>Conversiones:</strong> 31</p>
               </div>
               <div>
-                <p><strong>Septiembre:</strong> Preparación fin de año</p>
-                <p><strong>Propiedades disponibles:</strong> 7,320 | <strong>Tiempo prom. venta:</strong> 38 días</p>
+                <p><strong>Septiembre:</strong> Preparación fin de año, actividad alta</p>
+                <p><strong>Contactos esperados:</strong> 223 | <strong>Conversiones:</strong> 44</p>
               </div>
             </div>
           </div>
@@ -676,23 +555,25 @@ const MarketTrendsComponent = () => {
                 formatter={(value, name, props) => {
                   const month = props.payload.month;
                   let context = '';
+                  let activity = '';
                   
                   if (month === 'Jul 2025') {
                     context = '❄️ Vacaciones de invierno';
+                    activity = 'Baja actividad (-22%)';
                   } else if (month === 'Ago 2025') {
                     context = '📈 Reactivación gradual';
+                    activity = 'Recuperación del mercado';
                   } else if (month === 'Sep 2025') {
                     context = '🎯 Preparación fin de año';
+                    activity = 'Alta actividad (+12%)';
                   }
                   
-                  if (name === 'inventory') {
-                    return [`${value.toLocaleString()} propiedades`, `🏠 Inventario disponible`];
-                  } else if (name === 'avgSaleTime') {
-                    return [`${value} días`, `⏱️ Tiempo promedio venta`];
+                  if (name === 'contacts') {
+                    return [`${value} contactos`, `📞 Leads del mes`];
+                  } else if (name === 'conversions') {
+                    return [`${value} ventas`, `✅ Conversiones`];
                   } else if (name === 'avgPrice') {
                     return [`S/ ${Number(value).toLocaleString()}`, `💰 Precio Promedio`];
-                  } else if (name === 'pricePerM2') {
-                    return [`S/ ${Number(value).toLocaleString()}/m²`, `📏 Precio por m²`];
                   }
                   return [value, name];
                 }}
@@ -701,60 +582,60 @@ const MarketTrendsComponent = () => {
                   let context = '';
                   
                   if (month === 'Jul 2025') {
-                    context = '❄️ Julio 2025 - Temporada baja';
+                    context = '❄️ Julio 2025 - Vacaciones de invierno';
                   } else if (month === 'Ago 2025') {
                     context = '📈 Agosto 2025 - Reactivación del mercado';
                   } else if (month === 'Sep 2025') {
-                    context = '🎯 Septiembre 2025 - Alta demanda';
+                    context = '🎯 Septiembre 2025 - Preparación fin de año';
                   }
                   
                   return context;
                 }}
               />
               
-              {/* Barras para inventario de propiedades */}
+              {/* Barras para contactos con colores estacionales */}
               <Bar 
                 yAxisId="left" 
-                dataKey="inventory" 
-                name="inventory"
+                dataKey="contacts" 
+                name="contacts"
                 radius={[4, 4, 0, 0]}
               >
                 {q3Analysis.map((entry, index) => {
                   let color = '#3B82F6'; // Default blue
-                  if (entry.month === 'Jul 2025') color = '#DC2626'; // Red for high inventory
-                  if (entry.month === 'Ago 2025') color = '#F59E0B'; // Orange for medium
-                  if (entry.month === 'Sep 2025') color = '#10B981'; // Green for low inventory (high demand)
+                  if (entry.month === 'Jul 2025') color = '#DC2626'; // Red for low season
+                  if (entry.month === 'Ago 2025') color = '#F59E0B'; // Orange for recovery
+                  if (entry.month === 'Sep 2025') color = '#10B981'; // Green for high season
                   
                   return <Cell key={`cell-${index}`} fill={color} />;
                 })}
               </Bar>
               
-              {/* Área para tiempo de venta */}
+              {/* Área para conversiones */}
               <Area
-                yAxisId="right"
+                yAxisId="left"
                 type="monotone"
-                dataKey="avgSaleTime"
+                dataKey="conversions"
                 stroke="#8B5CF6"
                 strokeWidth={3}
-                fill="url(#saleTimeGradient)"
-                name="avgSaleTime"
+                fill="url(#conversionGradient)"
+                name="conversions"
               />
               
-              {/* Línea para precio por m² */}
+              {/* Línea para precio promedio */}
               <Line
                 yAxisId="right"
                 type="monotone"
-                dataKey="pricePerM2"
+                dataKey="avgPrice"
                 stroke="#EC4899"
                 strokeWidth={3}
                 strokeDasharray="5 5"
-                name="pricePerM2"
+                name="avgPrice"
                 dot={{ fill: '#EC4899', strokeWidth: 2, r: 5 }}
               />
               
-              {/* Gradientes */}
+              {/* Gradiente para el área de conversiones */}
               <defs>
-                <linearGradient id="saleTimeGradient" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="conversionGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.8}/>
                   <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.1}/>
                 </linearGradient>
@@ -768,52 +649,53 @@ const MarketTrendsComponent = () => {
               <div className="w-4 h-4 bg-red-600 rounded"></div>
               <div>
                 <span className="font-semibold text-red-800">❄️ Julio</span>
-                <p className="text-xs text-red-600">Alto inventario (8,450)</p>
+                <p className="text-xs text-red-600">Vacaciones (-22%)</p>
               </div>
             </div>
             <div className="flex items-center gap-2 p-2 bg-orange-50 rounded-lg">
               <div className="w-4 h-4 bg-orange-500 rounded"></div>
               <div>
                 <span className="font-semibold text-orange-800">📈 Agosto</span>
-                <p className="text-xs text-orange-600">Reducción inventario (7,890)</p>
+                <p className="text-xs text-orange-600">Reactivación</p>
               </div>
             </div>
             <div className="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
               <div className="w-4 h-4 bg-green-600 rounded"></div>
               <div>
                 <span className="font-semibold text-green-800">🎯 Septiembre</span>
-                <p className="text-xs text-green-600">Bajo inventario (7,320)</p>
-                </div>
+                <p className="text-xs text-green-600">Alta actividad (+12%)</p>
+              </div>
             </div>
           </div>
           
           {/* Métricas clave del trimestre */}
           <div className="mt-4 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200">
-            <h4 className="font-semibold text-purple-900 mb-3">📊 Mercado Inmobiliario Q3 2025</h4>
+            <h4 className="font-semibold text-purple-900 mb-3">📊 Resumen Q3 2025</h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div className="text-center">
                 <div className="text-lg font-bold text-blue-700">
-                  {Math.round(q3Analysis.reduce((sum, month) => sum + month.inventory, 0) / 3).toLocaleString()}
+                  {q3Analysis.reduce((sum, month) => sum + month.contacts, 0)}
                 </div>
-                <div className="text-xs text-gray-600">Inventario Promedio</div>
+                <div className="text-xs text-gray-600">Total Contactos</div>
               </div>
               <div className="text-center">
                 <div className="text-lg font-bold text-purple-700">
-                  {Math.round(q3Analysis.reduce((sum, month) => sum + month.avgSaleTime, 0) / 3)} días
+                  {q3Analysis.reduce((sum, month) => sum + month.conversions, 0)}
                 </div>
-                <div className="text-xs text-gray-600">Tiempo Venta Prom.</div>
+                <div className="text-xs text-gray-600">Total Ventas</div>
               </div>
               <div className="text-center">
                 <div className="text-lg font-bold text-green-700">
-                  S/ {Math.round(q3Analysis.reduce((sum, month) => sum + month.avgPrice, 0) / 3).toLocaleString()}
+                  {((q3Analysis.reduce((sum, month) => sum + month.conversions, 0) / 
+                     q3Analysis.reduce((sum, month) => sum + month.contacts, 0)) * 100).toFixed(1)}%
                 </div>
-                <div className="text-xs text-gray-600">Precio Promedio</div>
+                <div className="text-xs text-gray-600">Tasa Conversión</div>
               </div>
               <div className="text-center">
                 <div className="text-lg font-bold text-pink-700">
-                  S/ {Math.round(q3Analysis.reduce((sum, month) => sum + month.pricePerM2, 0) / 3).toLocaleString()}/m²
+                  S/ {Math.round(q3Analysis.reduce((sum, month) => sum + month.avgPrice, 0) / 3).toLocaleString()}
                 </div>
-                <div className="text-xs text-gray-600">Precio por m²</div>
+                <div className="text-xs text-gray-600">Precio Promedio</div>
               </div>
             </div>
           </div>
