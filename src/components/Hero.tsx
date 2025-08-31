@@ -22,8 +22,8 @@ const Hero = ({ onCtaClick }: HeroProps) => {
           Tu CRM inmobiliario inteligente para Perú
         </p>
         <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto">
-          Organiza, da seguimiento y convierte más clientes con menos esfuerzo.
-          <span className="block text-blue-200 mt-4 font-semibold">Ahorra hasta 5 horas semanales en seguimiento de clientes.</span>
+          Convierte más leads con IA predictiva actualizada para el mercado peruano de septiembre 2024.
+          <span className="block text-blue-200 mt-4 font-semibold">Incrementa tu tasa de cierre hasta 35% y ahorra 8 horas semanales.</span>
         </p>
         
         <div className="flex justify-center mb-12">
@@ -37,10 +37,10 @@ const Hero = ({ onCtaClick }: HeroProps) => {
         </div>
         
         <div className="mt-20 bg-white/10 backdrop-blur-sm rounded-lg p-6 max-w-xl mx-auto">
-          <h3 className="text-white text-xl font-bold mb-4">¿Qué hace diferente a Proptor?</h3>
+          <h3 className="text-white text-xl font-bold mb-4">Novedad Septiembre 2024</h3>
           <p className="text-blue-100">
-            Proptor es el único CRM que analiza el comportamiento de tus clientes potenciales para avisarte 
-            cuándo y cómo debes darles seguimiento, ayudándote a aumentar tus cierres. Ideal para el mercado peruano.
+            Nueva IA predictiva entrenada con datos del mercado limeño actualizado. Detecta automáticamente 
+            clientes en riesgo y sugiere las mejores estrategias de recuperación basadas en tendencias del Q3 2024.
           </p>
         </div>
       </div>

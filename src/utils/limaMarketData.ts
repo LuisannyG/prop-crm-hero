@@ -10,21 +10,21 @@ export const limaMarketTrends = {
     { month: 'Jun 2024', contacts: 189, conversions: 35, avgPrice: 305000, marketActivity: 'Muy Alta' },
     { month: 'Jul 2024', contacts: 198, conversions: 38, avgPrice: 310000, marketActivity: 'Muy Alta' },
     { month: 'Ago 2024', contacts: 142, conversions: 22, avgPrice: 285000, marketActivity: 'Baja' },
-    { month: 'Sep 2024', contacts: 167, conversions: 29, avgPrice: 298000, marketActivity: 'Alta' },
-    { month: 'Oct 2024', contacts: 183, conversions: 33, avgPrice: 308000, marketActivity: 'Alta' },
-    { month: 'Nov 2024', contacts: 195, conversions: 37, avgPrice: 315000, marketActivity: 'Muy Alta' },
-    { month: 'Dec 2024', contacts: 156, conversions: 26, avgPrice: 295000, marketActivity: 'Media' }
+    { month: 'Sep 2024', contacts: 201, conversions: 42, avgPrice: 320000, marketActivity: 'Muy Alta' },
+    { month: 'Oct 2024', contacts: 188, conversions: 36, avgPrice: 315000, marketActivity: 'Alta' },
+    { month: 'Nov 2024', contacts: 205, conversions: 41, avgPrice: 325000, marketActivity: 'Muy Alta' },
+    { month: 'Dic 2024', contacts: 170, conversions: 30, avgPrice: 305000, marketActivity: 'Media' }
   ],
   
   districtTrends: {
-    'Miraflores': { demand: 'Muy Alta', priceGrowth: 8.5, avgPrice: 450000 },
-    'San Isidro': { demand: 'Muy Alta', priceGrowth: 7.2, avgPrice: 520000 },
-    'Surco': { demand: 'Alta', priceGrowth: 6.8, avgPrice: 380000 },
-    'La Molina': { demand: 'Alta', priceGrowth: 6.1, avgPrice: 420000 },
-    'Barranco': { demand: 'Alta', priceGrowth: 9.2, avgPrice: 380000 },
-    'San Borja': { demand: 'Media', priceGrowth: 5.4, avgPrice: 350000 },
-    'Jesús María': { demand: 'Media', priceGrowth: 4.8, avgPrice: 280000 },
-    'Pueblo Libre': { demand: 'Media', priceGrowth: 4.2, avgPrice: 250000 }
+    'Miraflores': { demand: 'Muy Alta', priceGrowth: 9.2, avgPrice: 485000 },
+    'San Isidro': { demand: 'Muy Alta', priceGrowth: 8.1, avgPrice: 550000 },
+    'Surco': { demand: 'Muy Alta', priceGrowth: 7.5, avgPrice: 395000 },
+    'La Molina': { demand: 'Alta', priceGrowth: 6.8, avgPrice: 440000 },
+    'Barranco': { demand: 'Muy Alta', priceGrowth: 10.1, avgPrice: 410000 },
+    'San Borja': { demand: 'Alta', priceGrowth: 6.2, avgPrice: 370000 },
+    'Jesús María': { demand: 'Alta', priceGrowth: 5.5, avgPrice: 295000 },
+    'Pueblo Libre': { demand: 'Media', priceGrowth: 4.8, avgPrice: 265000 }
   },
 
   seasonalPatterns: [

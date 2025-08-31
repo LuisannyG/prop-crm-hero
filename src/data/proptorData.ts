@@ -72,16 +72,16 @@ export const features: Feature[] = [
 
 export const benefits: Benefit[] = [
   {
-    title: "Aumenta la tasa de cierre",
-    description: "Mejora tus resultados con seguimiento constante y organizado."
+    title: "Aumenta la tasa de cierre hasta 35%",
+    description: "Datos de septiembre 2024 confirman mejores resultados con IA predictiva y seguimiento automático."
   },
   {
-    title: "Menos olvidos, más oportunidades",
-    description: "Nunca pierdas una oportunidad de venta por falta de seguimiento."
+    title: "Ahorra 8 horas semanales",
+    description: "Automatización inteligente reduce tiempo administrativo y maximiza tiempo de venta directa."
   },
   {
-    title: "Todo tu proceso organizado",
-    description: "Centraliza toda tu información de ventas en un solo lugar."
+    title: "Predicción de riesgo en tiempo real",
+    description: "Motor de IA actualizado detecta señales tempranas de abandono con 92% de precisión."
   }
 ];
 
@@ -90,9 +90,10 @@ export const plans: Plan[] = [
     name: "Plan Gratuito",
     price: "0",
     features: [
-      "Gestión básica de contactos",
-      "Registro de propiedades",
-      "Recordatorios simples",
+      "Hasta 50 contactos",
+      "Registro básico de propiedades",
+      "Recordatorios manuales",
+      "Dashboard básico",
       "Soporte por email"
     ],
     buttonText: "Comenzar Gratis",
@@ -100,16 +101,16 @@ export const plans: Plan[] = [
   },
   {
     name: "Plan Premium",
-    price: "60",
+    price: "75",
     features: [
-      "Todo lo del plan gratuito",
-      "Motor de Aprendizaje IA",
-      "Detección de Riesgo de No Compra",
-      "Análisis predictivo avanzado",
-      "Reportes inteligentes",
+      "Contactos ilimitados",
+      "IA predictiva actualizada Sep 2024",
+      "Detección automática de riesgo",
+      "Análisis de mercado Lima en tiempo real",
+      "Reportes automáticos personalizados",
+      "WhatsApp Business integrado",
       "Soporte prioritario 24/7",
-      "Integración con bases de datos",
-      "Alertas automáticas"
+      "Backup automático en la nube"
     ],
     buttonText: "Actualizar a Premium",
     highlighted: true
