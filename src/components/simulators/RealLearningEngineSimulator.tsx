@@ -1368,6 +1368,36 @@ const RealLearningEngineSimulator = () => {
     const riskScore = 100 - contact.conversionProbability;
     const contactName = contact.name.toLowerCase();
     
+    // Para Victor (cliente individual con múltiples factores de riesgo)
+    if (contactName.includes('victor')) {
+      // Múltiples factores de riesgo para Victor
+      factors.push(`Probabilidad de conversión muy baja (${contact.conversionProbability}%) indica alta probabilidad de no concretar la compra.`);
+      
+      if (contact.totalInteractions >= 1) {
+        factors.push(`A pesar de ${contact.totalInteractions} interacciones, no ha mostrado suficiente compromiso para avanzar efectivamente.`);
+      }
+      
+      factors.push(`Cliente individual sin urgencia familiar, puede postponer decisión indefinidamente.`);
+      
+      if (contact.daysInCurrentStage > 7) {
+        factors.push(`Lleva ${contact.daysInCurrentStage} días en etapa "${contact.stage.replace(/_/g, ' ')}" sugiriendo indecisión o comparación con otras opciones.`);
+      }
+      
+      factors.push(`Presupuesto individual limitado puede no ser suficiente para las propiedades que realmente desea.`);
+      
+      if (contact.communicationPreference === 'Llamada') {
+        factors.push(`Prefiere comunicación telefónica pero respuestas pueden ser evasivas o poco comprometidas.`);
+      }
+      
+      factors.push(`Score de calificación bajo (${contact.qualificationScore}/10) indica perfil de cliente con baja intención de compra.`);
+      
+      if (contact.daysSinceLastInteraction > 3) {
+        factors.push(`${contact.daysSinceLastInteraction} días sin interacción reciente pueden indicar pérdida de interés activo.`);
+      }
+      
+      return factors;
+    }
+    
     // Para Maryuri (cliente familiar con alto engagement), mostrar factores de riesgo específicos pero menores
     if (contactName.includes('maryuri') || contactName.includes('maria')) {
       if (contact.conversionProbability >= 85) {
