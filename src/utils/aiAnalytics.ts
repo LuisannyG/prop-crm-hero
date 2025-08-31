@@ -324,8 +324,24 @@ export const analyzeIndividualContacts = async (userId: string): Promise<Individ
     
     // Lógica específica para nombres de contactos conocidos
     if (contactName.includes('victor')) {
-      // Victor tiene MÁS riesgo de no comprar (menor probabilidad de conversión)
-      conversionProbability = Math.floor(Math.random() * 15) + 15; // 15-29% - ALTO RIESGO
+      // Victor ha avanzado de etapa, por lo que su probabilidad sube un poco
+      if (stage === 'contacto_inicial_recibido') {
+        conversionProbability = Math.floor(Math.random() * 10) + 20; // 20-29%
+      } else if (stage === 'primer_contacto_activo') {
+        conversionProbability = Math.floor(Math.random() * 15) + 35; // 35-49%
+      } else if (stage === 'llenado_ficha') {
+        conversionProbability = Math.floor(Math.random() * 10) + 45; // 45-54%
+      } else if (stage === 'seguimiento_inicial') {
+        conversionProbability = Math.floor(Math.random() * 15) + 40; // 40-54%
+      } else if (stage === 'agendamiento_visitas') {
+        conversionProbability = Math.floor(Math.random() * 15) + 55; // 55-69%
+      } else if (stage === 'presentacion_personalizada') {
+        conversionProbability = Math.floor(Math.random() * 15) + 65; // 65-79%
+      } else if (stage === 'negociacion') {
+        conversionProbability = Math.floor(Math.random() * 10) + 75; // 75-84%
+      } else {
+        conversionProbability = Math.floor(Math.random() * 15) + 25; // 25-39% - mejorado pero aún con riesgo
+      }
     } else if (contactName.includes('maryuri') || contactName.includes('maria')) {
       // Maryuri tiene MENOS riesgo de no comprar (mayor probabilidad de conversión)
       conversionProbability = Math.floor(Math.random() * 15) + 75; // 75-89% - BAJO RIESGO
@@ -377,10 +393,18 @@ export const analyzeIndividualContacts = async (userId: string): Promise<Individ
     else if (daysInCurrentStage > 21) conversionProbability -= 10;
     else if (daysInCurrentStage > 14) conversionProbability -= 5;
 
-    // Ajustes específicos para Victor (aumentar su riesgo)
+    // Ajustes específicos para Victor (reducir penalización por avance de etapa)
     if (contactName.includes('victor')) {
-      conversionProbability -= 10; // Reducir aún más su probabilidad
-      if (daysInCurrentStage > 14) conversionProbability -= 15; // Penalizar más por tiempo
+      // Menos penalización si ha avanzado de etapa
+      if (stage === 'contacto_inicial_recibido' || stage === 'primer_contacto_activo') {
+        conversionProbability -= 5; // Menor penalización en etapas iniciales
+      } else if (['llenado_ficha', 'seguimiento_inicial', 'agendamiento_visitas'].includes(stage)) {
+        conversionProbability += 5; // Bonificación por avanzar
+      } else if (['presentacion_personalizada', 'negociacion'].includes(stage)) {
+        conversionProbability += 10; // Mayor bonificación en etapas avanzadas
+      }
+      
+      if (daysInCurrentStage > 14) conversionProbability -= 8; // Menos penalización por tiempo
     }
 
     // Ajustes específicos para Maryuri (reducir su riesgo)
@@ -426,7 +450,14 @@ export const analyzeIndividualContacts = async (userId: string): Promise<Individ
     else if (conversionProbability <= 25) qualificationScore -= 2;
     
     // Ajustes específicos de score
-    if (contactName.includes('victor')) qualificationScore = Math.max(1, qualificationScore - 3); // Victor score bajo
+    if (contactName.includes('victor')) {
+      // Mejorar score si ha avanzado de etapa
+      if (['llenado_ficha', 'seguimiento_inicial', 'agendamiento_visitas', 'presentacion_personalizada', 'negociacion'].includes(stage)) {
+        qualificationScore = Math.max(1, qualificationScore - 1); // Menos penalización
+      } else {
+        qualificationScore = Math.max(1, qualificationScore - 2); // Victor score mejorado
+      }
+    }
     if (contactName.includes('maryuri') || contactName.includes('maria')) qualificationScore = Math.min(10, qualificationScore + 2); // Maryuri score alto
     
     qualificationScore = Math.min(10, Math.max(1, qualificationScore));
@@ -453,7 +484,16 @@ export const analyzeIndividualContacts = async (userId: string): Promise<Individ
     if (qualificationScore <= 3) riskScore += 1;
 
     // Ajustes específicos de riesgo
-    if (contactName.includes('victor')) riskScore += 3; // Victor tiene más riesgo
+    if (contactName.includes('victor')) {
+      // Menos riesgo si ha avanzado de etapa
+      if (['presentacion_personalizada', 'negociacion'].includes(stage)) {
+        riskScore += 1; // Menor riesgo en etapas avanzadas
+      } else if (['llenado_ficha', 'seguimiento_inicial', 'agendamiento_visitas'].includes(stage)) {
+        riskScore += 2; // Riesgo medio en etapas intermedias
+      } else {
+        riskScore += 3; // Riesgo alto solo en etapas iniciales
+      }
+    }
     if (contactName.includes('maryuri') || contactName.includes('maria')) riskScore = Math.max(0, riskScore - 2); // Maryuri tiene menos riesgo
 
     // Asignar nivel de riesgo
