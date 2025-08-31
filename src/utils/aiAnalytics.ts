@@ -859,12 +859,31 @@ export const analyzeIndividualProperties = async (userId: string): Promise<Indiv
     else if (priceRatio < 0.9) pricePosition = 'Por debajo del mercado';
     else pricePosition = 'En el mercado';
 
-    // Calcular precio recomendado
+    // Calcular precio recomendado basado en análisis de mercado
     let recommendedPrice = property.price || 0;
-    if (pricePosition === 'Por encima del mercado' && propertyInteractions.length < 2) {
-      recommendedPrice = marketPrice * 0.95; // Reducir 5%
-    } else if (pricePosition === 'Por debajo del mercado' && propertyInteractions.length > 5) {
-      recommendedPrice = marketPrice * 1.05; // Aumentar 5%
+    const avgMarketPrice = marketPrices[property.property_type || 'otro'] || 0;
+    
+    if (avgMarketPrice > 0) {
+      const priceDeviation = ((property.price || 0) - avgMarketPrice) / avgMarketPrice;
+      
+      if (pricePosition === 'Por encima del mercado') {
+        // Si está costosa, sugerir precio menor
+        if (priceDeviation > 0.15) {
+          recommendedPrice = avgMarketPrice * 1.05; // Reducir significativamente pero mantener premium del 5%
+        } else {
+          recommendedPrice = avgMarketPrice * 0.98; // Reducir ligeramente
+        }
+      } else if (pricePosition === 'Por debajo del mercado') {
+        // Si está económica, sugerir precio mayor
+        if (priceDeviation < -0.15) {
+          recommendedPrice = avgMarketPrice * 0.95; // Aumentar significativamente pero mantener descuento del 5%
+        } else {
+          recommendedPrice = avgMarketPrice * 1.02; // Aumentar ligeramente
+        }
+      } else {
+        // Si está en el mercado, mantener precio similar con ajuste mínimo
+        recommendedPrice = avgMarketPrice;
+      }
     }
 
     return {
@@ -878,11 +897,11 @@ export const analyzeIndividualProperties = async (userId: string): Promise<Indiv
       daysOnMarket,
       interestLevel: propertyInteractions.length,
       recommendedPrice: Math.round(recommendedPrice),
-      priceAdjustmentSuggestion: pricePosition === 'Por encima del mercado' && propertyInteractions.length < 2 
-        ? `Considera reducir el precio en S/${Math.round((property.price || 0) - recommendedPrice).toLocaleString()}`
-        : pricePosition === 'Por debajo del mercado' && propertyInteractions.length > 5
-        ? `Puedes aumentar el precio en S/${Math.round(recommendedPrice - (property.price || 0)).toLocaleString()}`
-        : 'El precio actual está bien posicionado'
+      priceAdjustmentSuggestion: pricePosition === 'Por encima del mercado'
+        ? `Considera reducir el precio en S/${Math.round((property.price || 0) - recommendedPrice).toLocaleString()} para mejorar competitividad`
+        : pricePosition === 'Por debajo del mercado'
+        ? `Puedes aumentar el precio en S/${Math.round(recommendedPrice - (property.price || 0)).toLocaleString()} según análisis de mercado`
+        : 'El precio actual está bien posicionado en el mercado'
     };
   });
 };

@@ -310,7 +310,7 @@ const PropertyAnalysisComponent = ({
       position = 'Subvalorada (' + priceDeviation.toFixed(1) + '%)';
       color = 'text-blue-600';
     } else if (priceDeviation > 5) {
-      position = 'Ligeramente cara (+' + priceDeviation.toFixed(1) + '%)';
+      position = 'Ligeramente costosa (+' + priceDeviation.toFixed(1) + '%)';
       color = 'text-orange-600';
     } else if (priceDeviation < -5) {
       position = 'Precio competitivo (' + priceDeviation.toFixed(1) + '%)';
@@ -373,7 +373,7 @@ const PropertyAnalysisComponent = ({
                   </div>
                   <div className="text-right">
                     <Badge variant={marketPos.deviation > 10 ? 'destructive' : marketPos.deviation < -10 ? 'default' : 'secondary'}>
-                      {marketPos.deviation > 10 ? 'Cara' : marketPos.deviation < -10 ? 'Barata' : 'Mercado'}
+                      {marketPos.deviation > 10 ? 'Costosa' : marketPos.deviation < -10 ? 'Económica' : 'Mercado'}
                     </Badge>
                     <p className="text-2xl font-bold mt-1 text-green-700">S/ {property.price.toLocaleString()}</p>
                     <p className="text-xs text-gray-500">Precio actual</p>
