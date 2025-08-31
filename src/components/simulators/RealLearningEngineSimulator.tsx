@@ -1368,18 +1368,20 @@ const RealLearningEngineSimulator = () => {
     const riskScore = 100 - contact.conversionProbability;
     const contactName = contact.name.toLowerCase();
     
-    // Para Maryuri (cliente familiar con alto engagement), no mostrar factores de riesgo negativos
+    // Para Maryuri (cliente familiar con alto engagement), mostrar factores de riesgo específicos pero menores
     if (contactName.includes('maryuri') || contactName.includes('maria')) {
       if (contact.conversionProbability >= 85) {
-        // Cliente con alto engagement - factores positivos
-        factors.push(`Cliente familiar en etapa avanzada con alto nivel de engagement y compromiso.`);
-        if (contact.totalInteractions >= 2 && ['presentacion_personalizada', 'negociacion', 'agendamiento_visitas'].includes(contact.stage)) {
-          factors.push(`Sus ${contact.totalInteractions} interacciones han sido de alta calidad, avanzando efectivamente en el proceso.`);
-        }
+        // Factores de riesgo menores pero específicos para cliente familiar
         if (contact.familySize >= 4) {
-          factors.push(`Familia de ${contact.familySize} personas con necesidad real de vivienda, aumentando probabilidad de cierre.`);
+          factors.push(`Decisión familiar de ${contact.familySize} personas puede requerir más tiempo para consenso entre todos los miembros.`);
         }
-        return factors; // Retornar factores positivos sin evaluar negativos
+        if (contact.financingType === 'Crédito Hipotecario') {
+          factors.push(`Dependencia de aprobación de crédito hipotecario familiar puede generar demoras en el proceso.`);
+        }
+        if (contact.daysInCurrentStage > 7) {
+          factors.push(`Lleva ${contact.daysInCurrentStage} días en etapa actual, aunque normal para procesos familiares que requieren mayor análisis.`);
+        }
+        return factors;
       }
     }
     
@@ -1390,11 +1392,11 @@ const RealLearningEngineSimulator = () => {
       factors.push(`Ha permanecido ${contact.daysInCurrentStage} días en la etapa actual, más tiempo del promedio esperado.`);
     }
     
-    // Para contactos con pocas interacciones, evaluar context
+    // Para contactos con pocas interacciones, evaluar contexto
     if (contact.totalInteractions < 3) {
       // Excepción para contactos en etapas avanzadas con pocas pero efectivas interacciones
       if (['presentacion_personalizada', 'negociacion', 'cierre_firma_contrato'].includes(contact.stage)) {
-        factors.push(`Aunque tiene ${contact.totalInteractions} interacciones, ha avanzado a etapa "${contact.stage.replace(/_/g, ' ')}", sugiriendo interacciones de calidad.`);
+        factors.push(`Solo ${contact.totalInteractions} interacciones registradas para etapa "${contact.stage.replace(/_/g, ' ')}", podría necesitar más seguimiento.`);
       } else {
         factors.push(`Solo tiene ${contact.totalInteractions} interacciones registradas, lo que sugiere bajo nivel de engagement.`);
       }
