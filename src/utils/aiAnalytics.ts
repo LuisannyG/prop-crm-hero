@@ -872,7 +872,8 @@ export const analyzeIndividualProperties = async (userId: string): Promise<Indiv
       currentPrice,
       location,
       propertyType,
-      propertyInteractions.length
+      propertyInteractions.length,
+      property.title  // Agregar título para detectar La Paz
     );
     
     // Mapear posición de mercado al formato existente

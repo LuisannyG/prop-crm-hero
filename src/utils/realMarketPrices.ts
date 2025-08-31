@@ -194,7 +194,8 @@ export class RealMarketPriceService {
     currentPrice: number,
     location: string,
     propertyType: string,
-    interactionLevel: number
+    interactionLevel: number,
+    propertyTitle?: string
   ): {
     suggestedPrice: number;
     reason: string;
@@ -206,12 +207,16 @@ export class RealMarketPriceService {
     let reason = '';
     
     // Lógica especial para La Paz - SIEMPRE precio sugerido mayor a 300k
-    if (location.toLowerCase() === 'la paz') {
+    // Verificar tanto el location como el título de la propiedad
+    const isLaPazProperty = location.toLowerCase() === 'la paz' || 
+                           (propertyTitle && propertyTitle.toLowerCase().includes('la paz'));
+    
+    if (isLaPazProperty) {
       // Para La Paz, SIEMPRE aumentar el precio, nunca reducir
       if (propertyType.toLowerCase() === 'departamento') {
         // Departamentos en La Paz: precio sugerido SIEMPRE mayor a 300k
-        const minSuggestedPrice = 320000; // Mínimo 320k para estar seguro que sea >300k
-        const marketBasedPrice = analysis.marketPrice * 1.15; // 15% sobre precio de mercado (400k)
+        const minSuggestedPrice = 350000; // Mínimo 350k para estar bien seguro que sea >300k
+        const marketBasedPrice = 400000 * 1.15; // 15% sobre precio de mercado (400k) = 460k
         suggestedPrice = Math.max(minSuggestedPrice, marketBasedPrice, currentPrice * 1.10);
         reason = 'Departamentos La Paz - mercado premium con alta demanda, precio sugerido optimizado';
       } else if (propertyType.toLowerCase() === 'casa') {
