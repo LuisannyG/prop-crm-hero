@@ -73,18 +73,43 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'
 
 const ContactAnalysisComponent = ({
   individualContactAnalysis,
-  getRiskFactorsExplanation
+  getRiskFactorsExplanation,
+  onReloadContacts,
+  isReloading = false
 }: {
   individualContactAnalysis: IndividualContactAnalysis[];
   getRiskFactorsExplanation: (contact: IndividualContactAnalysis) => string[];
+  onReloadContacts: () => Promise<void>;
+  isReloading?: boolean;
 }) => {
   return (
     <Card className="bg-white/80 backdrop-blur-sm border-blue-200">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Eye className="w-5 h-5 text-blue-600" />
-          Análisis Detallado de Riesgo por Contacto
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Eye className="w-5 h-5 text-blue-600" />
+            Análisis Detallado de Riesgo por Contacto
+          </CardTitle>
+          <Button 
+            onClick={onReloadContacts}
+            disabled={isReloading}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 border-blue-200"
+          >
+            {isReloading ? (
+              <>
+                <Activity className="w-4 h-4 animate-spin" />
+                Actualizando...
+              </>
+            ) : (
+              <>
+                <Brain className="w-4 h-4" />
+                Recargar Análisis
+              </>
+            )}
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 gap-6">
@@ -1112,6 +1137,7 @@ const RealLearningEngineSimulator = () => {
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [loading, setLoading] = useState(true);
   const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [contactsAnalysisLoading, setContactsAnalysisLoading] = useState(false);
   const [currentQuarter, setCurrentQuarter] = useState<string>('Q3');
   const [currentYear, setCurrentYear] = useState<string>('2025');
   
@@ -1290,6 +1316,53 @@ const RealLearningEngineSimulator = () => {
     }
   };
 
+  const reloadContactsAnalysis = async () => {
+    if (!user) return;
+
+    try {
+      setContactsAnalysisLoading(true);
+
+      // Fetch updated contacts data first
+      const { data: contactsData, error: contactsError } = await supabase
+        .from('contacts')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (contactsError) {
+        console.error('Error fetching contacts:', contactsError);
+        toast({
+          title: "Error",
+          description: "Error al cargar los contactos actualizados.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setContacts(contactsData || []);
+
+      // Run individual contacts analysis
+      const individualContactsResult = await analyzeIndividualContacts(user.id);
+      setIndividualContactAnalysis(individualContactsResult);
+
+      toast({
+        title: "Análisis Actualizado",
+        description: "Los datos de contactos han sido actualizados correctamente.",
+        variant: "default",
+      });
+
+    } catch (error) {
+      console.error('Error reloading contacts analysis:', error);
+      toast({
+        title: "Error",
+        description: "Error al actualizar el análisis de contactos.",
+        variant: "destructive",
+      });
+    } finally {
+      setContactsAnalysisLoading(false);
+    }
+  };
+
   const getRiskFactorsExplanation = (contact: IndividualContactAnalysis) => {
     const factors = [];
     const riskScore = 100 - contact.conversionProbability;
@@ -1384,7 +1457,9 @@ const RealLearningEngineSimulator = () => {
             {individualContactAnalysis.length > 0 && (
               <ContactAnalysisComponent 
                 individualContactAnalysis={individualContactAnalysis} 
-                getRiskFactorsExplanation={getRiskFactorsExplanation} 
+                getRiskFactorsExplanation={getRiskFactorsExplanation}
+                onReloadContacts={reloadContactsAnalysis}
+                isReloading={contactsAnalysisLoading}
               />
             )}
           </div>

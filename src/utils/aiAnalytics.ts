@@ -676,7 +676,72 @@ const generateStageSpecificRecommendations = (
     recommendations.push('Considerar reasignación o cambio de enfoque comercial');
   }
 
-  return recommendations.slice(0, 4); // Limitar a 4 recomendaciones principales
+  // Agregar recomendaciones adicionales avanzadas
+  
+  // Recomendaciones específicas por urgencia
+  if (contact.urgency_level === 'Muy Alta' && interactionCount < 3) {
+    recommendations.push('Cliente con urgencia muy alta - contactar máximo cada 2 días');
+    recommendations.push('Preparar opciones inmediatas y financiamiento pre-aprobado');
+  }
+
+  // Recomendaciones por fuente
+  if (contact.acquisition_source === 'Facebook Ads' || contact.acquisition_source === 'Google Ads') {
+    recommendations.push('Lead digital - verificar interés real con llamada de calificación');
+    recommendations.push('Enviar contenido educativo para nutrir lead frío');
+  }
+
+  // Recomendaciones por presupuesto
+  if (contact.estimated_budget && contact.estimated_budget.includes('Por definir')) {
+    recommendations.push('Definir rango de presupuesto real mediante preguntas estratégicas');
+    recommendations.push('Explicar opciones de financiamiento disponibles');
+  }
+
+  // Recomendaciones por comunicación
+  if (contact.communication_preference === 'WhatsApp') {
+    recommendations.push('Mantener comunicación por WhatsApp con mensajes cortos y directos');
+    recommendations.push('Enviar fotos y videos de propiedades por este canal');
+  } else if (contact.communication_preference === 'Email') {
+    recommendations.push('Crear newsletters personalizadas con propiedades de interés');
+    recommendations.push('Enviar reportes de mercado y análisis comparativos');
+  }
+
+  // Recomendaciones avanzadas por tipo de financiamiento
+  if (contact.financing_type === 'Crédito Hipotecario') {
+    recommendations.push('Conectar con especialista en créditos hipotecarios del banco');
+    recommendations.push('Solicitar pre-evaluación crediticia para acelerar proceso');
+  } else if (contact.financing_type === 'Contado') {
+    recommendations.push('Cliente con liquidez - enfocar en propiedades premium');
+    recommendations.push('Ofrecer descuentos por pago al contado');
+  }
+
+  // Recomendaciones por tamaño familiar
+  if (contact.family_size && contact.family_size >= 4) {
+    recommendations.push('Familia numerosa - priorizar casas con 3+ dormitorios');
+    recommendations.push('Considerar ubicaciones cerca de colegios y centros comerciales');
+  } else if (contact.family_size === 1) {
+    recommendations.push('Cliente individual - focus en departamentos o estudios');
+    recommendations.push('Priorizar ubicaciones centrales con acceso al transporte');
+  }
+
+  // Recomendaciones por días sin interacción
+  if (contact.days_since_last_interaction > 14) {
+    recommendations.push('Reactivar con contenido de valor: guía de compra o tips');
+    recommendations.push('Ofrecer consulta gratuita de 15 minutos');
+  }
+
+  // Recomendaciones de seguimiento personalizado
+  if (stage === 'presentacion_personalizada' && daysInStage > 7) {
+    recommendations.push('Proponer visita acompañada de arquitecto o valuador');
+    recommendations.push('Crear presentación comparativa con 3 opciones similares');
+  }
+
+  // Recomendaciones para clientes de alto valor
+  if (contact.estimated_budget && contact.estimated_budget.includes('2,000,000')) {
+    recommendations.push('Cliente premium - asignar asesor senior especializado');
+    recommendations.push('Ofrecer servicios VIP: visitas privadas y asesoría exclusiva');
+  }
+
+  return recommendations.slice(0, 8); // Aumentar a 8 recomendaciones principales
 };
 
 // Análisis individual de propiedades
