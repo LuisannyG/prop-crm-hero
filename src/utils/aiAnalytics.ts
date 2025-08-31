@@ -317,22 +317,51 @@ export const analyzeIndividualContacts = async (userId: string): Promise<Individ
       : contact.created_at;
     const daysSinceLastInteraction = Math.floor((new Date().getTime() - new Date(lastInteractionDate).getTime()) / (1000 * 60 * 60 * 24));
 
-    // Calcular probabilidad de conversión más variada y realista basada en múltiples factores
-    let conversionProbability = 30; // Base más baja
+    // Calcular probabilidad de conversión basada en la etapa del contacto de forma lógica
+    let conversionProbability = 30; // Base
     const stage = contact.sales_stage || 'contacto_inicial_recibido';
     
-    // Ajuste base por etapa
+    // Probabilidades base más lógicas según la etapa (progresión coherente)
     switch (stage) {
-      case 'contacto_inicial_recibido': conversionProbability = Math.floor(Math.random() * 25) + 8; break; // 8-32%
-      case 'primer_contacto_activo': conversionProbability = Math.floor(Math.random() * 20) + 25; break; // 25-44%
-      case 'llenado_ficha': conversionProbability = Math.floor(Math.random() * 15) + 35; break; // 35-49%
-      case 'seguimiento_inicial': conversionProbability = Math.floor(Math.random() * 20) + 30; break; // 30-49%
-      case 'agendamiento_visitas': conversionProbability = Math.floor(Math.random() * 20) + 45; break; // 45-64%
-      case 'presentacion_personalizada': conversionProbability = Math.floor(Math.random() * 25) + 50; break; // 50-74%
-      case 'negociacion': conversionProbability = Math.floor(Math.random() * 20) + 70; break; // 70-89%
-      case 'cierre_firma_contrato': conversionProbability = Math.floor(Math.random() * 10) + 90; break; // 90-99%
-      case 'postventa_fidelizacion': conversionProbability = 100; break;
-      default: conversionProbability = Math.floor(Math.random() * 20) + 15; // 15-34%
+      case 'contacto_inicial_recibido': 
+        // Etapa muy temprana - probabilidad baja pero variable
+        conversionProbability = Math.floor(Math.random() * 20) + 10; // 10-29%
+        break;
+      case 'primer_contacto_activo': 
+        // Primer contacto exitoso - probabilidad sube
+        conversionProbability = Math.floor(Math.random() * 20) + 25; // 25-44%
+        break;
+      case 'llenado_ficha': 
+        // Cliente mostró interés completando ficha - probabilidad media
+        conversionProbability = Math.floor(Math.random() * 20) + 35; // 35-54%
+        break;
+      case 'seguimiento_inicial': 
+        // En proceso de seguimiento - probabilidad variable
+        conversionProbability = Math.floor(Math.random() * 25) + 30; // 30-54%
+        break;
+      case 'agendamiento_visitas': 
+        // Cliente acepta ver propiedades - probabilidad más alta
+        conversionProbability = Math.floor(Math.random() * 20) + 50; // 50-69%
+        break;
+      case 'presentacion_personalizada': 
+        // Ya visitó propiedades - probabilidad alta
+        conversionProbability = Math.floor(Math.random() * 20) + 60; // 60-79%
+        break;
+      case 'negociacion': 
+        // En negociación activa - probabilidad muy alta
+        conversionProbability = Math.floor(Math.random() * 15) + 75; // 75-89%
+        break;
+      case 'cierre_firma_contrato': 
+        // A punto de cerrar - probabilidad casi segura
+        conversionProbability = Math.floor(Math.random() * 8) + 92; // 92-99%
+        break;
+      case 'postventa_fidelizacion': 
+        // Ya cerró - 100%
+        conversionProbability = 100; 
+        break;
+      default: 
+        // Etapas no definidas - probabilidad baja
+        conversionProbability = Math.floor(Math.random() * 15) + 15; // 15-29%
     }
 
     // Ajustes por interacciones (más detallado)
