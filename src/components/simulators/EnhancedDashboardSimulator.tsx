@@ -42,13 +42,6 @@ interface Reminder {
   reminder_date: string;
 }
 
-interface NoPurchaseReason {
-  id: string;
-  contact_id: string;
-  reason_category: string;
-  reason_details: string;
-  created_at: string;
-}
 
 interface PerformanceMetric {
   id: string;
@@ -71,7 +64,6 @@ const EnhancedDashboardSimulator = () => {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
-  const [noPurchaseReasons, setNoPurchaseReasons] = useState<NoPurchaseReason[]>([]);
   const [performanceMetrics, setPerformanceMetrics] = useState<PerformanceMetric[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -132,18 +124,6 @@ const EnhancedDashboardSimulator = () => {
           setReminders(remindersData || []);
         }
 
-        // Fetch no purchase reasons
-        const { data: noPurchaseData, error: noPurchaseError } = await supabase
-          .from('no_purchase_reasons')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
-
-        if (noPurchaseError) {
-          console.error('Error fetching no purchase reasons:', noPurchaseError);
-        } else {
-          setNoPurchaseReasons(noPurchaseData || []);
-        }
 
         // Fetch performance metrics
         const { data: metricsData, error: metricsError } = await supabase
@@ -220,24 +200,6 @@ const EnhancedDashboardSimulator = () => {
     fill: COLORS[index % COLORS.length]
   }));
 
-  // No purchase reasons analysis
-  const reasonsData = noPurchaseReasons.reduce((acc, reason) => {
-    const category = reason.reason_category;
-    acc[category] = (acc[category] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const reasonsChartData = Object.entries(reasonsData).map(([name, value], index) => ({
-    name: name === 'precio' ? 'Precio' :
-          name === 'ubicacion' ? 'Ubicación' :
-          name === 'tamano' ? 'Tamaño' :
-          name === 'financiacion' ? 'Financiación' :
-          name === 'otra_propiedad' ? 'Otra Propiedad' :
-          name === 'timing' ? 'Timing' :
-          name === 'competencia' ? 'Competencia' : name,
-    value,
-    fill: ['#F59E0B', '#EF4444', '#8B5CF6', '#10B981', '#06B6D4', '#F97316', '#84CC16'][index % 7]
-  }));
 
   // Performance metrics by specific channels
   const channelMapping = {
@@ -514,38 +476,7 @@ const EnhancedDashboardSimulator = () => {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Motivos de No Compra */}
-        <Card className="shadow-md">
-          <CardHeader className="bg-orange-50">
-            <CardTitle className="text-orange-800 flex items-center">
-              <AlertCircle className="mr-2 h-5 w-5" />
-              Motivos de No Compra
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4">
-            {reasonsChartData.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <AlertCircle className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p>No hay datos de motivos de no compra</p>
-              </div>
-            ) : (
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={reasonsChartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="value" fill="#F59E0B" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
+      <div className="grid grid-cols-1 gap-6">
         {/* Rendimiento por Canal */}
         <Card className="shadow-md">
           <CardHeader className="bg-purple-50">
