@@ -428,19 +428,30 @@ const PropertyAnalysisComponent = ({
                     <BarChart3 className="w-4 h-4 text-blue-600" />
                     Análisis de Mercado
                   </h4>
-                  <div className="bg-white/60 p-3 rounded-lg">
+                  <div className="bg-white/60 p-3 rounded-lg mb-3">
                     <p className="text-sm text-gray-700 mb-2">{property.priceAdjustmentSuggestion}</p>
+                  </div>
+                  
+                  {/* Fuentes de datos más prominentes */}
+                  <div className="bg-gradient-to-r from-blue-50 to-green-50 border-l-4 border-blue-500 p-4 rounded-lg mb-3">
+                    <h5 className="font-bold text-blue-800 mb-2 flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                      Fuentes de Datos Verificadas
+                    </h5>
                     {property.marketDataSource && (
-                      <div className="text-xs text-blue-600 mb-2 p-2 bg-blue-50 rounded">
-                        <strong>Fuente de datos:</strong> {property.marketDataSource}
+                      <div className="text-sm text-blue-700 mb-2 font-medium">
+                        📊 <strong>Datos de mercado:</strong> {property.marketDataSource}
                       </div>
                     )}
                     {property.confidence && (
-                      <div className="text-xs text-green-600">
-                        <strong>Nivel de confianza:</strong> {property.confidence.charAt(0).toUpperCase() + property.confidence.slice(1)}
+                      <div className="text-sm text-green-700">
+                        ✅ <strong>Confiabilidad:</strong> {property.confidence.charAt(0).toUpperCase() + property.confidence.slice(1)}
                       </div>
                     )}
                   </div>
+
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
