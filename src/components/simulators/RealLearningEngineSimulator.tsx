@@ -428,7 +428,20 @@ const PropertyAnalysisComponent = ({
                     <BarChart3 className="w-4 h-4 text-blue-600" />
                     Análisis de Mercado
                   </h4>
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <div className="bg-white/60 p-3 rounded-lg">
+                    <p className="text-sm text-gray-700 mb-2">{property.priceAdjustmentSuggestion}</p>
+                    {property.marketDataSource && (
+                      <div className="text-xs text-blue-600 mb-2 p-2 bg-blue-50 rounded">
+                        <strong>Fuente de datos:</strong> {property.marketDataSource}
+                      </div>
+                    )}
+                    {property.confidence && (
+                      <div className="text-xs text-green-600">
+                        <strong>Nivel de confianza:</strong> {property.confidence.charAt(0).toUpperCase() + property.confidence.slice(1)}
+                      </div>
+                    )}
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <span className="text-gray-600">Precio promedio zona:</span>

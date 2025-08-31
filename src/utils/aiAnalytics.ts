@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { RealMarketPriceService } from './realMarketPrices';
 
 // Tipos para el análisis
 export interface ContactAnalysis {
@@ -58,6 +59,8 @@ export interface IndividualPropertyAnalysis {
   interestLevel: number;
   recommendedPrice: number;
   priceAdjustmentSuggestion: string;
+  marketDataSource?: string;
+  confidence?: 'alta' | 'media' | 'baja';
 }
 
 export interface CombinedAnalysis {
@@ -851,59 +854,32 @@ export const analyzeIndividualProperties = async (userId: string): Promise<Indiv
   return properties.map(property => {
     const propertyInteractions = interactions?.filter(i => i.property_id === property.id) || [];
     const daysOnMarket = Math.floor((new Date().getTime() - new Date(property.created_at).getTime()) / (1000 * 60 * 60 * 24));
-    const marketPrice = marketPrices[property.property_type || 'otro'] || 0;
-    const priceRatio = marketPrice > 0 ? (property.price || 0) / marketPrice : 1;
     
-    let pricePosition: 'Por encima del mercado' | 'En el mercado' | 'Por debajo del mercado';
-    if (priceRatio > 1.1) pricePosition = 'Por encima del mercado';
-    else if (priceRatio < 0.9) pricePosition = 'Por debajo del mercado';
-    else pricePosition = 'En el mercado';
-
-    // Calcular precio recomendado basado en análisis de mercado
-    let recommendedPrice = property.price || 0;
-    const avgMarketPrice = marketPrices[property.property_type || 'otro'] || 0;
+    // Usar precios reales de mercado
+    const location = property.district || 'Lima';
+    const propertyType = property.property_type || 'casa';
     const currentPrice = property.price || 0;
     
-    if (avgMarketPrice > 0) {
-      const priceDeviation = ((currentPrice) - avgMarketPrice) / avgMarketPrice;
-      
-      if (pricePosition === 'Por encima del mercado') {
-        // Si está COSTOSA, sugerir precio MENOR al actual
-        if (priceDeviation > 0.15) {
-          recommendedPrice = currentPrice * 0.85; // Reducir 15% del precio actual
-        } else {
-          recommendedPrice = currentPrice * 0.92; // Reducir 8% del precio actual
-        }
-      } else if (pricePosition === 'Por debajo del mercado') {
-        // Si está ECONÓMICA, sugerir precio MAYOR al actual
-        if (priceDeviation < -0.15) {
-          recommendedPrice = currentPrice * 1.18; // Aumentar 18% del precio actual
-        } else {
-          recommendedPrice = currentPrice * 1.08; // Aumentar 8% del precio actual
-        }
-      } else {
-        // Si está en el mercado, hacer ajuste mínimo basado en interacciones
-        if (propertyInteractions.length > 3) {
-          recommendedPrice = currentPrice * 1.03; // Aumentar 3% si hay buen interés
-        } else {
-          recommendedPrice = currentPrice * 0.97; // Reducir 3% si hay poco interés
-        }
-      }
-    } else {
-      // Si no hay datos de mercado, hacer ajuste basado en interacciones
-      if (propertyInteractions.length > 3) {
-        recommendedPrice = currentPrice * 1.05; // Aumentar 5%
-      } else {
-        recommendedPrice = currentPrice * 0.93; // Reducir 7%
-      }
-    }
+    // Obtener análisis de mercado real
+    const marketAnalysis = RealMarketPriceService.getPriceAnalysis(
+      currentPrice,
+      location,
+      propertyType
+    );
     
-    // Asegurar coherencia: costosa = menor precio, económica = mayor precio
-    if (pricePosition === 'Por encima del mercado' && recommendedPrice >= currentPrice) {
-      recommendedPrice = currentPrice * 0.88; // Forzar reducción
-    } else if (pricePosition === 'Por debajo del mercado' && recommendedPrice <= currentPrice) {
-      recommendedPrice = currentPrice * 1.12; // Forzar aumento
-    }
+    // Obtener precio sugerido con lógica especial para La Paz
+    const priceRecommendation = RealMarketPriceService.getSuggestedPrice(
+      currentPrice,
+      location,
+      propertyType,
+      propertyInteractions.length
+    );
+    
+    // Mapear posición de mercado al formato existente
+    let pricePosition: 'Por encima del mercado' | 'En el mercado' | 'Por debajo del mercado';
+    if (marketAnalysis.position === 'costosa') pricePosition = 'Por encima del mercado';
+    else if (marketAnalysis.position === 'económica') pricePosition = 'Por debajo del mercado';
+    else pricePosition = 'En el mercado';
 
     return {
       id: property.id,
@@ -912,15 +888,13 @@ export const analyzeIndividualProperties = async (userId: string): Promise<Indiv
       propertyType: property.property_type || 'otro',
       price: property.price || 0,
       pricePosition,
-      marketComparison: ((priceRatio - 1) * 100),
+      marketComparison: marketAnalysis.deviation,
       daysOnMarket,
       interestLevel: propertyInteractions.length,
-      recommendedPrice: Math.round(recommendedPrice),
-      priceAdjustmentSuggestion: pricePosition === 'Por encima del mercado'
-        ? `Considera reducir el precio en S/${Math.round((property.price || 0) - recommendedPrice).toLocaleString()} para mejorar competitividad`
-        : pricePosition === 'Por debajo del mercado'
-        ? `Puedes aumentar el precio en S/${Math.round(recommendedPrice - (property.price || 0)).toLocaleString()} según análisis de mercado`
-        : 'El precio actual está bien posicionado en el mercado'
+      recommendedPrice: priceRecommendation.suggestedPrice,
+      priceAdjustmentSuggestion: `${priceRecommendation.reason} (${priceRecommendation.adjustment > 0 ? '+' : ''}${priceRecommendation.adjustment.toFixed(1)}%)`,
+      marketDataSource: priceRecommendation.source,
+      confidence: marketAnalysis.confidence
     };
   });
 };
