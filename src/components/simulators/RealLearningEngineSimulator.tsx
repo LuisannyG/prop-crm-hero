@@ -1,5 +1,16 @@
 import React, { useState } from 'react';
-import { Property } from '../../types';
+
+interface Property {
+  location: string;
+  propertyType: string;
+  price: number;
+  size: number;
+  rooms: number;
+  bathrooms: number;
+  parking: boolean;
+  yearBuilt: number;
+  condition: string;
+}
 
 interface AnalysisResult {
   marketPrice: number;

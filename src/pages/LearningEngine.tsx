@@ -1,6 +1,6 @@
 
 import PaidFeatureAlert from '@/components/PaidFeatureAlert';
-import RealLearningEngineSimulator from '@/components/simulators/RealLearningEngineSimulator';
+import { RealLearningEngineSimulator } from '@/components/simulators/RealLearningEngineSimulator';
 import { Button } from '@/components/ui/button';
 import { Brain, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
