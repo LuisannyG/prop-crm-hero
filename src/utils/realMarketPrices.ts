@@ -205,23 +205,21 @@ export class RealMarketPriceService {
     let suggestedPrice = currentPrice;
     let reason = '';
     
-    // Lógica especial para La Paz - siempre sugerir precio mayor de 300k
+    // Lógica especial para La Paz - SIEMPRE precio sugerido mayor a 300k
     if (location.toLowerCase() === 'la paz') {
-      // Para cualquier propiedad en La Paz, asegurar precio mínimo de 300,000
-      const baseIncrease = Math.max(currentPrice * 1.08, 300000);
-      
+      // Para La Paz, SIEMPRE aumentar el precio, nunca reducir
       if (propertyType.toLowerCase() === 'departamento') {
-        suggestedPrice = Math.max(320000, baseIncrease);
-        reason = 'Mercado de departamentos en La Paz con fuerte demanda - precio mínimo S/320,000';
-      } else if (analysis.position === 'económica') {
-        suggestedPrice = Math.max(310000, currentPrice * 1.15);
-        reason = 'Mercado en La Paz muestra potencial de crecimiento, precio muy económico';
-      } else if (analysis.position === 'mercado') {
-        suggestedPrice = Math.max(305000, currentPrice * 1.08);
-        reason = 'Tendencia alcista en La Paz permite ajuste al alza';
+        // Departamentos en La Paz: mínimo 320k, siempre incrementar
+        suggestedPrice = Math.max(320000, currentPrice * 1.15);
+        reason = 'Mercado de departamentos en La Paz con alta demanda - incremento obligatorio';
+      } else if (propertyType.toLowerCase() === 'casa') {
+        // Casas en La Paz: mínimo 310k, siempre incrementar
+        suggestedPrice = Math.max(310000, currentPrice * 1.12);
+        reason = 'Casas en La Paz con fuerte valorización - ajuste al alza';
       } else {
-        suggestedPrice = Math.max(300000, currentPrice * 1.03);
-        reason = 'Incluso propiedades costosas en La Paz mantienen demanda';
+        // Terrenos en La Paz: mínimo 300k, siempre incrementar
+        suggestedPrice = Math.max(300000, currentPrice * 1.10);
+        reason = 'Terrenos en La Paz con gran potencial - incremento recomendado';
       }
     } else {
       // Lógica normal para otras ubicaciones
