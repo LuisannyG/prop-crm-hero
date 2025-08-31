@@ -868,21 +868,21 @@ export const analyzeIndividualProperties = async (userId: string): Promise<Indiv
       const priceDeviation = ((currentPrice) - avgMarketPrice) / avgMarketPrice;
       
       if (pricePosition === 'Por encima del mercado') {
-        // Si está costosa, sugerir precio menor
+        // Si está COSTOSA, sugerir precio MENOR al actual
         if (priceDeviation > 0.15) {
-          recommendedPrice = avgMarketPrice * 1.05; // Reducir significativamente pero mantener premium del 5%
+          recommendedPrice = currentPrice * 0.85; // Reducir 15% del precio actual
         } else {
-          recommendedPrice = currentPrice * 0.95; // Reducir 5% del precio actual
+          recommendedPrice = currentPrice * 0.92; // Reducir 8% del precio actual
         }
       } else if (pricePosition === 'Por debajo del mercado') {
-        // Si está económica, sugerir precio mayor
+        // Si está ECONÓMICA, sugerir precio MAYOR al actual
         if (priceDeviation < -0.15) {
-          recommendedPrice = avgMarketPrice * 0.95; // Aumentar significativamente
+          recommendedPrice = currentPrice * 1.18; // Aumentar 18% del precio actual
         } else {
           recommendedPrice = currentPrice * 1.08; // Aumentar 8% del precio actual
         }
       } else {
-        // Si está en el mercado, hacer ajuste mínimo pero diferente
+        // Si está en el mercado, hacer ajuste mínimo basado en interacciones
         if (propertyInteractions.length > 3) {
           recommendedPrice = currentPrice * 1.03; // Aumentar 3% si hay buen interés
         } else {
@@ -898,11 +898,11 @@ export const analyzeIndividualProperties = async (userId: string): Promise<Indiv
       }
     }
     
-    // Asegurar que el precio recomendado sea siempre diferente al actual
-    if (Math.abs(recommendedPrice - currentPrice) < 1000) {
-      recommendedPrice = currentPrice > avgMarketPrice 
-        ? currentPrice * 0.92  // Reducir más si está por encima
-        : currentPrice * 1.08; // Aumentar más si está por debajo
+    // Asegurar coherencia: costosa = menor precio, económica = mayor precio
+    if (pricePosition === 'Por encima del mercado' && recommendedPrice >= currentPrice) {
+      recommendedPrice = currentPrice * 0.88; // Forzar reducción
+    } else if (pricePosition === 'Por debajo del mercado' && recommendedPrice <= currentPrice) {
+      recommendedPrice = currentPrice * 1.12; // Forzar aumento
     }
 
     return {
