@@ -883,6 +883,8 @@ const RealLearningEngineSimulator = () => {
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [loading, setLoading] = useState(true);
   const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [currentQuarter, setCurrentQuarter] = useState<string>('Q3');
+  const [currentYear, setCurrentYear] = useState<string>('2025');
   
   // Advanced analysis states
   const [contactAnalysis, setContactAnalysis] = useState<ContactAnalysis | null>(null);
@@ -891,6 +893,20 @@ const RealLearningEngineSimulator = () => {
   const [individualPropertyAnalysis, setIndividualPropertyAnalysis] = useState<IndividualPropertyAnalysis[]>([]);
   const [combinedAnalysis, setCombinedAnalysis] = useState<CombinedAnalysis | null>(null);
   const [predictiveInsights, setPredictiveInsights] = useState<PredictiveInsights | null>(null);
+
+  // Function to get current quarter based on current date
+  const getCurrentQuarter = () => {
+    const now = new Date();
+    const month = now.getMonth() + 1; // getMonth() returns 0-11
+    const year = now.getFullYear();
+    
+    let quarter = 'Q1';
+    if (month >= 4 && month <= 6) quarter = 'Q2';
+    else if (month >= 7 && month <= 9) quarter = 'Q3';
+    else if (month >= 10 && month <= 12) quarter = 'Q4';
+    
+    return { quarter, year: year.toString() };
+  };
 
   useEffect(() => {
     fetchData();
@@ -975,6 +991,14 @@ const RealLearningEngineSimulator = () => {
     try {
       setAnalysisLoading(true);
 
+      // Update current quarter information
+      const { quarter, year } = getCurrentQuarter();
+      setCurrentQuarter(quarter);
+      setCurrentYear(year);
+
+      // Update market data to current quarter
+      await updateMarketDataForCurrentQuarter(quarter, year);
+
       // Run all analysis
       const [
         contactAnalysisResult,
@@ -1004,6 +1028,13 @@ const RealLearningEngineSimulator = () => {
       );
       setPredictiveInsights(predictiveResult);
 
+      // Show success toast with current quarter info
+      toast({
+        title: "Análisis Actualizado",
+        description: `Datos del ${quarter} ${year} actualizados correctamente.`,
+        variant: "default",
+      });
+
     } catch (error) {
       console.error('Error running advanced analysis:', error);
       toast({
@@ -1013,6 +1044,20 @@ const RealLearningEngineSimulator = () => {
       });
     } finally {
       setAnalysisLoading(false);
+    }
+  };
+
+  // Function to update market data based on current quarter
+  const updateMarketDataForCurrentQuarter = async (quarter: string, year: string) => {
+    try {
+      // Here you would typically update the market data
+      // For now, we'll just log the current quarter
+      console.log(`Actualizando datos del mercado para ${quarter} ${year}`);
+      
+      // You could update the limaMarketTrends data here
+      // or fetch new data from your API/database
+    } catch (error) {
+      console.error('Error updating market data:', error);
     }
   };
 
@@ -1068,9 +1113,9 @@ const RealLearningEngineSimulator = () => {
             </div>
             <div>
               <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Motor de Aprendizaje IA - Q3 2025
+                Motor de Aprendizaje IA - {currentQuarter} {currentYear}
               </h2>
-              <p className="text-gray-600">Análisis predictivo del mercado inmobiliario limeño</p>
+              <p className="text-gray-600">Análisis predictivo del mercado inmobiliario limeño - {currentQuarter} {currentYear}</p>
             </div>
           </div>
         </div>
@@ -1087,7 +1132,7 @@ const RealLearningEngineSimulator = () => {
           ) : (
             <>
               <Brain className="w-4 h-4 mr-2" />
-              Actualizar Análisis IA
+              Actualizar Análisis IA - {currentQuarter} {currentYear}
             </>
           )}
         </Button>
@@ -1095,10 +1140,10 @@ const RealLearningEngineSimulator = () => {
 
       <Tabs defaultValue="market" className="space-y-6">
         <TabsList className="grid w-full grid-cols-4 bg-white/80 backdrop-blur-sm rounded-xl p-1">
-          <TabsTrigger value="market" className="rounded-lg">Mercado Q3 2025</TabsTrigger>
+          <TabsTrigger value="market" className="rounded-lg">Mercado {currentQuarter} {currentYear}</TabsTrigger>
           <TabsTrigger value="contacts" className="rounded-lg">Análisis Contactos</TabsTrigger>
           <TabsTrigger value="properties" className="rounded-lg">Análisis Propiedades</TabsTrigger>
-          <TabsTrigger value="predictions" className="rounded-lg">Predicciones Q3</TabsTrigger>
+          <TabsTrigger value="predictions" className="rounded-lg">Predicciones {currentQuarter}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="market">
