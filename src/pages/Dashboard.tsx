@@ -29,14 +29,14 @@ const Dashboard = () => {
 
 
   return (
-    <div className="min-h-screen bg-white/90">
+    <div className="min-h-screen">
       <DashboardNav />
       
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8 flex items-center justify-between bg-white/90 backdrop-blur-sm rounded-lg p-6 shadow-lg">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard Inmobiliario</h1>
-            <p className="text-gray-600">Gestiona tu negocio inmobiliario de forma inteligente</p>
+            <h1 className="text-3xl font-bold text-primary mb-2">Dashboard Inmobiliario</h1>
+            <p className="text-secondary">Gestiona tu negocio inmobiliario de forma inteligente</p>
           </div>
           <div className="flex gap-2">
             <ExcelExportButton />

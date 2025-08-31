@@ -36,7 +36,7 @@ const DashboardNav = () => {
   ];
 
   return (
-    <div className="bg-white shadow-sm border-b">
+    <div className="bg-primary shadow-lg border-b border-primary-foreground/20 backdrop-blur-sm">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center py-4">
           <div className="flex items-center space-x-8">
@@ -57,12 +57,12 @@ const DashboardNav = () => {
                 return (
                   <Button
                     key={item.path}
-                    variant={isActive ? "default" : "ghost"}
+                    variant={isActive ? "secondary" : "ghost"}
                     size="sm"
                     onClick={() => navigate(item.path)}
-                    className={`relative ${isActive ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'}`}
+                    className={`relative ${isActive ? 'bg-secondary text-secondary-foreground' : 'text-primary-foreground hover:bg-primary-foreground/10'}`}
                   >
-                    <Icon className={`w-4 h-4 mr-2 ${isActive ? 'text-white' : item.color}`} />
+                    <Icon className={`w-4 h-4 mr-2 ${isActive ? 'text-secondary-foreground' : 'text-primary-foreground'}`} />
                     {item.label}
                     {item.isPaid && (
                       <span className="absolute -top-1 -right-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
@@ -79,11 +79,11 @@ const DashboardNav = () => {
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => setProfileEditOpen(true)}
-                className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 group"
+                className="flex items-center space-x-2 text-primary-foreground hover:text-primary-foreground/80 group"
               >
                 <Avatar className="w-8 h-8">
                   <AvatarImage src={user?.user_metadata?.avatar_url} />
-                  <AvatarFallback>
+                  <AvatarFallback className="bg-secondary text-secondary-foreground">
                     <User className="w-4 h-4" />
                   </AvatarFallback>
                 </Avatar>
@@ -97,7 +97,7 @@ const DashboardNav = () => {
               onClick={handleSignOut}
               variant="outline"
               size="sm"
-              className="text-gray-600 hover:text-gray-800"
+              className="text-primary-foreground border-primary-foreground/30 hover:bg-primary-foreground/10"
             >
               <LogOut className="w-4 h-4 mr-2" />
               Salir
