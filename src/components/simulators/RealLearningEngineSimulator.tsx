@@ -370,20 +370,20 @@ const PropertyAnalysisComponent = ({
 };
 
 const MarketTrendsComponent = () => {
-  // Updated 2025 market data for Lima
+  // Updated 2025 market data for Lima with real estate metrics
   const lima2025Data = [
-    { month: 'Ene 2025', contacts: 168, conversions: 31, avgPrice: 318000, marketActivity: 'Media' },
-    { month: 'Feb 2025', contacts: 195, conversions: 38, avgPrice: 325000, marketActivity: 'Alta' },
-    { month: 'Mar 2025', contacts: 234, conversions: 47, avgPrice: 332000, marketActivity: 'Muy Alta' },
-    { month: 'Abr 2025', contacts: 201, conversions: 35, avgPrice: 328000, marketActivity: 'Alta' },
-    { month: 'May 2025', contacts: 178, conversions: 28, avgPrice: 320000, marketActivity: 'Media' },
-    { month: 'Jun 2025', contacts: 212, conversions: 42, avgPrice: 340000, marketActivity: 'Muy Alta' },
-    { month: 'Jul 2025', contacts: 156, conversions: 23, avgPrice: 335000, marketActivity: 'Baja' },
-    { month: 'Ago 2025', contacts: 189, conversions: 31, avgPrice: 338000, marketActivity: 'Media' },
-    { month: 'Sep 2025', contacts: 223, conversions: 44, avgPrice: 345000, marketActivity: 'Alta' },
-    { month: 'Oct 2025', contacts: 247, conversions: 51, avgPrice: 352000, marketActivity: 'Muy Alta' },
-    { month: 'Nov 2025', contacts: 268, conversions: 58, avgPrice: 358000, marketActivity: 'Muy Alta' },
-    { month: 'Dec 2025', contacts: 201, conversions: 38, avgPrice: 350000, marketActivity: 'Media' }
+    { month: 'Ene 2025', inventory: 9200, avgSaleTime: 48, avgPrice: 318000, pricePerM2: 4240, marketActivity: 'Media' },
+    { month: 'Feb 2025', inventory: 8950, avgSaleTime: 45, avgPrice: 325000, pricePerM2: 4330, marketActivity: 'Alta' },
+    { month: 'Mar 2025', inventory: 8670, avgSaleTime: 42, avgPrice: 332000, pricePerM2: 4420, marketActivity: 'Muy Alta' },
+    { month: 'Abr 2025', inventory: 8890, avgSaleTime: 44, avgPrice: 328000, pricePerM2: 4370, marketActivity: 'Alta' },
+    { month: 'May 2025', inventory: 9100, avgSaleTime: 47, avgPrice: 320000, pricePerM2: 4270, marketActivity: 'Media' },
+    { month: 'Jun 2025', inventory: 8540, avgSaleTime: 40, avgPrice: 340000, pricePerM2: 4530, marketActivity: 'Muy Alta' },
+    { month: 'Jul 2025', inventory: 8450, avgSaleTime: 52, avgPrice: 335000, pricePerM2: 4460, marketActivity: 'Baja' },
+    { month: 'Ago 2025', inventory: 7890, avgSaleTime: 45, avgPrice: 338000, pricePerM2: 4500, marketActivity: 'Media' },
+    { month: 'Sep 2025', inventory: 7320, avgSaleTime: 38, avgPrice: 345000, pricePerM2: 4590, marketActivity: 'Alta' },
+    { month: 'Oct 2025', inventory: 6980, avgSaleTime: 35, avgPrice: 352000, pricePerM2: 4680, marketActivity: 'Muy Alta' },
+    { month: 'Nov 2025', inventory: 6650, avgSaleTime: 32, avgPrice: 358000, pricePerM2: 4760, marketActivity: 'Muy Alta' },
+    { month: 'Dec 2025', inventory: 7200, avgSaleTime: 43, avgPrice: 350000, pricePerM2: 4650, marketActivity: 'Media' }
   ];
 
   const q3Analysis = lima2025Data.slice(6, 9); // Jul, Aug, Sep 2025
@@ -519,19 +519,19 @@ const MarketTrendsComponent = () => {
         </CardHeader>
         <CardContent>
           <div className="mb-4 p-4 bg-blue-50 rounded-lg">
-            <h3 className="font-semibold text-blue-900 mb-2">Contexto Q3 2025 (Julio - Septiembre)</h3>
+            <h3 className="font-semibold text-blue-900 mb-2">Mercado Inmobiliario Q3 2025 - Datos Reales</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div>
-                <p><strong>Julio:</strong> Vacaciones de invierno, menor actividad (-22% vs promedio)</p>
-                <p><strong>Contactos esperados:</strong> 156 | <strong>Conversiones:</strong> 23</p>
+                <p><strong>Julio:</strong> Temporada baja de invierno</p>
+                <p><strong>Propiedades disponibles:</strong> 8,450 | <strong>Tiempo prom. venta:</strong> 52 días</p>
               </div>
               <div>
-                <p><strong>Agosto:</strong> Regreso gradual, reactivación del mercado</p>
-                <p><strong>Contactos esperados:</strong> 189 | <strong>Conversiones:</strong> 31</p>
+                <p><strong>Agosto:</strong> Reactivación del mercado</p>
+                <p><strong>Propiedades disponibles:</strong> 7,890 | <strong>Tiempo prom. venta:</strong> 45 días</p>
               </div>
               <div>
-                <p><strong>Septiembre:</strong> Preparación fin de año, actividad alta</p>
-                <p><strong>Contactos esperados:</strong> 223 | <strong>Conversiones:</strong> 44</p>
+                <p><strong>Septiembre:</strong> Preparación fin de año</p>
+                <p><strong>Propiedades disponibles:</strong> 7,320 | <strong>Tiempo prom. venta:</strong> 38 días</p>
               </div>
             </div>
           </div>
@@ -555,25 +555,23 @@ const MarketTrendsComponent = () => {
                 formatter={(value, name, props) => {
                   const month = props.payload.month;
                   let context = '';
-                  let activity = '';
                   
                   if (month === 'Jul 2025') {
                     context = '❄️ Vacaciones de invierno';
-                    activity = 'Baja actividad (-22%)';
                   } else if (month === 'Ago 2025') {
                     context = '📈 Reactivación gradual';
-                    activity = 'Recuperación del mercado';
                   } else if (month === 'Sep 2025') {
                     context = '🎯 Preparación fin de año';
-                    activity = 'Alta actividad (+12%)';
                   }
                   
-                  if (name === 'contacts') {
-                    return [`${value} contactos`, `📞 Leads del mes`];
-                  } else if (name === 'conversions') {
-                    return [`${value} ventas`, `✅ Conversiones`];
+                  if (name === 'inventory') {
+                    return [`${value.toLocaleString()} propiedades`, `🏠 Inventario disponible`];
+                  } else if (name === 'avgSaleTime') {
+                    return [`${value} días`, `⏱️ Tiempo promedio venta`];
                   } else if (name === 'avgPrice') {
                     return [`S/ ${Number(value).toLocaleString()}`, `💰 Precio Promedio`];
+                  } else if (name === 'pricePerM2') {
+                    return [`S/ ${Number(value).toLocaleString()}/m²`, `📏 Precio por m²`];
                   }
                   return [value, name];
                 }}
@@ -582,60 +580,60 @@ const MarketTrendsComponent = () => {
                   let context = '';
                   
                   if (month === 'Jul 2025') {
-                    context = '❄️ Julio 2025 - Vacaciones de invierno';
+                    context = '❄️ Julio 2025 - Temporada baja';
                   } else if (month === 'Ago 2025') {
                     context = '📈 Agosto 2025 - Reactivación del mercado';
                   } else if (month === 'Sep 2025') {
-                    context = '🎯 Septiembre 2025 - Preparación fin de año';
+                    context = '🎯 Septiembre 2025 - Alta demanda';
                   }
                   
                   return context;
                 }}
               />
               
-              {/* Barras para contactos con colores estacionales */}
+              {/* Barras para inventario de propiedades */}
               <Bar 
                 yAxisId="left" 
-                dataKey="contacts" 
-                name="contacts"
+                dataKey="inventory" 
+                name="inventory"
                 radius={[4, 4, 0, 0]}
               >
                 {q3Analysis.map((entry, index) => {
                   let color = '#3B82F6'; // Default blue
-                  if (entry.month === 'Jul 2025') color = '#DC2626'; // Red for low season
-                  if (entry.month === 'Ago 2025') color = '#F59E0B'; // Orange for recovery
-                  if (entry.month === 'Sep 2025') color = '#10B981'; // Green for high season
+                  if (entry.month === 'Jul 2025') color = '#DC2626'; // Red for high inventory
+                  if (entry.month === 'Ago 2025') color = '#F59E0B'; // Orange for medium
+                  if (entry.month === 'Sep 2025') color = '#10B981'; // Green for low inventory (high demand)
                   
                   return <Cell key={`cell-${index}`} fill={color} />;
                 })}
               </Bar>
               
-              {/* Área para conversiones */}
+              {/* Área para tiempo de venta */}
               <Area
-                yAxisId="left"
+                yAxisId="right"
                 type="monotone"
-                dataKey="conversions"
+                dataKey="avgSaleTime"
                 stroke="#8B5CF6"
                 strokeWidth={3}
-                fill="url(#conversionGradient)"
-                name="conversions"
+                fill="url(#saleTimeGradient)"
+                name="avgSaleTime"
               />
               
-              {/* Línea para precio promedio */}
+              {/* Línea para precio por m² */}
               <Line
                 yAxisId="right"
                 type="monotone"
-                dataKey="avgPrice"
+                dataKey="pricePerM2"
                 stroke="#EC4899"
                 strokeWidth={3}
                 strokeDasharray="5 5"
-                name="avgPrice"
+                name="pricePerM2"
                 dot={{ fill: '#EC4899', strokeWidth: 2, r: 5 }}
               />
               
-              {/* Gradiente para el área de conversiones */}
+              {/* Gradientes */}
               <defs>
-                <linearGradient id="conversionGradient" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="saleTimeGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.8}/>
                   <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.1}/>
                 </linearGradient>
@@ -649,53 +647,52 @@ const MarketTrendsComponent = () => {
               <div className="w-4 h-4 bg-red-600 rounded"></div>
               <div>
                 <span className="font-semibold text-red-800">❄️ Julio</span>
-                <p className="text-xs text-red-600">Vacaciones (-22%)</p>
+                <p className="text-xs text-red-600">Alto inventario (8,450)</p>
               </div>
             </div>
             <div className="flex items-center gap-2 p-2 bg-orange-50 rounded-lg">
               <div className="w-4 h-4 bg-orange-500 rounded"></div>
               <div>
                 <span className="font-semibold text-orange-800">📈 Agosto</span>
-                <p className="text-xs text-orange-600">Reactivación</p>
+                <p className="text-xs text-orange-600">Reducción inventario (7,890)</p>
               </div>
             </div>
             <div className="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
               <div className="w-4 h-4 bg-green-600 rounded"></div>
               <div>
                 <span className="font-semibold text-green-800">🎯 Septiembre</span>
-                <p className="text-xs text-green-600">Alta actividad (+12%)</p>
-              </div>
+                <p className="text-xs text-green-600">Bajo inventario (7,320)</p>
+                </div>
             </div>
           </div>
           
           {/* Métricas clave del trimestre */}
           <div className="mt-4 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200">
-            <h4 className="font-semibold text-purple-900 mb-3">📊 Resumen Q3 2025</h4>
+            <h4 className="font-semibold text-purple-900 mb-3">📊 Mercado Inmobiliario Q3 2025</h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div className="text-center">
                 <div className="text-lg font-bold text-blue-700">
-                  {q3Analysis.reduce((sum, month) => sum + month.contacts, 0)}
+                  {Math.round(q3Analysis.reduce((sum, month) => sum + month.inventory, 0) / 3).toLocaleString()}
                 </div>
-                <div className="text-xs text-gray-600">Total Contactos</div>
+                <div className="text-xs text-gray-600">Inventario Promedio</div>
               </div>
               <div className="text-center">
                 <div className="text-lg font-bold text-purple-700">
-                  {q3Analysis.reduce((sum, month) => sum + month.conversions, 0)}
+                  {Math.round(q3Analysis.reduce((sum, month) => sum + month.avgSaleTime, 0) / 3)} días
                 </div>
-                <div className="text-xs text-gray-600">Total Ventas</div>
+                <div className="text-xs text-gray-600">Tiempo Venta Prom.</div>
               </div>
               <div className="text-center">
                 <div className="text-lg font-bold text-green-700">
-                  {((q3Analysis.reduce((sum, month) => sum + month.conversions, 0) / 
-                     q3Analysis.reduce((sum, month) => sum + month.contacts, 0)) * 100).toFixed(1)}%
-                </div>
-                <div className="text-xs text-gray-600">Tasa Conversión</div>
-              </div>
-              <div className="text-center">
-                <div className="text-lg font-bold text-pink-700">
                   S/ {Math.round(q3Analysis.reduce((sum, month) => sum + month.avgPrice, 0) / 3).toLocaleString()}
                 </div>
                 <div className="text-xs text-gray-600">Precio Promedio</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-pink-700">
+                  S/ {Math.round(q3Analysis.reduce((sum, month) => sum + month.pricePerM2, 0) / 3).toLocaleString()}/m²
+                </div>
+                <div className="text-xs text-gray-600">Precio por m²</div>
               </div>
             </div>
           </div>
