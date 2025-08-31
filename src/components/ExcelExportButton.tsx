@@ -24,13 +24,11 @@ const ExcelExportButton = () => {
     setLoading(true);
     try {
       // Fetch all data
-      const [contactsRes, propertiesRes, remindersRes, salesFunnelRes, noPurchaseRes, metricsRes] = await Promise.all([
+      const [contactsRes, propertiesRes, remindersRes, interactionsRes] = await Promise.all([
         supabase.from('contacts').select('*').eq('user_id', user.id),
         supabase.from('properties').select('*').eq('user_id', user.id),
         supabase.from('reminders').select('*').eq('user_id', user.id),
-        supabase.from('sales_funnel').select('*').eq('user_id', user.id),
-        supabase.from('no_purchase_reasons').select('*').eq('user_id', user.id),
-        supabase.from('performance_metrics').select('*').eq('user_id', user.id)
+        supabase.from('interactions').select('*').eq('user_id', user.id)
       ]);
 
       // Create CSV content for each table
@@ -60,42 +58,28 @@ const ExcelExportButton = () => {
       // Contacts sheet
       if (contactsRes.data && contactsRes.data.length > 0) {
         workbookContent += 'CONTACTOS\n';
-        workbookContent += createCSV(contactsRes.data, ['full_name', 'email', 'phone', 'client_type', 'status', 'address', 'district', 'acquisition_source', 'notes', 'created_at']);
+        workbookContent += createCSV(contactsRes.data, ['full_name', 'email', 'phone', 'client_type', 'status', 'address', 'district', 'acquisition_source', 'sales_stage', 'notes', 'created_at', 'updated_at']);
         workbookContent += '\n\n';
       }
 
       // Properties sheet
       if (propertiesRes.data && propertiesRes.data.length > 0) {
         workbookContent += 'PROPIEDADES\n';
-        workbookContent += createCSV(propertiesRes.data, ['title', 'property_type', 'price', 'bedrooms', 'bathrooms', 'area_m2', 'address', 'status', 'description', 'created_at']);
+        workbookContent += createCSV(propertiesRes.data, ['title', 'property_type', 'price', 'bedrooms', 'bathrooms', 'area_m2', 'address', 'district', 'status', 'description', 'created_at', 'updated_at']);
         workbookContent += '\n\n';
       }
 
       // Reminders sheet
       if (remindersRes.data && remindersRes.data.length > 0) {
         workbookContent += 'RECORDATORIOS\n';
-        workbookContent += createCSV(remindersRes.data, ['title', 'description', 'priority', 'status', 'reminder_date', 'created_at']);
+        workbookContent += createCSV(remindersRes.data, ['title', 'description', 'priority', 'status', 'reminder_date', 'email_sent', 'created_at', 'updated_at']);
         workbookContent += '\n\n';
       }
 
-      // Sales funnel sheet
-      if (salesFunnelRes.data && salesFunnelRes.data.length > 0) {
-        workbookContent += 'EMBUDO DE VENTAS\n';
-        workbookContent += createCSV(salesFunnelRes.data, ['contact_id', 'stage', 'stage_date', 'notes', 'created_at']);
-        workbookContent += '\n\n';
-      }
-
-      // No purchase reasons sheet
-      if (noPurchaseRes.data && noPurchaseRes.data.length > 0) {
-        workbookContent += 'MOTIVOS DE NO COMPRA\n';
-        workbookContent += createCSV(noPurchaseRes.data, ['contact_id', 'property_id', 'reason_category', 'reason_details', 'price_feedback', 'will_reconsider', 'follow_up_date', 'notes', 'created_at']);
-        workbookContent += '\n\n';
-      }
-
-      // Performance metrics sheet
-      if (metricsRes.data && metricsRes.data.length > 0) {
-        workbookContent += 'MÉTRICAS DE RENDIMIENTO\n';
-        workbookContent += createCSV(metricsRes.data, ['metric_type', 'metric_value', 'metric_date', 'channel', 'team_member_id', 'created_at']);
+      // Interactions sheet
+      if (interactionsRes.data && interactionsRes.data.length > 0) {
+        workbookContent += 'INTERACCIONES\n';
+        workbookContent += createCSV(interactionsRes.data, ['contact_id', 'property_id', 'interaction_type', 'subject', 'notes', 'outcome', 'next_steps', 'previous_stage', 'new_stage', 'meeting_location', 'interaction_date', 'created_at']);
         workbookContent += '\n\n';
       }
 
