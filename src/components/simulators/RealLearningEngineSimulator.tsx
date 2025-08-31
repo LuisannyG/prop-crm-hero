@@ -456,19 +456,36 @@ const PropertyAnalysisComponent = ({
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <span className="text-gray-600">Precio promedio zona:</span>
-                        <p className="font-semibold text-blue-800">S/ {(limaMarketTrends.districtTrends[property.district || 'Miraflores']?.avgPrice || 350000).toLocaleString()}</p>
+                        <p className="font-semibold text-blue-800">
+                          S/ {property.marketDataSource ? 
+                            (property.district?.toLowerCase() === 'la paz' ? 
+                              (property.propertyType === 'departamento' ? '400,000' : 
+                               property.propertyType === 'casa' ? '420,000' : '250,000') :
+                              (limaMarketTrends.districtTrends[property.district || 'Miraflores']?.avgPrice || 350000).toLocaleString()
+                            ) : 
+                            (limaMarketTrends.districtTrends[property.district || 'Miraflores']?.avgPrice || 350000).toLocaleString()
+                          }
+                        </p>
                       </div>
                       <div>
                         <span className="text-gray-600">Demanda zona:</span>
-                        <p className="font-semibold text-blue-800">{limaMarketTrends.districtTrends[property.district || 'Miraflores']?.demand || 'Media'}</p>
+                        <p className="font-semibold text-blue-800">
+                          {property.district?.toLowerCase() === 'la paz' ? 'Alta' : 
+                           (limaMarketTrends.districtTrends[property.district || 'Miraflores']?.demand || 'Media')}
+                        </p>
                       </div>
                       <div>
                         <span className="text-gray-600">Crecimiento anual:</span>
-                        <p className="font-semibold text-green-600">+{(limaMarketTrends.districtTrends[property.district || 'Miraflores']?.priceGrowth || 5).toFixed(1)}%</p>
+                        <p className="font-semibold text-green-600">
+                          +{property.district?.toLowerCase() === 'la paz' ? '8.5' : 
+                            (limaMarketTrends.districtTrends[property.district || 'Miraflores']?.priceGrowth || 5).toFixed(1)}%
+                        </p>
                       </div>
                       <div>
                         <span className="text-gray-600">Tiempo promedio venta:</span>
-                        <p className="font-semibold text-orange-600">{limaMarketTrends.marketTrends.averageTimeToSell} días</p>
+                        <p className="font-semibold text-orange-600">
+                          {property.district?.toLowerCase() === 'la paz' ? '45' : limaMarketTrends.marketTrends.averageTimeToSell} días
+                        </p>
                       </div>
                     </div>
                   </div>
