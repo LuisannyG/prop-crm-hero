@@ -39,8 +39,11 @@ const Hero = ({ onCtaClick }: HeroProps) => {
         <div className="mt-20 bg-white/10 backdrop-blur-sm rounded-lg p-6 max-w-xl mx-auto">
           <h3 className="text-white text-xl font-bold mb-4">Revolución IA Septiembre 2025</h3>
           <p className="text-blue-100">
-            Motor de IA Gen-2 con capacidad de procesamiento cuántico. Predice tendencias de mercado con meses de anticipación 
-            y automatiza el 90% de las tareas de seguimiento. La nueva era de los CRM inmobiliarios ya está aquí.
+            Claude Opus 4 (claude-opus-4-20250514): Modelo insignia de Anthropic, especializado en tareas complejas de generación de código y razonamiento lógico. Es el modelo por defecto en procesos que requieren precisión y profundidad.
+            <br /><br />
+            Claude Sonnet 4 (claude-sonnet-4-20250514): Altamente eficiente en tareas generales con razonamiento intermedio, usado como modelo de respaldo de alta calidad.
+            <br /><br />
+            Claude Haiku 3.5 (claude-3-5-haiku-20241022): Diseñado para generar respuestas rápidas con menor latencia, ideal para tareas ligeras.
           </p>
         </div>
       </div>
