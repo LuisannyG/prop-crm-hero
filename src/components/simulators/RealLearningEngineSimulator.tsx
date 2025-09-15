@@ -819,25 +819,12 @@ const MarketTrendsComponent = () => {
           {/* Métricas clave del trimestre */}
           <div className="mt-4 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200">
             <h4 className="font-semibold text-purple-900 mb-3">📊 Resumen Q3 2025</h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="text-center">
                 <div className="text-lg font-bold text-blue-700">
                   {q3Analysis.reduce((sum, month) => sum + month.contacts, 0)}
                 </div>
                 <div className="text-xs text-gray-600">Total Contactos</div>
-              </div>
-              <div className="text-center">
-                <div className="text-lg font-bold text-purple-700">
-                  {q3Analysis.reduce((sum, month) => sum + month.conversions, 0)}
-                </div>
-                <div className="text-xs text-gray-600">Total Ventas</div>
-              </div>
-              <div className="text-center">
-                <div className="text-lg font-bold text-green-700">
-                  {((q3Analysis.reduce((sum, month) => sum + month.conversions, 0) / 
-                     q3Analysis.reduce((sum, month) => sum + month.contacts, 0)) * 100).toFixed(1)}%
-                </div>
-                <div className="text-xs text-gray-600">Tasa Conversión</div>
               </div>
               <div className="text-center">
                 <div className="text-lg font-bold text-pink-700">
