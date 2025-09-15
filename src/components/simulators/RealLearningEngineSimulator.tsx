@@ -816,24 +816,6 @@ const MarketTrendsComponent = () => {
             </div>
           </div>
           
-          {/* Métricas clave del trimestre */}
-          <div className="mt-4 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200">
-            <h4 className="font-semibold text-purple-900 mb-3">📊 Resumen Q3 2025</h4>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="text-center">
-                <div className="text-lg font-bold text-blue-700">
-                  {q3Analysis.reduce((sum, month) => sum + month.contacts, 0)}
-                </div>
-                <div className="text-xs text-gray-600">Total Contactos</div>
-              </div>
-              <div className="text-center">
-                <div className="text-lg font-bold text-pink-700">
-                  S/ {Math.round(q3Analysis.reduce((sum, month) => sum + month.avgPrice, 0) / 3).toLocaleString()}
-                </div>
-                <div className="text-xs text-gray-600">Precio Promedio</div>
-              </div>
-            </div>
-          </div>
           <div className="mt-3 text-xs text-gray-500 text-center space-y-1">
             <p><strong>Fuente:</strong> Análisis de ciclos estacionales del mercado inmobiliario peruano - MVCS 2025</p>
             <p>Patrones de demanda histórica Q3 (2019-2024) - Asociación de Desarrolladores Inmobiliarios del Perú (ADI)</p>
