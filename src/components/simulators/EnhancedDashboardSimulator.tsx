@@ -742,19 +742,25 @@ const EnhancedDashboardSimulator = () => {
                 <p>No hay datos por distrito</p>
               </div>
             ) : (
-              <div className="h-48">
+              <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={districtChartData} layout="horizontal">
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" />
-                    <YAxis dataKey="name" type="category" width={80} />
-                    <Tooltip />
-                    <Bar dataKey="value" fill="#0088FE">
+                  <PieChart>
+                    <Pie
+                      data={districtChartData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
                       {districtChartData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.fill} />
                       ))}
-                    </Bar>
-                  </BarChart>
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
                 </ResponsiveContainer>
               </div>
             )}
