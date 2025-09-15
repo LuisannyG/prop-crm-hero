@@ -177,7 +177,7 @@ export class RealMarketPriceService {
         deviation: 0,
         position: 'mercado',
         source,
-        confidence: 'media'
+        confidence: source.includes('MVCS') ? 'alta' : 'media'
       };
     }
 
