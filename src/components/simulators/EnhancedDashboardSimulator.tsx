@@ -749,7 +749,11 @@ const EnhancedDashboardSimulator = () => {
                     <XAxis type="number" />
                     <YAxis dataKey="name" type="category" width={80} />
                     <Tooltip />
-                    <Bar dataKey="value" />
+                    <Bar dataKey="value" fill="#0088FE">
+                      {districtChartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </div>
