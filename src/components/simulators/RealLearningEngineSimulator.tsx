@@ -844,19 +844,24 @@ const PredictiveInsightsComponent = ({
     const userTotalContacts = contactAnalysis?.totalContacts || 0;
     const userTotalConversions = contactAnalysis?.monthlyTrends.reduce((sum, month) => sum + month.conversions, 0) || 0;
     const userAvgPrice = propertyAnalysis?.avgPrice || 300000;
-    const userRevenue = userTotalConversions * userAvgPrice;
     
-    // Calculate Q3 projections based on user's performance
-    const q3ContactsTotal = Math.max(userTotalContacts, Math.round(userTotalContacts * 1.5)); // Project 50% growth for Q3
-    const q3ConversionsTotal = Math.max(1, Math.round(userTotalConversions * 1.2)); // Project 20% growth
-    const q3Revenue = q3ConversionsTotal * userAvgPrice;
+    // Current actual revenue (based on real sales)
+    const actualRevenue = userTotalConversions * userAvgPrice;
+    
+    // If no sales yet, project conservative but realistic revenue for Q3
+    const hasActualSales = userTotalConversions > 0;
+    const projectedQ3Sales = hasActualSales ? Math.max(1, Math.round(userTotalConversions * 1.2)) : 1; // At least 1 sale projected if none yet
+    const projectedQ3Revenue = projectedQ3Sales * userAvgPrice;
+    
+    // Q3 contact projections
+    const q3ContactsTotal = Math.max(userTotalContacts + 2, Math.round(userTotalContacts * 1.3)); // Conservative growth
     
     return [
       { 
         mes: 'Jul 2025', 
         contactosPredichos: Math.floor(q3ContactsTotal * 0.3), // 30% in July
-        ventasPredichas: Math.floor(q3ConversionsTotal * 0.25), // 25% in July
-        ingresosMiles: (q3Revenue * 0.25) / 1000,
+        ventasPredichas: hasActualSales ? Math.floor(projectedQ3Sales * 0.25) : 0, // 0 if no actual sales yet
+        ingresosMiles: hasActualSales ? (projectedQ3Revenue * 0.25) / 1000 : 0,
         precioPromedio: userAvgPrice * 0.98, // Slight decrease in vacation period
         demandaIndice: 72,
         contexto: 'Vacaciones de invierno'
@@ -864,8 +869,8 @@ const PredictiveInsightsComponent = ({
       { 
         mes: 'Ago 2025', 
         contactosPredichos: Math.floor(q3ContactsTotal * 0.35), // 35% in August
-        ventasPredichas: Math.floor(q3ConversionsTotal * 0.35), // 35% in August
-        ingresosMiles: (q3Revenue * 0.35) / 1000,
+        ventasPredichas: hasActualSales ? Math.floor(projectedQ3Sales * 0.35) : 0,
+        ingresosMiles: hasActualSales ? (projectedQ3Revenue * 0.35) / 1000 : 0,
         precioPromedio: userAvgPrice * 1.02, // Recovery
         demandaIndice: 85,
         contexto: 'Reactivación post-vacaciones'
@@ -873,8 +878,8 @@ const PredictiveInsightsComponent = ({
       { 
         mes: 'Sep 2025', 
         contactosPredichos: Math.floor(q3ContactsTotal * 0.35), // 35% in September
-        ventasPredichas: Math.floor(q3ConversionsTotal * 0.4), // 40% in September (peak)
-        ingresosMiles: (q3Revenue * 0.4) / 1000,
+        ventasPredichas: Math.floor(projectedQ3Sales * 0.4), // First projected sale in September
+        ingresosMiles: (projectedQ3Revenue * 0.4) / 1000,
         precioPromedio: userAvgPrice * 1.068, // 6.8% growth as shown in image
         demandaIndice: 98,
         contexto: 'Preparación fin de año'
@@ -882,8 +887,8 @@ const PredictiveInsightsComponent = ({
       { 
         mes: 'Oct 2025', 
         contactosPredichos: Math.floor(q3ContactsTotal * 0.4),
-        ventasPredichas: Math.floor(q3ConversionsTotal * 0.5), 
-        ingresosMiles: (q3Revenue * 0.5) / 1000,
+        ventasPredichas: Math.floor(projectedQ3Sales * 0.5), 
+        ingresosMiles: (projectedQ3Revenue * 0.5) / 1000,
         precioPromedio: userAvgPrice * 1.1,
         demandaIndice: 105,
         contexto: 'Temporada alta'
@@ -891,8 +896,8 @@ const PredictiveInsightsComponent = ({
       { 
         mes: 'Nov 2025', 
         contactosPredichos: Math.floor(q3ContactsTotal * 0.45),
-        ventasPredichas: Math.floor(q3ConversionsTotal * 0.6), 
-        ingresosMiles: (q3Revenue * 0.6) / 1000,
+        ventasPredichas: Math.floor(projectedQ3Sales * 0.6), 
+        ingresosMiles: (projectedQ3Revenue * 0.6) / 1000,
         precioPromedio: userAvgPrice * 1.12,
         demandaIndice: 112,
         contexto: 'Pico de bonificaciones'
@@ -900,8 +905,8 @@ const PredictiveInsightsComponent = ({
       { 
         mes: 'Dic 2025', 
         contactosPredichos: Math.floor(q3ContactsTotal * 0.3),
-        ventasPredichas: Math.floor(q3ConversionsTotal * 0.35), 
-        ingresosMiles: (q3Revenue * 0.35) / 1000,
+        ventasPredichas: Math.floor(projectedQ3Sales * 0.35), 
+        ingresosMiles: (projectedQ3Revenue * 0.35) / 1000,
         precioPromedio: userAvgPrice * 1.08,
         demandaIndice: 88,
         contexto: 'Desaceleración navideña'
@@ -959,7 +964,9 @@ const PredictiveInsightsComponent = ({
             <div className="text-2xl font-bold">S/ {(q3MarketData.slice(0, 3).reduce((sum, month) => sum + month.ingresosMiles, 0) * 1000).toLocaleString()}</div>
             <p className="text-xs opacity-80">Total trimestre</p>
             <div className="mt-2 text-xs opacity-90">
-              Julio: -30% (vacaciones)
+              {q3MarketData.slice(0, 3).reduce((sum, month) => sum + month.ingresosMiles, 0) === 0 ? 
+                'Proyección: Primera venta en Sep' : 
+                'Julio: -30% (vacaciones)'}
             </div>
           </CardContent>
         </Card>
