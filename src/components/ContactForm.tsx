@@ -10,7 +10,6 @@ const ContactForm = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    agentType: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -29,7 +28,7 @@ const ContactForm = () => {
         title: "¡Gracias por tu interés!",
         description: "Te hemos añadido a nuestra lista de espera. Te contactaremos pronto.",
       });
-      setFormData({ name: "", email: "", agentType: "" });
+      setFormData({ name: "", email: "" });
       setIsSubmitting(false);
     }, 1500);
   };
@@ -61,23 +60,6 @@ const ContactForm = () => {
               onChange={handleChange}
               required
             />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="agentType">Tipo de agente</Label>
-            <select 
-              id="agentType"
-              name="agentType"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              value={formData.agentType}
-              onChange={handleChange}
-              required
-            >
-              <option value="">Seleccionar...</option>
-              <option value="independiente">Agente Independiente</option>
-              <option value="inmobiliaria">Pequeña Inmobiliaria</option>
-              <option value="otro">Otro</option>
-            </select>
           </div>
           
           <Button 
