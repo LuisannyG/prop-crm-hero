@@ -671,15 +671,15 @@ const MarketTrendsComponent = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div>
                 <p><strong>Julio:</strong> Vacaciones de invierno, menor actividad (-22% vs promedio)</p>
-                <p><strong>Contactos esperados:</strong> 156 | <strong>Conversiones:</strong> 23</p>
+                <p><strong>Precio promedio:</strong> S/ 3,150/m² | <strong>Tiempo de venta:</strong> 95 días</p>
               </div>
               <div>
                 <p><strong>Agosto:</strong> Regreso gradual, reactivación del mercado</p>
-                <p><strong>Contactos esperados:</strong> 189 | <strong>Conversiones:</strong> 31</p>
+                <p><strong>Precio promedio:</strong> S/ 3,280/m² | <strong>Tiempo de venta:</strong> 78 días</p>
               </div>
               <div>
                 <p><strong>Septiembre:</strong> Preparación fin de año, actividad alta</p>
-                <p><strong>Contactos esperados:</strong> 223 | <strong>Conversiones:</strong> 44</p>
+                <p><strong>Precio promedio:</strong> S/ 3,420/m² | <strong>Tiempo de venta:</strong> 62 días</p>
               </div>
             </div>
           </div>
