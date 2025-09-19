@@ -323,25 +323,138 @@ const PropertyAnalysisComponent = ({
   const getPropertyRecommendations = (property: IndividualPropertyAnalysis) => {
     const recommendations = [];
     const marketPos = getPropertyMarketPosition(property);
+    const avgMarketPrice = limaMarketTrends.districtTrends[property.district || 'Miraflores']?.avgPrice || 350000;
     
+    // 1. Recomendación de Precio y Posicionamiento
     if (marketPos.deviation > 15) {
-      recommendations.push('Considerar reducir el precio en un 10-15% para mejorar competitividad');
-      recommendations.push('Realizar mejoras en la propiedad para justificar el precio premium');
+      recommendations.push({
+        category: 'Precio',
+        text: `Reducir precio en 10-15% (S/ ${(property.price * 0.85).toLocaleString()}) para mejorar competitividad vs mercado ${property.district}`,
+        priority: 'Alta'
+      });
     } else if (marketPos.deviation < -15) {
-      recommendations.push('Oportunidad de incrementar precio gradualmente');
-      recommendations.push('Destacar las ventajas únicas de la propiedad en el marketing');
+      recommendations.push({
+        category: 'Precio',
+        text: `Oportunidad de incrementar precio hasta S/ ${(avgMarketPrice * 0.95).toLocaleString()} - propiedad subvalorada en ${property.district}`,
+        priority: 'Media'
+      });
+    } else {
+      recommendations.push({
+        category: 'Precio',
+        text: `Precio competitivo para ${property.district}. Mantener y enfocar en diferenciación por características únicas`,
+        priority: 'Baja'
+      });
     }
-    
+
+    // 2. Recomendación de Marketing y Visibilidad
     if (property.daysOnMarket > 60) {
-      recommendations.push('Revisar estrategia de marketing - la propiedad lleva mucho tiempo en el mercado');
-      recommendations.push('Considerar homestaging o fotografía profesional');
+      recommendations.push({
+        category: 'Marketing',
+        text: `Renovar estrategia: fotografía 360°, tour virtual y promoción en redes sociales. ${property.daysOnMarket} días es excesivo`,
+        priority: 'Alta'
+      });
+    } else if (property.interestLevel < 3) {
+      recommendations.push({
+        category: 'Marketing',
+        text: 'Ampliar canales: agregar portales premium, Facebook Ads segmentado y WhatsApp Business para consultas',
+        priority: 'Media'
+      });
+    } else {
+      recommendations.push({
+        category: 'Marketing',
+        text: 'Marketing efectivo. Considerar testimonios de clientes y casos de éxito en la zona para reforzar confianza',
+        priority: 'Baja'
+      });
     }
-    
-    if (property.interestLevel < 3) {
-      recommendations.push('Mejorar la descripción y fotos de la propiedad');
-      recommendations.push('Revisar canales de comercialización');
+
+    // 3. Recomendación de Ubicación y Mercado Local
+    const districtTrend = limaMarketTrends.districtTrends[property.district || 'Miraflores'];
+    if (districtTrend) {
+      if (districtTrend.priceGrowth > 0.05) {
+        recommendations.push({
+          category: 'Ubicación',
+          text: `${property.district} en crecimiento (+${(districtTrend.priceGrowth * 100).toFixed(1)}%). Destacar potencial de revalorización y servicios de la zona`,
+          priority: 'Media'
+        });
+      } else {
+        recommendations.push({
+          category: 'Ubicación',
+          text: `Enfatizar estabilidad del mercado en ${property.district} y proximidad a centros comerciales, colegios y transporte público`,
+          priority: 'Media'
+        });
+      }
+    } else {
+      recommendations.push({
+        category: 'Ubicación',
+        text: 'Investigar y destacar los principales atractivos del distrito: centros comerciales, parques, colegios y conectividad',
+        priority: 'Media'
+      });
     }
-    
+
+    // 4. Recomendación de Mejoras y Presentación
+    if (property.price < 200000) {
+      recommendations.push({
+        category: 'Presentación',
+        text: 'Optimizar espacios: homestaging minimalista, espejos estratégicos e iluminación LED para amplitud visual',
+        priority: 'Alta'
+      });
+    } else if (property.price > 500000) {
+      recommendations.push({
+        category: 'Presentación',
+        text: 'Propiedad premium: amueblar áreas clave, crear ambientes sofisticados y mostrar exclusividad del inmueble',
+        priority: 'Media'
+      });
+    } else {
+      recommendations.push({
+        category: 'Presentación',
+        text: 'Mejorar presentación: limpieza profunda, aromatización, plantas naturales y temperatura ambiente óptima',
+        priority: 'Media'
+      });
+    }
+
+    // 5. Recomendación de Timing y Estacionalidad
+    const currentMonth = new Date().getMonth() + 1;
+    if (currentMonth >= 7 && currentMonth <= 8) {
+      recommendations.push({
+        category: 'Timing',
+        text: 'Temporada baja (invierno): ofrecer incentivos como gastos notariales incluidos o 1 mes de mantenimiento gratis',
+        priority: 'Alta'
+      });
+    } else if (currentMonth >= 3 && currentMonth <= 5) {
+      recommendations.push({
+        category: 'Timing',
+        text: 'Temporada alta: aprovechar demanda estacional. Programar más visitas y agilizar proceso de decisión',
+        priority: 'Media'
+      });
+    } else {
+      recommendations.push({
+        category: 'Timing',
+        text: 'Preparar para temporada alta: actualizar fotos, revisar precio y optimizar disponibilidad para visitas',
+        priority: 'Media'
+      });
+    }
+
+    // 6. Recomendación de Target y Segmentación
+    if (property.propertyType === 'Departamento' && property.price < 300000) {
+      recommendations.push({
+        category: 'Target',
+        text: 'Dirigir a jóvenes profesionales y parejas sin hijos. Destacar ubicación vs oficinas y vida nocturna/gastronómica',
+        priority: 'Media'
+      });
+    } else if (property.propertyType === 'Casa' || property.price > 400000) {
+      recommendations.push({
+        category: 'Target',
+        text: 'Enfocar en familias con hijos. Resaltar seguridad, colegios cercanos, parques y espacios para niños',
+        priority: 'Media'
+      });
+    } else {
+      recommendations.push({
+        category: 'Target',
+        text: 'Segmentar por perfil económico del distrito. Adaptar mensaje a ejecutivos, familias establecidas o inversores',
+        priority: 'Media'
+      });
+    }
+
     return recommendations;
   };
 
@@ -499,14 +612,26 @@ const PropertyAnalysisComponent = ({
                     <Lightbulb className="w-4 h-4 text-green-600" />
                     Recomendaciones Estratégicas:
                   </h4>
-                  <ul className="text-sm text-green-700 space-y-2">
+                  <div className="space-y-3">
                     {recommendations.map((recommendation, index) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                        {recommendation}
-                      </li>
+                      <div key={index} className="p-3 bg-white/60 rounded-lg border border-green-200">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                            <span className="text-xs font-semibold text-green-800 bg-green-100 px-2 py-1 rounded">
+                              {recommendation.category}
+                            </span>
+                          </div>
+                          <Badge variant={recommendation.priority === 'Alta' ? 'destructive' : recommendation.priority === 'Media' ? 'default' : 'secondary'}>
+                            {recommendation.priority}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-green-700 leading-relaxed">
+                          {recommendation.text}
+                        </p>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 </div>
               </div>
             );
