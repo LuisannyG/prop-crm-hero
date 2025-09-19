@@ -927,10 +927,10 @@ const PredictiveInsightsComponent = ({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{q3MarketData.slice(0, 3).reduce((sum, month) => sum + month.contactosPredichos, 0)}</div>
-            <p className="text-xs opacity-80">Total trimestre</p>
+            <div className="text-2xl font-bold">{contactAnalysis?.totalContacts || 2}</div>
+            <p className="text-xs opacity-80">Registrados actualmente</p>
             <div className="mt-2 text-xs opacity-90">
-              Promedio mensual: {Math.round(q3MarketData.slice(0, 3).reduce((sum, month) => sum + month.contactosPredichos, 0) / 3)}
+              Proyección Q3: +{Math.round(((contactAnalysis?.totalContacts || 2) * 1.3) - (contactAnalysis?.totalContacts || 2))} nuevos
             </div>
           </CardContent>
         </Card>
@@ -943,12 +943,10 @@ const PredictiveInsightsComponent = ({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{q3MarketData.slice(0, 3).reduce((sum, month) => sum + month.ventasPredichas, 0)}</div>
-            <p className="text-xs opacity-80">Total trimestre</p>
+            <div className="text-2xl font-bold">{contactAnalysis?.monthlyTrends.reduce((sum, month) => sum + month.conversions, 0) || 0}</div>
+            <p className="text-xs opacity-80">Ventas realizadas</p>
             <div className="mt-2 text-xs opacity-90">
-              Conversión: {contactAnalysis && contactAnalysis.totalContacts > 0 ? 
-                ((contactAnalysis.monthlyTrends.reduce((sum, month) => sum + month.conversions, 0) / contactAnalysis.totalContacts) * 100).toFixed(1) : 
-                '25.0'}%
+              Proyección Q3: 1 venta (Sep)
             </div>
           </CardContent>
         </Card>
@@ -961,12 +959,10 @@ const PredictiveInsightsComponent = ({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">S/ {(q3MarketData.slice(0, 3).reduce((sum, month) => sum + month.ingresosMiles, 0) * 1000).toLocaleString()}</div>
-            <p className="text-xs opacity-80">Total trimestre</p>
+            <div className="text-2xl font-bold">S/ {((contactAnalysis?.monthlyTrends.reduce((sum, month) => sum + month.conversions, 0) || 0) * (propertyAnalysis?.avgPrice || 350000)).toLocaleString()}</div>
+            <p className="text-xs opacity-80">Ingresos actuales</p>
             <div className="mt-2 text-xs opacity-90">
-              {q3MarketData.slice(0, 3).reduce((sum, month) => sum + month.ingresosMiles, 0) === 0 ? 
-                'Proyección: Primera venta en Sep' : 
-                'Julio: -30% (vacaciones)'}
+              Proyección Q3: S/ {(propertyAnalysis?.avgPrice || 350000).toLocaleString()}
             </div>
           </CardContent>
         </Card>
