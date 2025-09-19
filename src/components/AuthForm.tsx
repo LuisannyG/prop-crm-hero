@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -16,9 +15,6 @@ const AuthForm = () => {
     email: '',
     password: '',
     fullName: '',
-    userType: 'independent_agent' as 'independent_agent' | 'small_company',
-    companyName: '',
-    userRole: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { signIn, signUp } = useAuth();
@@ -29,18 +25,8 @@ const AuthForm = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleUserTypeChange = (value: 'independent_agent' | 'small_company') => {
-    setFormData(prev => ({ 
-      ...prev, 
-      userType: value,
-      // Limpiar los campos de empresa cuando se cambia el tipo
-      companyName: value === 'independent_agent' ? '' : prev.companyName,
-      userRole: value === 'independent_agent' ? '' : prev.userRole,
-    }));
-  };
-
   const handleBackToHome = () => {
-    navigate('/');
+    navigate('/', { replace: true });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,9 +49,7 @@ const AuthForm = () => {
           formData.email, 
           formData.password, 
           formData.fullName, 
-          formData.userType,
-          formData.companyName,
-          formData.userRole
+          'independent_agent'
         );
         if (!result.error) {
           toast({
@@ -78,9 +62,6 @@ const AuthForm = () => {
             email: formData.email, 
             password: '', 
             fullName: '', 
-            userType: 'independent_agent',
-            companyName: '',
-            userRole: '',
           });
         }
       }
@@ -95,7 +76,7 @@ const AuthForm = () => {
           errorMessage = 'Esta cuenta ya está creada. Puedes iniciar sesión directamente.';
           // Cambiar automáticamente al modo login
           setIsLogin(true);
-          setFormData(prev => ({ ...prev, password: '', fullName: '', userType: 'independent_agent' }));
+          setFormData(prev => ({ ...prev, password: '', fullName: '' }));
         } else if (result.error.message?.includes('Invalid login credentials')) {
           errorMessage = 'Email o contraseña incorrectos';
         } else if (result.error.message?.includes('Email not confirmed')) {
@@ -165,53 +146,6 @@ const AuthForm = () => {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="userType">Tipo de usuario</Label>
-                  <Select value={formData.userType} onValueChange={handleUserTypeChange}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona tu tipo de usuario" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="independent_agent">Agente Inmobiliario Independiente</SelectItem>
-                      <SelectItem value="small_company">Pequeña Empresa Inmobiliaria</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {formData.userType === 'small_company' && (
-                  <>
-                    <div className="space-y-2">
-                      <Label htmlFor="companyName">Nombre de la empresa</Label>
-                      <Input
-                        id="companyName"
-                        name="companyName"
-                        placeholder="Nombre de tu empresa"
-                        value={formData.companyName}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="userRole">Tu rol en la empresa</Label>
-                      <Select 
-                        value={formData.userRole} 
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, userRole: value }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecciona tu rol" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="owner">Propietario</SelectItem>
-                          <SelectItem value="manager">Gerente</SelectItem>
-                          <SelectItem value="agent">Agente</SelectItem>
-                          <SelectItem value="assistant">Asistente</SelectItem>
-                          <SelectItem value="marketing">Marketing</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </>
-                )}
               </>
             )}
             
