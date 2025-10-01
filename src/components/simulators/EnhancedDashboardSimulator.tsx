@@ -79,14 +79,16 @@ const EnhancedDashboardSimulator = () => {
       try {
         console.log('Obteniendo datos para usuario:', user.id);
         
-        // Fetch user profile
+        // Fetch user profile (optional field)
         const { data: profileData } = await supabase
           .from('profiles')
-          .select('user_type')
+          .select('*')
           .eq('id', user.id)
           .single();
         
-        setUserProfile(profileData);
+        if (profileData && 'user_type' in profileData) {
+          setUserProfile(profileData as UserProfile);
+        }
 
         // Fetch contacts with ALL fields including updated_at
         const { data: contactsData, error: contactsError } = await supabase
