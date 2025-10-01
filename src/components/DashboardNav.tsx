@@ -95,9 +95,9 @@ const DashboardNav = () => {
             </div>
             <Button 
               onClick={handleSignOut}
-              variant="outline"
+              variant="secondary"
               size="sm"
-              className="text-primary-foreground border-primary-foreground/30 hover:bg-primary-foreground/10"
+              className="bg-red-500 text-white hover:bg-red-600 border-0"
             >
               <LogOut className="w-4 h-4 mr-2" />
               Salir
