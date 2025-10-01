@@ -32,6 +32,9 @@ const Landing = () => {
         element.scrollIntoView({ behavior: 'smooth' });
       }
     }
+    if (location.state?.hideAuth) {
+      setShowAuthForm(false);
+    }
   }, [location.state]);
 
   const handleCtaClick = () => {

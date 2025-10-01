@@ -26,7 +26,7 @@ const AuthForm = () => {
   };
 
   const handleBackToHome = () => {
-    navigate('/');
+    navigate('/', { state: { hideAuth: true } });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
