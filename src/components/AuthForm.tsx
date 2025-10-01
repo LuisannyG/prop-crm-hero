@@ -26,7 +26,7 @@ const AuthForm = () => {
   };
 
   const handleBackToHome = () => {
-    navigate('/', { replace: true });
+    navigate('/');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
