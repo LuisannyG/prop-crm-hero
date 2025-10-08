@@ -56,6 +56,8 @@ const Reminders = () => {
   const navigate = useNavigate();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [filteredReminders, setFilteredReminders] = useState<Reminder[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [editingReminder, setEditingReminder] = useState<Reminder | null>(null);
   const [newReminder, setNewReminder] = useState<NewReminder>({
     contactId: undefined,
@@ -97,6 +99,7 @@ const Reminders = () => {
       }));
 
       setReminders(typedReminders);
+      setFilteredReminders(typedReminders);
     } catch (error) {
       console.error("Unexpected error fetching reminders:", error);
       toast({
@@ -142,6 +145,20 @@ const Reminders = () => {
     fetchContacts();
     fetchReminders();
   }, [user, toast]);
+
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setFilteredReminders(reminders);
+    } else {
+      const filtered = reminders.filter(reminder => {
+        const contact = contacts.find(c => c.id === reminder.contact_id);
+        return reminder.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+               reminder.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+               contact?.full_name.toLowerCase().includes(searchTerm.toLowerCase());
+      });
+      setFilteredReminders(filtered);
+    }
+  }, [searchTerm, reminders, contacts]);
 
   // Función para actualizar la fecha con la hora seleccionada
   const updateReminderDateTime = () => {
@@ -604,21 +621,31 @@ const Reminders = () => {
           {/* Lista de recordatorios */}
           <div className="lg:col-span-2">
             <div className="space-y-4">
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center gap-4">
                 <h2 className="text-xl font-semibold">Próximos Recordatorios</h2>
+                <Input
+                  placeholder="Buscar por título, descripción o contacto..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="max-w-md"
+                />
               </div>
 
-              {reminders.length === 0 ? (
+              {filteredReminders.length === 0 ? (
                 <Card>
                   <CardContent className="flex flex-col items-center justify-center py-12">
                     <Clock className="w-12 h-12 text-gray-400 mb-4" />
-                    <p className="text-gray-500 text-center">No tienes recordatorios programados</p>
-                    <p className="text-gray-400 text-sm text-center mt-2">Crea tu primer recordatorio para comenzar</p>
+                    <p className="text-gray-500 text-center">
+                      {searchTerm ? 'No se encontraron recordatorios con ese criterio de búsqueda.' : 'No tienes recordatorios programados'}
+                    </p>
+                    <p className="text-gray-400 text-sm text-center mt-2">
+                      {!searchTerm && 'Crea tu primer recordatorio para comenzar'}
+                    </p>
                   </CardContent>
                 </Card>
               ) : (
                 <div className="space-y-3">
-                  {reminders.map((reminder) => {
+                  {filteredReminders.map((reminder) => {
                     const contact = contacts.find(c => c.id === reminder.contact_id);
                     const isOverdue = new Date(reminder.reminder_date) < new Date() && reminder.status === 'pendiente';
                     const priorityColors = {

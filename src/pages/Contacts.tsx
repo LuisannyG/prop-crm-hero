@@ -39,6 +39,8 @@ const Contacts = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [isAddingContact, setIsAddingContact] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
@@ -81,6 +83,20 @@ const Contacts = () => {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setFilteredContacts(contacts);
+    } else {
+      const filtered = contacts.filter(contact =>
+        contact.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        contact.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        contact.phone?.includes(searchTerm) ||
+        contact.district?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredContacts(filtered);
+    }
+  }, [searchTerm, contacts]);
+
   const fetchContacts = async () => {
     try {
       console.log('Fetching contacts for user:', user?.id);
@@ -121,6 +137,7 @@ const Contacts = () => {
       );
       
       setContacts(contactsWithLastInteraction);
+      setFilteredContacts(contactsWithLastInteraction);
     } catch (error) {
       console.error('Error fetching contacts:', error);
       toast({
@@ -487,12 +504,20 @@ const Contacts = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Contactos ({contacts.length})</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>Contactos ({filteredContacts.length})</CardTitle>
+              <Input
+                placeholder="Buscar por nombre, email, teléfono o distrito..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="max-w-md"
+              />
+            </div>
           </CardHeader>
           <CardContent>
-            {contacts.length === 0 ? (
+            {filteredContacts.length === 0 ? (
               <p className="text-center text-gray-500 py-8">
-                No tienes contactos registrados. ¡Agrega tu primer contacto!
+                {searchTerm ? 'No se encontraron contactos con ese criterio de búsqueda.' : 'No tienes contactos registrados. ¡Agrega tu primer contacto!'}
               </p>
             ) : (
               <Table>
@@ -510,7 +535,7 @@ const Contacts = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {contacts.map((contact) => {
+                  {filteredContacts.map((contact) => {
                     const stageInfo = getSalesStageInfo(contact.sales_stage || '');
                     const interactionInfo = contact.last_interaction ? getInteractionTypeInfo(contact.last_interaction.type) : null;
                     

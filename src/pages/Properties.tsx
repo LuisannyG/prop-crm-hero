@@ -35,6 +35,8 @@ const Properties = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [properties, setProperties] = useState<Property[]>([]);
+  const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [isAddingProperty, setIsAddingProperty] = useState(false);
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
@@ -58,6 +60,20 @@ const Properties = () => {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setFilteredProperties(properties);
+    } else {
+      const filtered = properties.filter(property =>
+        property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        property.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        property.district?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        property.property_type?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredProperties(filtered);
+    }
+  }, [searchTerm, properties]);
+
   const fetchProperties = async () => {
     try {
       const { data, error } = await supabase
@@ -68,6 +84,7 @@ const Properties = () => {
       if (error) throw error;
       console.log('Properties loaded:', data);
       setProperties(data || []);
+      setFilteredProperties(data || []);
     } catch (error) {
       console.error('Error fetching properties:', error);
       toast({
@@ -406,12 +423,20 @@ const Properties = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Propiedades ({properties.length})</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>Propiedades ({filteredProperties.length})</CardTitle>
+              <Input
+                placeholder="Buscar por título, dirección, distrito o tipo..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="max-w-md"
+              />
+            </div>
           </CardHeader>
           <CardContent>
-            {properties.length === 0 ? (
+            {filteredProperties.length === 0 ? (
               <p className="text-center text-gray-500 py-8">
-                No tienes propiedades registradas. ¡Agrega tu primera propiedad!
+                {searchTerm ? 'No se encontraron propiedades con ese criterio de búsqueda.' : 'No tienes propiedades registradas. ¡Agrega tu primera propiedad!'}
               </p>
             ) : (
               <Table>
@@ -426,7 +451,7 @@ const Properties = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {properties.map((property) => (
+                  {filteredProperties.map((property) => (
                     <TableRow key={property.id}>
                       <TableCell>
                         <div>
