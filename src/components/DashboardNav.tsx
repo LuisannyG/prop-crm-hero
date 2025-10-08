@@ -23,8 +23,17 @@ const DashboardNav = () => {
   const [profileEditOpen, setProfileEditOpen] = useState(false);
 
   const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
+    try {
+      await signOut();
+      // Esperar un momento para que el estado se limpie
+      setTimeout(() => {
+        navigate('/', { replace: true });
+      }, 100);
+    } catch (error) {
+      console.error('Error during sign out:', error);
+      // Navegar de todas formas para asegurar que el usuario salga
+      navigate('/', { replace: true });
+    }
   };
 
   const navItems = [
