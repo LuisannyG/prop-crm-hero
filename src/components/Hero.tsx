@@ -37,7 +37,7 @@ const Hero = ({ onCtaClick }: HeroProps) => {
         </div>
         
         <div className="mt-20 bg-white/10 backdrop-blur-sm rounded-lg p-6 max-w-xl mx-auto">
-          <h3 className="text-white text-xl font-bold mb-4">Revolución IA Septiembre 2025</h3>
+          <h3 className="text-white text-xl font-bold mb-4">Revolución IA</h3>
           <p className="text-blue-100">
             Potenciado por Claude Opus 4 (claude-opus-4-20250514): Modelo insignia de Anthropic, especializado en tareas complejas de generación de código y razonamiento lógico para procesos inmobiliarios que requieren precisión y profundidad.
             <br /><br />
