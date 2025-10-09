@@ -114,7 +114,7 @@ const ContactAnalysisComponent = ({
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 gap-6">
-          {individualContactAnalysis.slice(0, 12).map((contact) => {
+          {individualContactAnalysis.map((contact) => {
             const riskScore = 100 - contact.conversionProbability;
             const riskFactors = getRiskFactorsExplanation(contact);
             const riskExplanation = getRiskExplanation(riskScore, riskFactors);
@@ -469,7 +469,7 @@ const PropertyAnalysisComponent = ({
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 gap-6">
-          {individualPropertyAnalysis.slice(0, 8).map((property) => {
+          {individualPropertyAnalysis.map((property) => {
             const marketPos = getPropertyMarketPosition(property);
             const recommendations = getPropertyRecommendations(property);
             
