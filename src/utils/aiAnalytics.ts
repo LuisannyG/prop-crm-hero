@@ -328,10 +328,23 @@ export const analyzeIndividualContacts = async (userId: string): Promise<Individ
     // Usar información real del contacto específica para cada cliente conocido
     let estimatedBudget, familySize, leadSource, propertyInterest, urgencyLevel, communicationPreference, financingType;
     
+    // Primero intentar usar el presupuesto real del contacto
+    if (contact.budget) {
+      // Formatear el presupuesto de la base de datos
+      const budgetMap: Record<string, string> = {
+        '0-150000': 'S/ 0 - 150,000',
+        '150000-300000': 'S/ 150,000 - 300,000',
+        '300000-500000': 'S/ 300,000 - 500,000',
+        '500000-1000000': 'S/ 500,000 - 1,000,000',
+        '1000000+': 'Más de S/ 1,000,000'
+      };
+      estimatedBudget = budgetMap[contact.budget] || contact.budget;
+    }
+    
     if (contactName.includes('maryuri') || contactName.includes('maria')) {
       // Maryuri - Cliente familiar de 4 personas
       familySize = 4;
-      estimatedBudget = 'S/ 400,000 - S/ 600,000'; // Presupuesto familiar típico
+      estimatedBudget = estimatedBudget || 'S/ 400,000 - S/ 600,000'; // Presupuesto familiar típico
       leadSource = contact.acquisition_source || 'Referido familiar';
       propertyInterest = 'Casa unifamiliar';
       urgencyLevel = 'Alta'; // Por estar en etapa avanzada
@@ -340,15 +353,15 @@ export const analyzeIndividualContacts = async (userId: string): Promise<Individ
     } else if (contactName.includes('victor')) {
       // Victor - Cliente individual
       familySize = 1;
-      estimatedBudget = 'S/ 250,000 - S/ 400,000'; // Presupuesto individual
+      estimatedBudget = estimatedBudget || 'S/ 250,000 - S/ 400,000'; // Presupuesto individual
       leadSource = contact.acquisition_source || 'Página web';
       propertyInterest = 'Departamento moderno';
       urgencyLevel = 'Media';
       communicationPreference = 'Llamada';
       financingType = 'Mixto';
     } else {
-      // Otros contactos - usar valores por defecto
-      estimatedBudget = budgetRanges[index % budgetRanges.length];
+      // Otros contactos - usar valores del presupuesto real o por defecto
+      estimatedBudget = estimatedBudget || budgetRanges[index % budgetRanges.length];
       familySize = Math.floor(Math.random() * 5) + 1;
       leadSource = contact.acquisition_source || leadSources[index % leadSources.length];
       propertyInterest = propertyInterests[index % propertyInterests.length];

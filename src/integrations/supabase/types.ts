@@ -77,6 +77,7 @@ export type Database = {
         Row: {
           acquisition_source: string | null
           address: string | null
+          budget: string | null
           client_type: string | null
           created_at: string
           district: string | null
@@ -93,6 +94,7 @@ export type Database = {
         Insert: {
           acquisition_source?: string | null
           address?: string | null
+          budget?: string | null
           client_type?: string | null
           created_at?: string
           district?: string | null
@@ -109,6 +111,7 @@ export type Database = {
         Update: {
           acquisition_source?: string | null
           address?: string | null
+          budget?: string | null
           client_type?: string | null
           created_at?: string
           district?: string | null

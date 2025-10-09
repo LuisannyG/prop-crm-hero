@@ -47,6 +47,7 @@ interface Contact {
   district?: string;
   client_type?: string;
   acquisition_source?: string;
+  budget?: string;
 }
 
 interface Property {

@@ -27,6 +27,7 @@ interface Contact {
   client_type?: string;
   acquisition_source?: string;
   sales_stage?: string;
+  budget?: string;
   created_at: string;
   last_interaction?: {
     type: string;
@@ -54,7 +55,8 @@ const Contacts = () => {
     status: 'prospect',
     client_type: '',
     acquisition_source: '',
-    sales_stage: 'contacto_inicial_recibido'
+    sales_stage: 'contacto_inicial_recibido',
+    budget: ''
   });
 
   const salesStages = [
@@ -176,6 +178,7 @@ const Contacts = () => {
         client_type: formData.client_type,
         acquisition_source: formData.acquisition_source,
         sales_stage: formData.sales_stage,
+        budget: formData.budget || null,
         user_id: user.id
       };
 
@@ -241,7 +244,8 @@ const Contacts = () => {
       status: 'prospect',
       client_type: '',
       acquisition_source: '',
-      sales_stage: 'contacto_inicial_recibido'
+      sales_stage: 'contacto_inicial_recibido',
+      budget: ''
     });
     setIsAddingContact(false);
     setEditingContact(null);
@@ -259,7 +263,8 @@ const Contacts = () => {
       status: contact.status,
       client_type: contact.client_type || '',
       acquisition_source: contact.acquisition_source || '',
-      sales_stage: contact.sales_stage || 'contacto_inicial_recibido'
+      sales_stage: contact.sales_stage || 'contacto_inicial_recibido',
+      budget: contact.budget || ''
     });
     setEditingContact(contact);
     setIsAddingContact(true);
@@ -477,6 +482,21 @@ const Contacts = () => {
                           </div>
                         </SelectItem>
                       ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="budget">Presupuesto</Label>
+                  <Select value={formData.budget} onValueChange={(value) => setFormData({...formData, budget: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar presupuesto (opcional)" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white z-50">
+                      <SelectItem value="0-150000">S/ 0 - 150,000</SelectItem>
+                      <SelectItem value="150000-300000">S/ 150,000 - 300,000</SelectItem>
+                      <SelectItem value="300000-500000">S/ 300,000 - 500,000</SelectItem>
+                      <SelectItem value="500000-1000000">S/ 500,000 - 1,000,000</SelectItem>
+                      <SelectItem value="1000000+">Más de S/ 1,000,000</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
