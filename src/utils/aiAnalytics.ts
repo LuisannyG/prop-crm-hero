@@ -61,6 +61,7 @@ export interface IndividualPropertyAnalysis {
   priceAdjustmentSuggestion: string;
   marketDataSource?: string;
   confidence?: 'alta' | 'media' | 'baja';
+  area_m2?: number;
 }
 
 export interface CombinedAnalysis {
@@ -924,7 +925,8 @@ export const analyzeIndividualProperties = async (userId: string): Promise<Indiv
       recommendedPrice,
       priceAdjustmentSuggestion: `${recReason} (${recAdjustment > 0 ? '+' : ''}${recAdjustment.toFixed(1)}%)`,
       marketDataSource: priceRecommendation.source,
-      confidence: marketAnalysis.confidence
+      confidence: marketAnalysis.confidence,
+      area_m2: property.area_m2
     };
   });
 };

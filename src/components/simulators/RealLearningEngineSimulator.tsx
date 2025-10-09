@@ -358,133 +358,237 @@ const PropertyAnalysisComponent = ({
     const recommendations = [];
     const marketPos = getPropertyMarketPosition(property);
     const avgMarketPrice = limaMarketTrends.districtTrends[property.district || 'Miraflores']?.avgPrice || 350000;
-    
-    // 1. Recomendación de Precio y Posicionamiento
-    if (marketPos.deviation > 15) {
-      recommendations.push({
-        category: 'Precio',
-        text: `Reducir precio en 10-15% (S/ ${(property.price * 0.85).toLocaleString()}) para mejorar competitividad vs mercado ${property.district}`,
-        priority: 'Alta'
-      });
-    } else if (marketPos.deviation < -15) {
-      recommendations.push({
-        category: 'Precio',
-        text: `Oportunidad de incrementar precio hasta S/ ${(avgMarketPrice * 0.95).toLocaleString()} - propiedad subvalorada en ${property.district}`,
-        priority: 'Media'
-      });
-    } else {
-      recommendations.push({
-        category: 'Precio',
-        text: `Precio competitivo para ${property.district}. Mantener y enfocar en diferenciación por características únicas`,
-        priority: 'Baja'
-      });
-    }
-
-    // 2. Recomendación de Marketing y Visibilidad
-    if (property.daysOnMarket > 60) {
-      recommendations.push({
-        category: 'Marketing',
-        text: `Renovar estrategia: fotografía 360°, tour virtual y promoción en redes sociales. ${property.daysOnMarket} días es excesivo`,
-        priority: 'Alta'
-      });
-    } else if (property.interestLevel < 3) {
-      recommendations.push({
-        category: 'Marketing',
-        text: 'Ampliar canales: agregar portales premium, Facebook Ads segmentado y WhatsApp Business para consultas',
-        priority: 'Media'
-      });
-    } else {
-      recommendations.push({
-        category: 'Marketing',
-        text: 'Marketing efectivo. Considerar testimonios de clientes y casos de éxito en la zona para reforzar confianza',
-        priority: 'Baja'
-      });
-    }
-
-    // 3. Recomendación de Ubicación y Mercado Local
     const districtTrend = limaMarketTrends.districtTrends[property.district || 'Miraflores'];
-    if (districtTrend) {
-      if (districtTrend.priceGrowth > 0.05) {
+    const pricePerM2 = property.area_m2 ? property.price / property.area_m2 : 0;
+    const avgPricePerM2 = districtTrend?.avgPricePerM2 || 3500;
+    
+    // 1. Recomendación de Precio personalizada según tamaño, distrito y posicionamiento
+    if (marketPos.deviation > 15) {
+      const targetPrice = property.price * 0.88;
+      const reduction = property.price - targetPrice;
+      if (property.area_m2) {
         recommendations.push({
-          category: 'Ubicación',
-          text: `${property.district} en crecimiento (+${(districtTrend.priceGrowth * 100).toFixed(1)}%). Destacar potencial de revalorización y servicios de la zona`,
-          priority: 'Media'
+          category: 'Precio',
+          text: `${property.title}: Reducir S/ ${reduction.toLocaleString()} (${marketPos.deviation.toFixed(1)}% sobre mercado). Con ${property.area_m2}m² en ${property.district}, precio sugerido S/ ${targetPrice.toLocaleString()} = S/ ${(targetPrice/property.area_m2).toFixed(0)}/m²`,
+          priority: 'Alta'
         });
       } else {
         recommendations.push({
+          category: 'Precio',
+          text: `${property.title}: Propiedad ${marketPos.deviation.toFixed(1)}% sobre mercado en ${property.district}. Ajustar a S/ ${targetPrice.toLocaleString()} para mejorar competitividad`,
+          priority: 'Alta'
+        });
+      }
+    } else if (marketPos.deviation < -15) {
+      const targetPrice = Math.min(avgMarketPrice * 0.98, property.price * 1.15);
+      const increase = targetPrice - property.price;
+      if (property.area_m2) {
+        recommendations.push({
+          category: 'Precio',
+          text: `${property.title}: Subvalorada en ${property.district}. Incrementar S/ ${increase.toLocaleString()} aprovechando ${property.area_m2}m² bien ubicados. Nuevo precio: S/ ${targetPrice.toLocaleString()}`,
+          priority: 'Alta'
+        });
+      } else {
+        recommendations.push({
+          category: 'Precio',
+          text: `${property.title}: Oportunidad en ${property.district}. Incrementar a S/ ${targetPrice.toLocaleString()} (${Math.abs(marketPos.deviation).toFixed(1)}% bajo mercado actual)`,
+          priority: 'Media'
+        });
+      }
+    } else {
+      if (property.interestLevel > 5) {
+        const newPrice = property.price * 1.03;
+        recommendations.push({
+          category: 'Precio',
+          text: `${property.title}: Alto interés (${property.interestLevel} consultas) con precio competitivo. Considerar incremento de 3% a S/ ${newPrice.toLocaleString()} para maximizar valor`,
+          priority: 'Baja'
+        });
+      } else {
+        recommendations.push({
+          category: 'Precio',
+          text: `${property.title}: Precio óptimo para ${property.district}. Mantener S/ ${property.price.toLocaleString()} y diferenciarse por características del inmueble`,
+          priority: 'Baja'
+        });
+      }
+    }
+
+    // 2. Recomendación de Marketing según días en mercado, interés y características específicas
+    if (property.daysOnMarket > 90) {
+      const specificFeatures = property.area_m2 && property.area_m2 > 100 ? `Destacar los ${property.area_m2}m² de amplitud` : 'Resaltar distribución funcional';
+      recommendations.push({
+        category: 'Marketing',
+        text: `${property.title}: ${property.daysOnMarket} días sin vender. Urgente: nuevo set fotográfico profesional, video-tour 4K y campaña segmentada en ${property.district}. ${specificFeatures}`,
+        priority: 'Alta'
+      });
+    } else if (property.daysOnMarket > 45) {
+      const priceRange = property.price > 400000 ? 'premium' : property.price < 200000 ? 'accesible' : 'medio';
+      recommendations.push({
+        category: 'Marketing',
+        text: `${property.title}: Acelerar venta. Para segmento ${priceRange} en ${property.district}: agregar testimonios de vecinos, destacar servicios cercanos y promoción en Instagram Stories`,
+        priority: 'Alta'
+      });
+    } else if (property.interestLevel < 2) {
+      const typeSpecific = property.propertyType === 'Casa' ? 'jardín y espacios exteriores' : property.propertyType === 'Departamento' ? 'amenities del edificio' : 'potencial del terreno';
+      recommendations.push({
+        category: 'Marketing',
+        text: `${property.title}: Bajo interés en ${property.district}. Reforzar presencia online: fotos del ${typeSpecific}, comparativa de precios y anuncios en LinkedIn para profesionales`,
+        priority: 'Media'
+      });
+    } else {
+      recommendations.push({
+        category: 'Marketing',
+        text: `${property.title}: Buen nivel de visibilidad. Optimizar tasa de conversión: responder consultas en <30min y preparar dossier digital con planos y documentación`,
+        priority: 'Baja'
+      });
+    }
+
+    // 3. Recomendación de Ubicación personalizada por distrito y tamaño
+    if (districtTrend) {
+      const sizeContext = property.area_m2 && property.area_m2 > 120 ? `espacioso ${property.area_m2}m²` : 
+                          property.area_m2 && property.area_m2 < 60 ? `compacto pero funcional ${property.area_m2}m²` : 
+                          `${property.area_m2 || 'suficiente'}m²`;
+      
+      if (districtTrend.priceGrowth > 0.05) {
+        const futureValue = property.price * (1 + districtTrend.priceGrowth);
+        recommendations.push({
           category: 'Ubicación',
-          text: `Enfatizar estabilidad del mercado en ${property.district} y proximidad a centros comerciales, colegios y transporte público`,
+          text: `${property.title}: ${property.district} crece ${(districtTrend.priceGrowth * 100).toFixed(1)}% anual. Proyección: S/ ${futureValue.toLocaleString()} en 12 meses. Comunicar ${sizeContext} como inversión inteligente`,
+          priority: 'Alta'
+        });
+      } else if (districtTrend.avgDaysOnMarket < 60) {
+        recommendations.push({
+          category: 'Ubicación',
+          text: `${property.title}: ${property.district} es mercado dinámico (venta promedio ${districtTrend.avgDaysOnMarket} días). Enfatizar conectividad, ${sizeContext} y zonas comerciales cercanas`,
+          priority: 'Media'
+        });
+      } else {
+        const nearbyDistricts = property.district === 'Miraflores' ? 'San Isidro y Barranco' :
+                               property.district === 'San Isidro' ? 'Miraflores y Lince' :
+                               property.district === 'Surco' ? 'La Molina y San Borja' : 'distritos vecinos';
+        recommendations.push({
+          category: 'Ubicación',
+          text: `${property.title}: Mercado estable en ${property.district}. Comparar ventajas vs ${nearbyDistricts} y destacar que ${sizeContext} ofrece mejor precio/ubicación`,
           priority: 'Media'
         });
       }
     } else {
       recommendations.push({
         category: 'Ubicación',
-        text: 'Investigar y destacar los principales atractivos del distrito: centros comerciales, parques, colegios y conectividad',
+        text: `${property.title}: Mapear competencia directa en ${property.district}. Con ${property.area_m2 || 'estas'}m², identificar 3 ventajas únicas de ubicación micro (parques, transporte, comercios)`,
         priority: 'Media'
       });
     }
 
-    // 4. Recomendación de Mejoras y Presentación
-    if (property.price < 200000) {
+    // 4. Recomendación de Presentación según precio, tipo y tamaño
+    if (property.propertyType === 'Casa' && property.area_m2 && property.area_m2 > 150) {
       recommendations.push({
         category: 'Presentación',
-        text: 'Optimizar espacios: homestaging minimalista, espejos estratégicos e iluminación LED para amplitud visual',
+        text: `${property.title}: Casa amplia ${property.area_m2}m². Homestaging: amueblar sala, comedor y 1 dormitorio. Jardín: césped cortado, macetas coloridas. Resaltar espacios exteriores`,
         priority: 'Alta'
       });
-    } else if (property.price > 500000) {
+    } else if (property.propertyType === 'Departamento' && property.price > 500000) {
+      const floor = Math.floor(Math.random() * 10) + 5; // Simular piso alto
       recommendations.push({
         category: 'Presentación',
-        text: 'Propiedad premium: amueblar áreas clave, crear ambientes sofisticados y mostrar exclusividad del inmueble',
+        text: `${property.title}: Departamento premium S/ ${property.price.toLocaleString()}. Contratar decorador: sofá gris claro, arte minimalista, velas aromáticas. Video desde balcón mostrando vista`,
+        priority: 'Alta'
+      });
+    } else if (property.area_m2 && property.area_m2 < 50) {
+      recommendations.push({
+        category: 'Presentación',
+        text: `${property.title}: Maximizar ${property.area_m2}m² compactos. Estrategia: espejos de pared, muebles plegables, iluminación LED blanca. Fotos desde esquinas para amplitud visual`,
+        priority: 'Alta'
+      });
+    } else if (property.price < 180000) {
+      recommendations.push({
+        category: 'Presentación',
+        text: `${property.title}: Rango accesible. Inversión mínima, alto impacto: repintar paredes (blanco hueso), aromatizante cítrico, plantas naturales y cortinas translúcidas`,
         priority: 'Media'
       });
     } else {
       recommendations.push({
         category: 'Presentación',
-        text: 'Mejorar presentación: limpieza profunda, aromatización, plantas naturales y temperatura ambiente óptima',
+        text: `${property.title}: Profesionalizar presentación. Checklist pre-visita: despersonalizar espacios, temperatura 20-22°C, música ambiental suave y documentación ordenada`,
         priority: 'Media'
       });
     }
 
-    // 5. Recomendación de Timing y Estacionalidad
+    // 5. Recomendación de Timing según estacionalidad y características del inmueble
     const currentMonth = new Date().getMonth() + 1;
+    const seasonalContext = property.propertyType === 'Casa' && (currentMonth >= 3 && currentMonth <= 5) ? 
+                           'temporada ideal para mostrar jardines y áreas exteriores' :
+                           property.propertyType === 'Departamento' && (currentMonth >= 9 && currentMonth <= 11) ?
+                           'fin de año con ejecutivos buscando mudanza' : 'temporada actual';
+    
     if (currentMonth >= 7 && currentMonth <= 8) {
+      const incentive = property.price > 400000 ? 'gastos notariales + primer mes de mantenimiento' :
+                       property.price > 250000 ? 'gastos de escritura pública' :
+                       '1 mes de mantenimiento o seguro de incendio';
       recommendations.push({
         category: 'Timing',
-        text: 'Temporada baja (invierno): ofrecer incentivos como gastos notariales incluidos o 1 mes de mantenimiento gratis',
+        text: `${property.title}: Invierno en ${property.district}. Compensar baja demanda: incluir ${incentive} (valor S/ 3,000-5,000). Cerrar venta antes de octubre`,
         priority: 'Alta'
       });
-    } else if (currentMonth >= 3 && currentMonth <= 5) {
+    } else if (currentMonth >= 3 && currentMonth <= 5 || currentMonth >= 9 && currentMonth <= 11) {
       recommendations.push({
         category: 'Timing',
-        text: 'Temporada alta: aprovechar demanda estacional. Programar más visitas y agilizar proceso de decisión',
+        text: `${property.title}: Momento óptimo - ${seasonalContext}. Aumentar agenda de visitas a 4-5 semanales. Precio firme, negociar solo en detalles finales`,
+        priority: 'Media'
+      });
+    } else if (currentMonth === 12 || currentMonth === 1) {
+      recommendations.push({
+        category: 'Timing',
+        text: `${property.title}: Periodo vacacional. Mantener disponibilidad flexible, tours virtuales para compradores fuera de Lima. Posicionar para boom de febrero-marzo`,
         priority: 'Media'
       });
     } else {
+      const daysToHighSeason = currentMonth < 3 ? (3 - currentMonth) * 30 : (15 - currentMonth) * 30;
       recommendations.push({
         category: 'Timing',
-        text: 'Preparar para temporada alta: actualizar fotos, revisar precio y optimizar disponibilidad para visitas',
+        text: `${property.title}: Preparar temporada alta (${Math.floor(daysToHighSeason/30)} meses). Actualizar: fotos profesionales, reparaciones menores y estrategia de promoción`,
         priority: 'Media'
       });
     }
 
-    // 6. Recomendación de Target y Segmentación
-    if (property.propertyType === 'Departamento' && property.price < 300000) {
+    // 6. Recomendación de Target según tipo, precio, tamaño y distrito
+    if (property.propertyType === 'Departamento' && property.area_m2 && property.area_m2 < 60 && property.price < 250000) {
       recommendations.push({
         category: 'Target',
-        text: 'Dirigir a jóvenes profesionales y parejas sin hijos. Destacar ubicación vs oficinas y vida nocturna/gastronómica',
+        text: `${property.title}: Perfil ideal - jóvenes 25-35 años, solteros o parejas sin hijos. Mensaje: "${property.area_m2}m² óptimos en ${property.district}, cerca de oficinas y vida social"`,
+        priority: 'Alta'
+      });
+    } else if (property.propertyType === 'Casa' && property.area_m2 && property.area_m2 > 120) {
+      const schoolsNearby = property.district === 'Surco' || property.district === 'La Molina' || property.district === 'San Borja';
+      const schoolText = schoolsNearby ? 'Destacar colegios top cercanos (Newton, San Silvestre)' : 'Enfatizar seguridad y espacios familiares';
+      recommendations.push({
+        category: 'Target',
+        text: `${property.title}: Casa familiar ${property.area_m2}m². Target: familias 3-5 personas, con hijos escolares. ${schoolText}. Canal: grupos de Facebook de padres`,
+        priority: 'Alta'
+      });
+    } else if (property.price > 600000) {
+      recommendations.push({
+        category: 'Target',
+        text: `${property.title}: Segmento alto. Perfil: ejecutivos 40-55 años, empresarios. Estrategia: LinkedIn Ads, revista Asia Sur, golf clubs. Enfoque: exclusividad y status`,
+        priority: 'Alta'
+      });
+    } else if (property.district === 'Miraflores' || property.district === 'San Isidro' || property.district === 'Barranco') {
+      recommendations.push({
+        category: 'Target',
+        text: `${property.title}: ${property.district} atrae profesionales extranjeros y retornantes. Mensaje bilingüe, destacar walkability score y escena cultural/gastronómica`,
         priority: 'Media'
       });
-    } else if (property.propertyType === 'Casa' || property.price > 400000) {
+    } else if (property.propertyType === 'Terreno') {
       recommendations.push({
         category: 'Target',
-        text: 'Enfocar en familias con hijos. Resaltar seguridad, colegios cercanos, parques y espacios para niños',
-        priority: 'Media'
+        text: `${property.title}: Terreno en ${property.district}. Target: inversionistas y constructores. Preparar: certificado de parámetros, planos de zonificación, análisis de rentabilidad`,
+        priority: 'Alta'
       });
     } else {
+      const budgetSegment = property.price > 350000 ? 'clase media-alta establecida' : 
+                           property.price > 200000 ? 'clase media emergente' : 'compradores de primera vivienda';
       recommendations.push({
         category: 'Target',
-        text: 'Segmentar por perfil económico del distrito. Adaptar mensaje a ejecutivos, familias establecidas o inversores',
+        text: `${property.title}: Segmento ${budgetSegment} en ${property.district}. Adaptar comunicación: financiamiento disponible, proyección de plusvalía, testimonios de vecinos`,
         priority: 'Media'
       });
     }
