@@ -753,12 +753,73 @@ const generateStageSpecificRecommendations = (
       recommendations.push('Revisar proceso de seguimiento estándar');
   }
 
-  // Recomendaciones adicionales contextualles
-  if (contact.client_type === 'inversionista') {
-    recommendations.push('Presentar análisis de ROI y rentabilidad proyectada');
-    recommendations.push('Mostrar comparativo con otras oportunidades de inversión');
+  // ============= RECOMENDACIONES ESPECÍFICAS POR TIPO DE CLIENTE =============
+  const clientType = contact.client_type || 'individual';
+  
+  // Recomendaciones según tipo de cliente
+  if (clientType === 'familiar' || clientType === 'family') {
+    recommendations.push('Cliente familiar - priorizar propiedades con múltiples habitaciones');
+    recommendations.push('Considerar zonas familiares con parques, colegios y seguridad');
+    recommendations.push('Enfocar en espacios amplios: jardín, sala familiar, cocina grande');
+    if (stage === 'seguimiento_inicial' || stage === 'agendamiento_visitas') {
+      recommendations.push('Agendar visitas en horarios que permitan que toda la familia asista');
+      recommendations.push('Preguntar por número de hijos y necesidades educativas de la zona');
+    }
+    if (stage === 'presentacion_personalizada' || stage === 'negociacion') {
+      recommendations.push('Destacar beneficios para toda la familia: áreas comunes, seguridad 24/7');
+      recommendations.push('Mostrar opciones de financiamiento familiar y subsidios disponibles');
+    }
+  } else if (clientType === 'individual' || clientType === 'persona') {
+    recommendations.push('Cliente individual - enfocar en departamentos prácticos y céntricos');
+    recommendations.push('Priorizar ubicaciones con buen acceso a transporte público');
+    recommendations.push('Destacar beneficios de bajo mantenimiento y seguridad');
+    if (stage === 'seguimiento_inicial' || stage === 'agendamiento_visitas') {
+      recommendations.push('Agendar visitas rápidas y eficientes (30-45 minutos por propiedad)');
+      recommendations.push('Preguntar sobre estilo de vida: trabajo, hobbies, necesidades diarias');
+    }
+    if (stage === 'presentacion_personalizada' || stage === 'negociacion') {
+      recommendations.push('Enfatizar practicidad: cercanía al trabajo, gimnasio, supermercados');
+      recommendations.push('Mostrar opciones de departamentos tipo estudio o 1-2 dormitorios');
+    }
+  } else if (clientType === 'negocio' || clientType === 'business') {
+    recommendations.push('Cliente de negocio - enfocar en locales comerciales y oficinas');
+    recommendations.push('Analizar flujo peatonal, visibilidad y accesibilidad del local');
+    recommendations.push('Considerar zonificación comercial y permisos municipales');
+    if (stage === 'seguimiento_inicial' || stage === 'agendamiento_visitas') {
+      recommendations.push('Preguntar sobre giro del negocio y requerimientos específicos');
+      recommendations.push('Coordinar visitas en horarios comerciales para evaluar movimiento');
+    }
+    if (stage === 'presentacion_personalizada' || stage === 'negociacion') {
+      recommendations.push('Presentar análisis de la competencia en la zona');
+      recommendations.push('Destacar potencial comercial: tráfico, estacionamiento, señalización');
+    }
+  } else if (clientType === 'empresa' || clientType === 'company') {
+    recommendations.push('Cliente corporativo - enfocar en oficinas y espacios empresariales');
+    recommendations.push('Priorizar zonas empresariales con buena conectividad');
+    recommendations.push('Analizar capacidad, distribución y servicios del inmueble');
+    if (stage === 'seguimiento_inicial' || stage === 'agendamiento_visitas') {
+      recommendations.push('Coordinar con tomadores de decisión de la empresa');
+      recommendations.push('Preparar presentación formal con planos y especificaciones técnicas');
+    }
+    if (stage === 'presentacion_personalizada' || stage === 'negociacion') {
+      recommendations.push('Destacar servicios: seguridad, estacionamiento, áreas comunes');
+      recommendations.push('Ofrecer contratos empresariales con términos flexibles');
+    }
+  } else if (clientType === 'inversionista' || clientType === 'investor') {
+    recommendations.push('Cliente inversionista - presentar análisis de ROI y rentabilidad');
+    recommendations.push('Mostrar comparativo con otras oportunidades de inversión del mercado');
+    recommendations.push('Analizar potencial de plusvalía y demanda de alquiler en la zona');
+    if (stage === 'seguimiento_inicial' || stage === 'agendamiento_visitas') {
+      recommendations.push('Preparar reporte financiero: precio m², rendimiento, proyecciones');
+      recommendations.push('Compartir datos del mercado y tendencias de valorización');
+    }
+    if (stage === 'presentacion_personalizada' || stage === 'negociacion') {
+      recommendations.push('Enfatizar oportunidad de inversión y retorno esperado');
+      recommendations.push('Ofrecer múltiples opciones para diversificar portafolio');
+    }
   }
 
+  // Recomendaciones adicionales contextuales
   if (contact.acquisition_source === 'referido' && interactionCount < 3) {
     recommendations.push('Contactar al referidor para obtener más contexto');
     recommendations.push('Aprovechar la confianza del referido para acelerar proceso');
@@ -769,8 +830,6 @@ const generateStageSpecificRecommendations = (
     recommendations.push('Considerar reasignación o cambio de enfoque comercial');
   }
 
-  // Agregar recomendaciones adicionales avanzadas
-  
   // Recomendaciones específicas por urgencia
   if (contact.urgency_level === 'Muy Alta' && interactionCount < 3) {
     recommendations.push('Cliente con urgencia muy alta - contactar máximo cada 2 días');
@@ -803,17 +862,26 @@ const generateStageSpecificRecommendations = (
     recommendations.push('Conectar con especialista en créditos hipotecarios del banco');
     recommendations.push('Solicitar pre-evaluación crediticia para acelerar proceso');
   } else if (contact.financing_type === 'Contado') {
-    recommendations.push('Cliente con liquidez - enfocar en propiedades premium');
+    // Ajustar recomendación según tipo de cliente
+    if (clientType === 'inversionista') {
+      recommendations.push('Inversionista con liquidez - proponer múltiples propiedades');
+    } else if (clientType === 'empresa' || clientType === 'negocio') {
+      recommendations.push('Cliente corporativo con liquidez - ofrecer propiedades premium');
+    } else {
+      recommendations.push('Cliente con liquidez - enfocar en propiedades premium');
+    }
     recommendations.push('Ofrecer descuentos por pago al contado');
   }
 
-  // Recomendaciones por tamaño familiar
-  if (contact.family_size && contact.family_size >= 4) {
-    recommendations.push('Familia numerosa - priorizar casas con 3+ dormitorios');
-    recommendations.push('Considerar ubicaciones cerca de colegios y centros comerciales');
-  } else if (contact.family_size === 1) {
-    recommendations.push('Cliente individual - focus en departamentos o estudios');
-    recommendations.push('Priorizar ubicaciones centrales con acceso al transporte');
+  // Recomendaciones por tamaño familiar (solo para clientes familiares)
+  if ((clientType === 'familiar' || clientType === 'family') && contact.family_size) {
+    if (contact.family_size >= 4) {
+      recommendations.push('Familia numerosa - priorizar casas con 3+ dormitorios');
+      recommendations.push('Considerar ubicaciones cerca de colegios y centros comerciales');
+    } else if (contact.family_size <= 2) {
+      recommendations.push('Familia pequeña - opciones de 2 dormitorios son ideales');
+      recommendations.push('Considerar departamentos en edificios familiares');
+    }
   }
 
   // Recomendaciones por días sin interacción
@@ -824,7 +892,13 @@ const generateStageSpecificRecommendations = (
 
   // Recomendaciones de seguimiento personalizado
   if (stage === 'presentacion_personalizada' && daysInStage > 7) {
-    recommendations.push('Proponer visita acompañada de arquitecto o valuador');
+    if (clientType === 'inversionista') {
+      recommendations.push('Proponer análisis financiero más detallado con valuador certificado');
+    } else if (clientType === 'empresa' || clientType === 'negocio') {
+      recommendations.push('Coordinar visita con arquitecto para evaluar adaptaciones');
+    } else {
+      recommendations.push('Proponer visita acompañada de arquitecto o valuador');
+    }
     recommendations.push('Crear presentación comparativa con 3 opciones similares');
   }
 
@@ -834,7 +908,7 @@ const generateStageSpecificRecommendations = (
     recommendations.push('Ofrecer servicios VIP: visitas privadas y asesoría exclusiva');
   }
 
-  return recommendations.slice(0, 8); // Aumentar a 8 recomendaciones principales
+  return recommendations.slice(0, 8); // Retornar máximo 8 recomendaciones principales
 };
 
 // Análisis individual de propiedades
