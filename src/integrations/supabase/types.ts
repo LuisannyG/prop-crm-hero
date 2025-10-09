@@ -428,6 +428,7 @@ export type Database = {
           email_sent: boolean | null
           id: string
           priority: string | null
+          property_id: string | null
           reminder_date: string
           status: string | null
           title: string
@@ -441,6 +442,7 @@ export type Database = {
           email_sent?: boolean | null
           id?: string
           priority?: string | null
+          property_id?: string | null
           reminder_date: string
           status?: string | null
           title: string
@@ -454,6 +456,7 @@ export type Database = {
           email_sent?: boolean | null
           id?: string
           priority?: string | null
+          property_id?: string | null
           reminder_date?: string
           status?: string | null
           title?: string
@@ -466,6 +469,13 @@ export type Database = {
             columns: ["contact_id"]
             isOneToOne: false
             referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reminders_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
             referencedColumns: ["id"]
           },
         ]
