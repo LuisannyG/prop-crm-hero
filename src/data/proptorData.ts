@@ -101,7 +101,7 @@ export const plans: Plan[] = [
   },
   {
     name: "Plan Premium",
-    price: "89",
+    price: "60",
     features: [
       "Contactos ilimitados",
       "IA Gen-2 con predicción avanzada",
