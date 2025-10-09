@@ -1788,86 +1788,194 @@ const RealLearningEngineSimulator = () => {
   };
 
   const getRiskFactorsExplanation = (contact: IndividualContactAnalysis) => {
-    const factors = [];
-    const riskScore = 100 - contact.conversionProbability;
-    const contactName = contact.name.toLowerCase();
+    const factors: string[] = [];
     
-    // Para Victor (cliente individual con múltiples factores de riesgo)
-    if (contactName.includes('victor')) {
-      // Múltiples factores de riesgo para Victor
-      factors.push(`Probabilidad de conversión muy baja (${contact.conversionProbability}%) indica alta probabilidad de no concretar la compra.`);
-      
-      if (contact.totalInteractions >= 1) {
-        factors.push(`A pesar de ${contact.totalInteractions} interacciones, no ha mostrado suficiente compromiso para avanzar efectivamente.`);
-      }
-      
-      factors.push(`Cliente individual sin urgencia familiar, puede postponer decisión indefinidamente.`);
-      
-      if (contact.daysInCurrentStage > 7) {
-        factors.push(`Lleva ${contact.daysInCurrentStage} días en etapa "${contact.stage.replace(/_/g, ' ')}" sugiriendo indecisión o comparación con otras opciones.`);
-      }
-      
-      factors.push(`Presupuesto individual limitado puede no ser suficiente para las propiedades que realmente desea.`);
-      
-      if (contact.communicationPreference === 'Llamada') {
-        factors.push(`Prefiere comunicación telefónica pero respuestas pueden ser evasivas o poco comprometidas.`);
-      }
-      
-      factors.push(`Score de calificación bajo (${contact.qualificationScore}/10) indica perfil de cliente con baja intención de compra.`);
-      
-      if (contact.daysSinceLastInteraction > 3) {
-        factors.push(`${contact.daysSinceLastInteraction} días sin interacción reciente pueden indicar pérdida de interés activo.`);
-      }
-      
-      return factors;
+    // ========== ANÁLISIS POR PROBABILIDAD DE CONVERSIÓN ==========
+    if (contact.conversionProbability < 30) {
+      factors.push(`Probabilidad de conversión muy baja (${contact.conversionProbability}%), requiere atención inmediata para recuperar el interés.`);
+    } else if (contact.conversionProbability < 50) {
+      factors.push(`Probabilidad de conversión moderada (${contact.conversionProbability}%), necesita seguimiento estratégico.`);
     }
     
-    // Para Maryuri (cliente familiar con alto engagement), mostrar factores de riesgo específicos pero menores
-    if (contactName.includes('maryuri') || contactName.includes('maria')) {
-      if (contact.conversionProbability >= 85) {
-        // Factores de riesgo menores pero específicos para cliente familiar
-        if (contact.clientType === 'familiar') {
-          factors.push(`Decisión familiar puede requerir más tiempo para consenso entre todos los miembros.`);
-        }
-        if (contact.financingType === 'Crédito Hipotecario') {
-          factors.push(`Dependencia de aprobación de crédito hipotecario familiar puede generar demoras en el proceso.`);
-        }
-        if (contact.daysInCurrentStage > 7) {
-          factors.push(`Lleva ${contact.daysInCurrentStage} días en etapa actual, aunque normal para procesos familiares que requieren mayor análisis.`);
-        }
-        return factors;
-      }
+    // ========== ANÁLISIS POR DÍAS SIN INTERACCIÓN ==========
+    if (contact.daysSinceLastInteraction > 21) {
+      factors.push(`${contact.daysSinceLastInteraction} días sin contacto. Cliente puede estar considerando otras opciones o ha perdido interés.`);
+    } else if (contact.daysSinceLastInteraction > 14) {
+      factors.push(`${contact.daysSinceLastInteraction} días sin interacción. Riesgo de enfriamiento de la relación comercial.`);
+    } else if (contact.daysSinceLastInteraction > 7) {
+      factors.push(`${contact.daysSinceLastInteraction} días sin contacto reciente. Recomienda hacer seguimiento pronto.`);
     }
     
-    // Para otros contactos, aplicar lógica normal de factores de riesgo
-    if (contact.daysInCurrentStage > 21) {
-      factors.push(`Lleva ${contact.daysInCurrentStage} días en la etapa "${contact.stage.replace(/_/g, ' ')}" sin avanzar, indicando posible desinterés o dudas no resueltas.`);
+    // ========== ANÁLISIS POR DÍAS EN ETAPA ACTUAL ==========
+    if (contact.daysInCurrentStage > 30) {
+      factors.push(`Lleva ${contact.daysInCurrentStage} días estancado en "${contact.stage.replace(/_/g, ' ')}". Indica indecisión o barreras no resueltas.`);
+    } else if (contact.daysInCurrentStage > 21) {
+      factors.push(`${contact.daysInCurrentStage} días en etapa "${contact.stage.replace(/_/g, ' ')}" supera el tiempo promedio esperado.`);
     } else if (contact.daysInCurrentStage > 14) {
-      factors.push(`Ha permanecido ${contact.daysInCurrentStage} días en la etapa actual, más tiempo del promedio esperado.`);
+      factors.push(`Permanece ${contact.daysInCurrentStage} días en etapa actual sin avanzar al siguiente paso.`);
     }
     
-    // Para contactos con pocas interacciones, evaluar contexto
-    if (contact.totalInteractions < 3) {
-      // Excepción para contactos en etapas avanzadas con pocas pero efectivas interacciones
-      if (['presentacion_personalizada', 'negociacion', 'cierre_firma_contrato'].includes(contact.stage)) {
-        factors.push(`Solo ${contact.totalInteractions} interacciones registradas para etapa "${contact.stage.replace(/_/g, ' ')}", podría necesitar más seguimiento.`);
-      } else {
-        factors.push(`Solo tiene ${contact.totalInteractions} interacciones registradas, lo que sugiere bajo nivel de engagement.`);
+    // ========== ANÁLISIS POR TIPO DE CLIENTE ==========
+    if (contact.clientType === 'familiar' || contact.clientType === 'family') {
+      if (contact.totalInteractions < 5) {
+        factors.push(`Cliente familiar con solo ${contact.totalInteractions} interacciones. Las familias requieren más puntos de contacto para decidir.`);
       }
-    } else if (contact.totalInteractions < 5 && !['presentacion_personalizada', 'negociacion'].includes(contact.stage)) {
-      factors.push(`Con ${contact.totalInteractions} interacciones, necesita más seguimiento para fortalecer la relación.`);
+      if (contact.daysInCurrentStage > 14) {
+        factors.push(`Decisiones familiares requieren consenso entre varios miembros, lo que puede alargar el proceso.`);
+      }
+      if (contact.financingType === 'No definido') {
+        factors.push(`Familia sin tipo de financiamiento definido. Necesita asesoría sobre opciones de crédito familiar.`);
+      }
+    } else if (contact.clientType === 'individual' || contact.clientType === 'persona') {
+      if (contact.urgencyLevel === 'Baja') {
+        factors.push(`Cliente individual con urgencia baja puede postponer la decisión indefinidamente sin presión externa.`);
+      }
+      if (contact.totalInteractions < 3 && contact.daysInCurrentStage > 10) {
+        factors.push(`Cliente individual con pocas interacciones y tiempo prolongado sugiere bajo compromiso.`);
+      }
+    } else if (contact.clientType === 'inversionista' || contact.clientType === 'investor') {
+      if (contact.totalInteractions < 4) {
+        factors.push(`Inversionista requiere análisis financiero detallado. Necesita más información sobre ROI y rentabilidad.`);
+      }
+      if (!contact.estimatedBudget || contact.estimatedBudget === 'Por definir') {
+        factors.push(`Inversionista sin presupuesto claro. Debe definir capital disponible para inversión.`);
+      }
+    } else if (contact.clientType === 'negocio' || contact.clientType === 'business') {
+      if (contact.totalInteractions < 3) {
+        factors.push(`Negocio necesita evaluar ubicación, flujo peatonal y retorno de inversión. Requiere más visitas.`);
+      }
+      if (contact.daysInCurrentStage > 14) {
+        factors.push(`Decisión empresarial tomando más tiempo del esperado. Puede requerir aprobación de socios.`);
+      }
+    } else if (contact.clientType === 'empresa' || contact.clientType === 'company') {
+      if (contact.totalInteractions < 5) {
+        factors.push(`Empresa corporativa necesita más interacciones con tomadores de decisión y análisis técnico.`);
+      }
+      factors.push(`Proceso corporativo involucra aprobaciones múltiples, presupuestos y evaluaciones técnicas.`);
     }
     
-    if (contact.stage === 'contacto_inicial' && contact.daysInCurrentStage > 7) {
-      factors.push('Permanece en contacto inicial demasiado tiempo, puede estar comparando opciones o perdiendo interés.');
+    // ========== ANÁLISIS POR PRESUPUESTO ==========
+    if (contact.estimatedBudget === 'Por definir') {
+      factors.push(`Presupuesto no definido dificulta mostrar opciones adecuadas y avanzar en el proceso.`);
+    } else if (contact.estimatedBudget.includes('S/ 0') || contact.estimatedBudget.includes('150,000')) {
+      factors.push(`Presupuesto muy ajustado limita opciones disponibles en ${contact.preferredDistrict}.`);
+    } else if (contact.estimatedBudget.includes('2,000,000')) {
+      factors.push(`Cliente con alto presupuesto es más selectivo y puede tomar más tiempo en decidir.`);
     }
     
-    if (contact.stage === 'visita_realizada' && contact.daysInCurrentStage > 10) {
-      factors.push('No ha progresado después de la visita, posiblemente tiene objeciones no expresadas sobre la propiedad.');
+    // ========== ANÁLISIS POR DISTRITO PREFERIDO ==========
+    const highDemandDistricts = ['Miraflores', 'San Isidro', 'Surco', 'La Molina', 'San Borja'];
+    const emergingDistricts = ['Jesús María', 'Magdalena', 'Pueblo Libre', 'Lince'];
+    
+    if (highDemandDistricts.includes(contact.preferredDistrict)) {
+      factors.push(`Busca en ${contact.preferredDistrict}, zona de alta demanda con precios premium. Competencia intensa por propiedades.`);
+    } else if (emergingDistricts.includes(contact.preferredDistrict)) {
+      factors.push(`Interés en ${contact.preferredDistrict}, distrito en crecimiento. Debe actuar rápido por valorización acelerada.`);
     }
     
-    if (contact.stage === 'negociacion' && contact.daysInCurrentStage > 14) {
-      factors.push('La negociación se ha extendido demasiado, puede haber problemas de financiamiento o expectativas de precio.');
+    // ========== ANÁLISIS POR TOTAL DE INTERACCIONES ==========
+    if (contact.totalInteractions === 0) {
+      factors.push(`Sin interacciones registradas. Cliente completamente frío, requiere contacto urgente.`);
+    } else if (contact.totalInteractions < 3) {
+      if (['presentacion_personalizada', 'negociacion', 'cierre_firma_contrato'].includes(contact.stage)) {
+        factors.push(`Solo ${contact.totalInteractions} interacciones para etapa "${contact.stage.replace(/_/g, ' ')}". Proceso avanzado requiere más seguimiento.`);
+      } else {
+        factors.push(`Pocas interacciones (${contact.totalInteractions}). Bajo nivel de engagement con el proceso.`);
+      }
+    } else if (contact.totalInteractions < 5 && contact.conversionProbability < 50) {
+      factors.push(`${contact.totalInteractions} interacciones no han generado suficiente avance. Revisar estrategia de seguimiento.`);
+    }
+    
+    // ========== ANÁLISIS POR ETAPA DE CONVERSIÓN ==========
+    if (contact.stage === 'contacto_inicial_recibido') {
+      if (contact.daysInCurrentStage > 3) {
+        factors.push(`Contacto inicial sin respuesta por ${contact.daysInCurrentStage} días. Cliente puede estar contactando múltiples asesores.`);
+      }
+    } else if (contact.stage === 'primer_contacto_activo') {
+      if (contact.daysInCurrentStage > 7) {
+        factors.push(`Primer contacto hace ${contact.daysInCurrentStage} días sin avanzar. Puede estar evaluando otras opciones.`);
+      }
+    } else if (contact.stage === 'llenado_ficha') {
+      if (contact.daysInCurrentStage > 5) {
+        factors.push(`Ficha sin completar por ${contact.daysInCurrentStage} días. Cliente no está comprometido con el proceso.`);
+      }
+    } else if (contact.stage === 'seguimiento_inicial') {
+      if (contact.daysInCurrentStage > 14) {
+        factors.push(`${contact.daysInCurrentStage} días en seguimiento sin agendar visita. Necesita propuestas más concretas.`);
+      }
+    } else if (contact.stage === 'agendamiento_visitas') {
+      if (contact.daysInCurrentStage > 10) {
+        factors.push(`Visita sin concretar por ${contact.daysInCurrentStage} días. Problemas de agenda o pérdida de interés.`);
+      }
+    } else if (contact.stage === 'presentacion_personalizada') {
+      if (contact.daysInCurrentStage > 14) {
+        factors.push(`${contact.daysInCurrentStage} días post-visita sin decisión. Cliente puede tener objeciones no expresadas.`);
+      }
+    } else if (contact.stage === 'negociacion') {
+      if (contact.daysInCurrentStage > 14) {
+        factors.push(`Negociación estancada por ${contact.daysInCurrentStage} días. Posibles problemas de precio o financiamiento.`);
+      }
+    } else if (contact.stage === 'cierre_firma_contrato') {
+      if (contact.daysInCurrentStage > 7) {
+        factors.push(`Cierre demorado ${contact.daysInCurrentStage} días. Revisar documentación legal o disponibilidad bancaria.`);
+      }
+    }
+    
+    // ========== ANÁLISIS POR URGENCIA ==========
+    if (contact.urgencyLevel === 'Muy Alta' && contact.daysInCurrentStage > 7) {
+      factors.push(`Cliente con urgencia muy alta pero ${contact.daysInCurrentStage} días sin avanzar. Contradicción requiere investigación.`);
+    } else if (contact.urgencyLevel === 'Baja') {
+      factors.push(`Urgencia baja indica que el cliente no tiene presión de tiempo para decidir.`);
+    }
+    
+    // ========== ANÁLISIS POR TIPO DE FINANCIAMIENTO ==========
+    if (contact.financingType === 'No definido') {
+      factors.push(`Sin tipo de financiamiento definido. Cliente puede no tener claridad sobre su capacidad de compra.`);
+    } else if (contact.financingType === 'Crédito Hipotecario') {
+      if (contact.stage !== 'llenado_ficha' && contact.stage !== 'contacto_inicial_recibido') {
+        factors.push(`Depende de aprobación de crédito hipotecario. Proceso bancario puede generar demoras adicionales.`);
+      }
+    }
+    
+    // ========== ANÁLISIS POR SCORE DE CALIFICACIÓN ==========
+    if (contact.qualificationScore <= 3) {
+      factors.push(`Score de calificación muy bajo (${contact.qualificationScore}/10). Cliente con baja intención de compra real.`);
+    } else if (contact.qualificationScore <= 5) {
+      factors.push(`Score de calificación medio-bajo (${contact.qualificationScore}/10). Necesita mayor validación de interés.`);
+    }
+    
+    // ========== ANÁLISIS POR FUENTE DE ADQUISICIÓN ==========
+    if (contact.leadSource.includes('Ads') || contact.leadSource.includes('Google') || contact.leadSource.includes('Facebook')) {
+      if (contact.totalInteractions < 2) {
+        factors.push(`Lead digital de ${contact.leadSource} con pocas interacciones. Requiere calificación de interés real.`);
+      }
+    } else if (contact.leadSource === 'Referido' || contact.leadSource.includes('referido')) {
+      if (contact.conversionProbability < 50) {
+        factors.push(`Referido con baja conversión (${contact.conversionProbability}%). Contactar al referidor para entender contexto.`);
+      }
+    }
+    
+    // ========== ANÁLISIS POR PREFERENCIA DE COMUNICACIÓN ==========
+    if (contact.communicationPreference === 'Presencial' && contact.totalInteractions < 3) {
+      factors.push(`Prefiere contacto presencial pero pocas interacciones. Dificultad para coordinar encuentros.`);
+    } else if (contact.communicationPreference === 'Email' && contact.totalInteractions < 4) {
+      factors.push(`Comunicación por email es más lenta. Cliente puede necesitar contacto más directo por WhatsApp o llamada.`);
+    }
+    
+    // ========== ANÁLISIS POR INTERÉS INMOBILIARIO ==========
+    if (contact.propertyInterest.includes('Primera vivienda')) {
+      if (contact.financingType === 'No definido') {
+        factors.push(`Primera vivienda sin financiamiento definido. Necesita orientación sobre Mivivienda y créditos hipotecarios.`);
+      }
+    } else if (contact.propertyInterest.includes('Inversión')) {
+      if (contact.totalInteractions < 5) {
+        factors.push(`Perfil inversionista requiere análisis exhaustivo de rentabilidad antes de decidir.`);
+      }
+    }
+    
+    // Si no hay factores de riesgo identificados, agregar mensaje positivo
+    if (factors.length === 0) {
+      factors.push(`Cliente con perfil equilibrado. Continuar con seguimiento regular y propuestas personalizadas.`);
     }
     
     return factors;
