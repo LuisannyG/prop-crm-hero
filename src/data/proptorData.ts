@@ -91,10 +91,10 @@ export const plans: Plan[] = [
     price: "0",
     features: [
       "Hasta 100 contactos",
+      "Hasta 100 propiedades",
+      "Hasta 100 recordatorios",
       "IA básica de seguimiento",
-      "Dashboard con métricas básicas",
-      "Integración WhatsApp",
-      "Soporte por chat 24/7"
+      "Dashboard con métricas básicas"
     ],
     buttonText: "Comenzar Gratis",
     highlighted: false
@@ -104,13 +104,15 @@ export const plans: Plan[] = [
     price: "60",
     features: [
       "Contactos ilimitados",
+      "Propiedades ilimitadas",
+      "Recordatorios ilimitados",
       "IA Gen-2 con predicción avanzada",
-      "Asistente virtual personalizado",
-      "Análisis de mercado predictivo Sep 2025",
+      "Motor de aprendizaje con detección de riesgo",
+      "Análisis de mercado predictivo",
       "Automatización completa de workflows",
       "Integración omnicanal completa",
       "Analytics avanzados con Big Data",
-      "Soporte dedicado con asesor personal"
+      "Soporte con asesor"
     ],
     buttonText: "Actualizar a Premium",
     highlighted: true
