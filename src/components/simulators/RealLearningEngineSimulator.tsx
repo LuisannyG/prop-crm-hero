@@ -606,13 +606,8 @@ const PropertyAnalysisComponent = ({
                       Fuentes de Datos Verificadas
                     </h5>
                     {property.marketDataSource && (
-                      <div className="text-sm text-blue-700 mb-2 font-medium">
+                      <div className="text-sm text-blue-700 font-medium">
                         📊 <strong>Datos de mercado:</strong> {property.marketDataSource}
-                      </div>
-                    )}
-                    {property.confidence && (
-                      <div className="text-sm text-green-700">
-                        ✅ <strong>Confiabilidad:</strong> {property.confidence.charAt(0).toUpperCase() + property.confidence.slice(1)}
                       </div>
                     )}
                   </div>
