@@ -6,12 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Input } from '@/components/ui/input';
 import { 
   Brain, TrendingUp, Users, Building, Target, 
   AlertCircle, Zap, Calendar, DollarSign,
   BarChart3, PieChart, Activity, Lightbulb,
   MapPin, Clock, Star, Shield, Eye, CheckCircle,
-  TrendingDown, ArrowUp, ArrowDown, Home, Wallet
+  TrendingDown, ArrowUp, ArrowDown, Home, Wallet, Search
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -83,10 +84,18 @@ const ContactAnalysisComponent = ({
   onReloadContacts: () => Promise<void>;
   isReloading?: boolean;
 }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredContacts = individualContactAnalysis.filter(contact => 
+    contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contact.stage.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contact.preferredDistrict.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <Card className="bg-white/80 backdrop-blur-sm border-blue-200">
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <CardTitle className="flex items-center gap-2">
             <Eye className="w-5 h-5 text-blue-600" />
             Análisis Detallado de Riesgo por Contacto
@@ -111,10 +120,25 @@ const ContactAnalysisComponent = ({
             )}
           </Button>
         </div>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Input
+            placeholder="Buscar contacto por nombre, etapa o distrito..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 gap-6">
-          {individualContactAnalysis.map((contact) => {
+        {filteredContacts.length === 0 ? (
+          <div className="text-center py-12 text-gray-500">
+            <Search className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+            <p>No se encontraron contactos que coincidan con la búsqueda</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-6">
+            {filteredContacts.map((contact) => {
             const riskScore = 100 - contact.conversionProbability;
             const riskFactors = getRiskFactorsExplanation(contact);
             const riskExplanation = getRiskExplanation(riskScore, riskFactors);
@@ -287,6 +311,7 @@ const ContactAnalysisComponent = ({
             );
           })}
         </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -297,6 +322,14 @@ const PropertyAnalysisComponent = ({
 }: {
   individualPropertyAnalysis: IndividualPropertyAnalysis[];
 }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredProperties = individualPropertyAnalysis.filter(property => 
+    property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    property.district.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    property.propertyType.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const getPropertyMarketPosition = (property: IndividualPropertyAnalysis) => {
     const avgMarketPrice = limaMarketTrends.districtTrends[property.district || 'Miraflores']?.avgPrice || 350000;
     const priceDeviation = ((property.price - avgMarketPrice) / avgMarketPrice) * 100;
@@ -462,14 +495,29 @@ const PropertyAnalysisComponent = ({
   return (
     <Card className="bg-white/80 backdrop-blur-sm border-green-200">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 mb-4">
           <Building className="w-5 h-5 text-green-600" />
           Análisis Detallado por Propiedad
         </CardTitle>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Input
+            placeholder="Buscar propiedad por título, distrito o tipo..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 gap-6">
-          {individualPropertyAnalysis.map((property) => {
+        {filteredProperties.length === 0 ? (
+          <div className="text-center py-12 text-gray-500">
+            <Search className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+            <p>No se encontraron propiedades que coincidan con la búsqueda</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-6">
+            {filteredProperties.map((property) => {
             const marketPos = getPropertyMarketPosition(property);
             const recommendations = getPropertyRecommendations(property);
             
@@ -638,6 +686,7 @@ const PropertyAnalysisComponent = ({
             );
           })}
         </div>
+        )}
       </CardContent>
     </Card>
   );
