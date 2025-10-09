@@ -43,7 +43,7 @@ export interface IndividualContactAnalysis {
   communicationPreference: 'WhatsApp' | 'Llamada' | 'Email' | 'Presencial';
   daysSinceLastInteraction: number;
   qualificationScore: number; // 1-10
-  familySize: number;
+  clientType: string;
   financingType: 'Contado' | 'Crédito Hipotecario' | 'Mixto' | 'No definido';
 }
 
@@ -581,7 +581,7 @@ export const analyzeIndividualContacts = async (userId: string): Promise<Individ
       communicationPreference,
       daysSinceLastInteraction,
       qualificationScore,
-      familySize,
+      clientType,
       financingType
     };
   });

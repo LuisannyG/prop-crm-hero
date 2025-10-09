@@ -246,9 +246,16 @@ const ContactAnalysisComponent = ({
                     <div className="bg-white/60 p-3 rounded-lg">
                       <div className="flex items-center gap-2 mb-2">
                         <Users className="w-4 h-4 text-cyan-600" />
-                        <span className="text-sm font-semibold text-gray-700">Tamaño Familiar</span>
+                        <span className="text-sm font-semibold text-gray-700">Tipo de Cliente</span>
                       </div>
-                      <p className="text-sm font-medium text-gray-800">{contact.familySize} persona{contact.familySize > 1 ? 's' : ''}</p>
+                      <p className="text-sm font-medium text-gray-800">
+                        {contact.clientType === 'familiar' ? 'Familiar' :
+                         contact.clientType === 'individual' ? 'Individual' :
+                         contact.clientType === 'negocio' ? 'Negocio' :
+                         contact.clientType === 'empresa' ? 'Empresa' :
+                         contact.clientType === 'inversionista' ? 'Inversionista' :
+                         'Individual'}
+                      </p>
                     </div>
                     <div className="bg-white/60 p-3 rounded-lg">
                       <div className="flex items-center gap-2 mb-2">
@@ -1819,8 +1826,8 @@ const RealLearningEngineSimulator = () => {
     if (contactName.includes('maryuri') || contactName.includes('maria')) {
       if (contact.conversionProbability >= 85) {
         // Factores de riesgo menores pero específicos para cliente familiar
-        if (contact.familySize >= 4) {
-          factors.push(`Decisión familiar de ${contact.familySize} personas puede requerir más tiempo para consenso entre todos los miembros.`);
+        if (contact.clientType === 'familiar') {
+          factors.push(`Decisión familiar puede requerir más tiempo para consenso entre todos los miembros.`);
         }
         if (contact.financingType === 'Crédito Hipotecario') {
           factors.push(`Dependencia de aprobación de crédito hipotecario familiar puede generar demoras en el proceso.`);
