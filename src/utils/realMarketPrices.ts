@@ -274,8 +274,11 @@ export class RealMarketPriceService {
     suggestedPrice = Math.max(suggestedPrice, 50000); // Mínimo absoluto de 50k
     
     // CRÍTICO: Si la propiedad está económica, el precio sugerido SIEMPRE debe ser mayor al actual
-    if (analysis.position === 'económica' && suggestedPrice <= currentPrice) {
-      suggestedPrice = currentPrice * 1.10; // Mínimo 10% más
+    if (analysis.position === 'económica') {
+      const minIncrease = Math.max(currentPrice * 1.10, currentPrice + 1, 50000);
+      if (suggestedPrice <= currentPrice || suggestedPrice < minIncrease) {
+        suggestedPrice = minIncrease;
+      }
     }
     
     const adjustment = ((suggestedPrice - currentPrice) / currentPrice) * 100;
