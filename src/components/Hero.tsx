@@ -19,7 +19,7 @@ const Hero = ({ onCtaClick }: HeroProps) => {
           />
         </div>
         <p className="text-2xl md:text-3xl text-white mb-6">
-          Tu CRM inmobiliario inteligente para Perú
+          Gestión inmobiliaria: Organización, Predicción y Análisis de datos del mercado limeño.
         </p>
         <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto">
           La plataforma de IA inmobiliaria más avanzada de Latinoamérica, ahora en su versión 2025.

@@ -6,7 +6,7 @@ const Footer = () => {
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-6 md:mb-0">
             <h2 className="text-2xl font-bold">Proptor</h2>
-            <p className="text-slate-300 mt-2">Tu CRM inmobiliario inteligente para Perú</p>
+            <p className="text-slate-300 mt-2">Gestión inmobiliaria: Organización, Predicción y Análisis de datos del mercado limeño.</p>
           </div>
           <div className="flex space-x-8">
             <div>
