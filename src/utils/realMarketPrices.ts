@@ -240,32 +240,39 @@ export class RealMarketPriceService {
         reason = 'Terrenos en La Paz con gran potencial - incremento recomendado';
       }
     } else {
-      // Lógica normal para otras ubicaciones
+      // Lógica para otras ubicaciones basada en análisis de mercado del distrito
       if (analysis.position === 'costosa') {
-        // Propiedad MUY COSTOSA: el precio sugerido debe ser MENOR
-        const reductionPercentage = Math.min(0.85, 1 - (Math.abs(analysis.deviation) / 100));
-        suggestedPrice = currentPrice * reductionPercentage;
-        reason = `Precio ${analysis.deviation.toFixed(1)}% por encima del mercado - reducir para mejorar competitividad`;
+        // Propiedad MUY COSTOSA: el precio sugerido debe ser MENOR pero nunca negativo
+        // Reducir entre 10-15% dependiendo de qué tan costosa esté
+        const deviationFactor = Math.min(Math.abs(analysis.deviation), 20) / 100; // Max 20% de reducción
+        const reductionPercentage = Math.max(0.80, 1 - deviationFactor); // Mínimo 80% del precio actual
+        suggestedPrice = Math.max(currentPrice * reductionPercentage, currentPrice * 0.80);
+        reason = `Precio ${Math.abs(analysis.deviation).toFixed(1)}% sobre mercado en ${location} - reducción recomendada`;
       } else if (analysis.position === 'económica') {
         // Propiedad MUY ECONÓMICA: el precio sugerido debe ser MAYOR
-        const increasePercentage = Math.max(1.15, 1 + (Math.abs(analysis.deviation) / 100));
+        // Incrementar entre 10-20% dependiendo de qué tan económica esté
+        const deviationFactor = Math.min(Math.abs(analysis.deviation), 25) / 100; // Max 25% de incremento
+        const increasePercentage = Math.max(1.10, 1 + deviationFactor); // Mínimo 10% de incremento
         suggestedPrice = currentPrice * increasePercentage;
-        reason = `Precio ${Math.abs(analysis.deviation).toFixed(1)}% por debajo del mercado - oportunidad de incremento`;
+        reason = `Precio ${Math.abs(analysis.deviation).toFixed(1)}% bajo mercado en ${location} - oportunidad de incremento`;
       } else {
         // En el mercado - ajuste leve basado en interés
         if (interactionLevel > 3) {
           suggestedPrice = currentPrice * 1.05; // +5%
-          reason = 'Precio en mercado con alto interés - ajuste moderado al alza';
+          reason = `Precio competitivo en ${location} con alto interés - ajuste moderado al alza`;
         } else if (interactionLevel > 0) {
           suggestedPrice = currentPrice; // Mantener precio
-          reason = 'Precio competitivo en mercado - mantener precio actual';
+          reason = `Precio en mercado en ${location} - mantener precio actual`;
         } else {
           suggestedPrice = currentPrice * 0.97; // -3%
-          reason = 'Precio en mercado sin interés - ligera reducción estratégica';
+          reason = `Precio en mercado en ${location} sin interés - ligera reducción estratégica`;
         }
       }
     }
 
+    // Asegurar que el precio sugerido nunca sea negativo o cero
+    suggestedPrice = Math.max(suggestedPrice, 50000); // Mínimo absoluto de 50k
+    
     const adjustment = ((suggestedPrice - currentPrice) / currentPrice) * 100;
 
     return {
