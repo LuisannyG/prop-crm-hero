@@ -1,5 +1,5 @@
 
-// Datos proyectados del mercado inmobiliario de Lima para septiembre 2025
+// Datos proyectados del mercado inmobiliario de Lima para Q4 2025 (octubre, noviembre, diciembre)
 export const limaMarketTrends = {
   monthlyData: [
     { month: 'Oct 2025', contacts: 265, conversions: 68, avgPrice: 400000, marketActivity: 'Muy Alta' },

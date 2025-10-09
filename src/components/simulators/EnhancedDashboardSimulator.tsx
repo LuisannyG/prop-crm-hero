@@ -253,21 +253,25 @@ const EnhancedDashboardSimulator = () => {
 
   // NEW CHARTS DATA PROCESSING
 
-  // 1. Contacts trend by month (last 6 months)
-  const getLast6Months = () => {
-    const months = [];
-    for (let i = 5; i >= 0; i--) {
-      const date = new Date();
-      date.setMonth(date.getMonth() - i);
-      months.push({
-        month: date.toLocaleDateString('es-ES', { month: 'short', year: '2-digit' }),
-        fullDate: date
-      });
-    }
-    return months;
+  // 1. Contacts trend by month (Q4 2025: Oct, Nov, Dec)
+  const getQ4Months = () => {
+    return [
+      {
+        month: 'Oct 25',
+        fullDate: new Date(2025, 9, 1) // October (month 9 in JS)
+      },
+      {
+        month: 'Nov 25',
+        fullDate: new Date(2025, 10, 1) // November
+      },
+      {
+        month: 'Dic 25',
+        fullDate: new Date(2025, 11, 1) // December
+      }
+    ];
   };
 
-  const monthsData = getLast6Months();
+  const monthsData = getQ4Months();
   const contactsTrendData = monthsData.map(({ month, fullDate }) => {
     const monthStart = new Date(fullDate.getFullYear(), fullDate.getMonth(), 1);
     const monthEnd = new Date(fullDate.getFullYear(), fullDate.getMonth() + 1, 0, 23, 59, 59);

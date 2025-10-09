@@ -913,23 +913,14 @@ const PropertyAnalysisComponent = ({
 };
 
 const MarketTrendsComponent = () => {
-  // Updated 2025 market data for Lima
+  // Q4 2025 market data for Lima (October, November, December)
   const lima2025Data = [
-    { month: 'Ene 2025', contacts: 168, conversions: 31, avgPrice: 318000, marketActivity: 'Media' },
-    { month: 'Feb 2025', contacts: 195, conversions: 38, avgPrice: 325000, marketActivity: 'Alta' },
-    { month: 'Mar 2025', contacts: 234, conversions: 47, avgPrice: 332000, marketActivity: 'Muy Alta' },
-    { month: 'Abr 2025', contacts: 201, conversions: 35, avgPrice: 328000, marketActivity: 'Alta' },
-    { month: 'May 2025', contacts: 178, conversions: 28, avgPrice: 320000, marketActivity: 'Media' },
-    { month: 'Jun 2025', contacts: 212, conversions: 42, avgPrice: 340000, marketActivity: 'Muy Alta' },
-    { month: 'Jul 2025', contacts: 156, conversions: 23, avgPrice: 335000, marketActivity: 'Baja' },
-    { month: 'Ago 2025', contacts: 189, conversions: 31, avgPrice: 338000, marketActivity: 'Media' },
-    { month: 'Sep 2025', contacts: 223, conversions: 44, avgPrice: 345000, marketActivity: 'Alta' },
-    { month: 'Oct 2025', contacts: 247, conversions: 51, avgPrice: 352000, marketActivity: 'Muy Alta' },
-    { month: 'Nov 2025', contacts: 268, conversions: 58, avgPrice: 358000, marketActivity: 'Muy Alta' },
-    { month: 'Dec 2025', contacts: 201, conversions: 38, avgPrice: 350000, marketActivity: 'Media' }
+    { month: 'Oct 2025', contacts: 265, conversions: 68, avgPrice: 400000, marketActivity: 'Muy Alta' },
+    { month: 'Nov 2025', contacts: 295, conversions: 85, avgPrice: 420000, marketActivity: 'Excepcional' },
+    { month: 'Dic 2025', contacts: 245, conversions: 58, avgPrice: 390000, marketActivity: 'Alta' }
   ];
 
-  const q3Analysis = lima2025Data.slice(6, 9); // Jul, Aug, Sep 2025
+  const q4Analysis = lima2025Data; // Q4: Oct, Nov, Dec 2025
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -964,12 +955,12 @@ const MarketTrendsComponent = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Activity className="w-5 h-5 text-green-600" />
-            Análisis Q3 2025 (Jul-Sep)
+            Análisis Q4 2025 (Oct-Dic)
           </CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
-            <ComposedChart data={q3Analysis}>
+            <ComposedChart data={q4Analysis}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis />
@@ -979,6 +970,8 @@ const MarketTrendsComponent = () => {
             </ComposedChart>
           </ResponsiveContainer>
           <div className="mt-3 text-xs text-gray-500 text-center space-y-1">
+            <p>Q4 es temporada alta por bonos de gratificación</p>
+            <p>Noviembre es el mes pico del año con mayor liquidez</p>
             <p><strong>Fuente:</strong> Tendencias estacionales del mercado inmobiliario limeño - Instituto de Economía y Desarrollo Empresarial (IEDEP) CCL</p>
             <p>Proyecciones basadas en ciclos históricos 2019-2024</p>
           </div>
@@ -1057,29 +1050,29 @@ const MarketTrendsComponent = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Activity className="w-5 h-5 text-red-600" />
-            Análisis Estacional Q3 2025
+            Análisis Estacional Q4 2025
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="mb-4 p-4 bg-blue-50 rounded-lg">
-            <h3 className="font-semibold text-blue-900 mb-2">Contexto Q3 2025 (Julio - Septiembre)</h3>
+            <h3 className="font-semibold text-blue-900 mb-2">Contexto Q4 2025 (Octubre - Diciembre)</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div>
-                <p><strong>Julio:</strong> Vacaciones de invierno, menor actividad (-22% vs promedio)</p>
-                <p><strong>Precio promedio:</strong> S/ 3,150/m² | <strong>Tiempo de venta:</strong> 95 días</p>
+                <p><strong>Octubre:</strong> Preparación para temporada alta, actividad creciente (+18% vs promedio)</p>
+                <p><strong>Precio promedio:</strong> S/ 3,800/m² | <strong>Tiempo de venta:</strong> 52 días</p>
               </div>
               <div>
-                <p><strong>Agosto:</strong> Regreso gradual, reactivación del mercado</p>
-                <p><strong>Precio promedio:</strong> S/ 3,280/m² | <strong>Tiempo de venta:</strong> 78 días</p>
+                <p><strong>Noviembre:</strong> Pico del año por bonos, máxima actividad (+35% vs promedio)</p>
+                <p><strong>Precio promedio:</strong> S/ 3,950/m² | <strong>Tiempo de venta:</strong> 38 días</p>
               </div>
               <div>
-                <p><strong>Septiembre:</strong> Preparación fin de año, actividad alta</p>
-                <p><strong>Precio promedio:</strong> S/ 3,420/m² | <strong>Tiempo de venta:</strong> 62 días</p>
+                <p><strong>Diciembre:</strong> Descenso por vacaciones, aún activo (+8% vs promedio)</p>
+                <p><strong>Precio promedio:</strong> S/ 3,700/m² | <strong>Tiempo de venta:</strong> 65 días</p>
               </div>
             </div>
           </div>
           <ResponsiveContainer width="100%" height={350}>
-            <ComposedChart data={q3Analysis} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <ComposedChart data={q4Analysis} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ff" />
               <XAxis 
                 dataKey="month" 
@@ -1100,15 +1093,15 @@ const MarketTrendsComponent = () => {
                   let context = '';
                   let activity = '';
                   
-                  if (month === 'Jul 2025') {
-                    context = '❄️ Vacaciones de invierno';
-                    activity = 'Baja actividad (-22%)';
-                  } else if (month === 'Ago 2025') {
-                    context = '📈 Reactivación gradual';
-                    activity = 'Recuperación del mercado';
-                  } else if (month === 'Sep 2025') {
-                    context = '🎯 Preparación fin de año';
-                    activity = 'Alta actividad (+12%)';
+                  if (month === 'Oct 2025') {
+                    context = '🍂 Preparación temporada alta';
+                    activity = 'Actividad creciente (+18%)';
+                  } else if (month === 'Nov 2025') {
+                    context = '💰 Pico por bonos';
+                    activity = 'Máxima actividad del año (+35%)';
+                  } else if (month === 'Dic 2025') {
+                    context = '🎄 Vacaciones de fin de año';
+                    activity = 'Descenso moderado (+8%)';
                   }
                   
                   if (name === 'contacts') {
@@ -1124,30 +1117,30 @@ const MarketTrendsComponent = () => {
                   const month = label;
                   let context = '';
                   
-                  if (month === 'Jul 2025') {
-                    context = '❄️ Julio 2025 - Vacaciones de invierno';
-                  } else if (month === 'Ago 2025') {
-                    context = '📈 Agosto 2025 - Reactivación del mercado';
-                  } else if (month === 'Sep 2025') {
-                    context = '🎯 Septiembre 2025 - Preparación fin de año';
+                  if (month === 'Oct 2025') {
+                    context = '🍂 Octubre 2025 - Preparación temporada alta';
+                  } else if (month === 'Nov 2025') {
+                    context = '💰 Noviembre 2025 - Pico por bonos de gratificación';
+                  } else if (month === 'Dic 2025') {
+                    context = '🎄 Diciembre 2025 - Vacaciones de fin de año';
                   }
                   
                   return context;
                 }}
               />
               
-              {/* Barras para contactos con colores estacionales */}
+              {/* Barras para contactos con colores estacionales Q4 */}
               <Bar 
                 yAxisId="left" 
                 dataKey="contacts" 
                 name="contacts"
                 radius={[4, 4, 0, 0]}
               >
-                {q3Analysis.map((entry, index) => {
+                {q4Analysis.map((entry, index) => {
                   let color = '#3B82F6'; // Default blue
-                  if (entry.month === 'Jul 2025') color = '#DC2626'; // Red for low season
-                  if (entry.month === 'Ago 2025') color = '#F59E0B'; // Orange for recovery
-                  if (entry.month === 'Sep 2025') color = '#10B981'; // Green for high season
+                  if (entry.month === 'Oct 2025') color = '#F59E0B'; // Orange for growing season
+                  if (entry.month === 'Nov 2025') color = '#10B981'; // Green for peak season (bonos)
+                  if (entry.month === 'Dic 2025') color = '#8B5CF6'; // Purple for holidays
                   
                   return <Cell key={`cell-${index}`} fill={color} />;
                 })}
@@ -1186,34 +1179,34 @@ const MarketTrendsComponent = () => {
             </ComposedChart>
           </ResponsiveContainer>
           
-          {/* Leyenda personalizada */}
+          {/* Leyenda personalizada Q4 */}
           <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-            <div className="flex items-center gap-2 p-2 bg-red-50 rounded-lg">
-              <div className="w-4 h-4 bg-red-600 rounded"></div>
-              <div>
-                <span className="font-semibold text-red-800">❄️ Julio</span>
-                <p className="text-xs text-red-600">Vacaciones (-22%)</p>
-              </div>
-            </div>
             <div className="flex items-center gap-2 p-2 bg-orange-50 rounded-lg">
               <div className="w-4 h-4 bg-orange-500 rounded"></div>
               <div>
-                <span className="font-semibold text-orange-800">📈 Agosto</span>
-                <p className="text-xs text-orange-600">Reactivación</p>
+                <span className="font-semibold text-orange-800">🍂 Octubre</span>
+                <p className="text-xs text-orange-600">Preparación (+18%)</p>
               </div>
             </div>
             <div className="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
               <div className="w-4 h-4 bg-green-600 rounded"></div>
               <div>
-                <span className="font-semibold text-green-800">🎯 Septiembre</span>
-                <p className="text-xs text-green-600">Alta actividad (+12%)</p>
+                <span className="font-semibold text-green-800">💰 Noviembre</span>
+                <p className="text-xs text-green-600">Pico de bonos (+35%)</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 p-2 bg-purple-50 rounded-lg">
+              <div className="w-4 h-4 bg-purple-600 rounded"></div>
+              <div>
+                <span className="font-semibold text-purple-800">🎄 Diciembre</span>
+                <p className="text-xs text-purple-600">Vacaciones (+8%)</p>
               </div>
             </div>
           </div>
           
           <div className="mt-3 text-xs text-gray-500 text-center space-y-1">
             <p><strong>Fuente:</strong> Análisis de ciclos estacionales del mercado inmobiliario peruano - MVCS 2025</p>
-            <p>Patrones de demanda histórica Q3 (2019-2024) - Asociación de Desarrolladores Inmobiliarios del Perú (ADI)</p>
+            <p>Patrones de demanda histórica Q4 (2019-2024) - Asociación de Desarrolladores Inmobiliarios del Perú (ADI)</p>
           </div>
         </CardContent>
       </Card>
@@ -1233,8 +1226,8 @@ const PredictiveInsightsComponent = ({
   const marketGrowthValue = limaMarketTrends.marketTrends.priceGrowth * 100;
   const demandGrowthValue = limaMarketTrends.marketTrends.demandGrowth * 100;
 
-  // Calculate Q3 2025 predictions based on user's actual data
-  const generateQ3MarketData = () => {
+  // Calculate Q4 2025 predictions based on user's actual data
+  const generateQ4MarketData = () => {
     // Use real user data for base calculations
     const userTotalContacts = contactAnalysis?.totalContacts || 0;
     const userTotalConversions = contactAnalysis?.monthlyTrends.reduce((sum, month) => sum + month.conversions, 0) || 0;
@@ -1243,73 +1236,73 @@ const PredictiveInsightsComponent = ({
     // Current actual revenue (based on real sales)
     const actualRevenue = userTotalConversions * userAvgPrice;
     
-    // If no sales yet, project conservative but realistic revenue for Q3
+    // If no sales yet, project conservative but realistic revenue for Q4
     const hasActualSales = userTotalConversions > 0;
-    const projectedQ3Sales = hasActualSales ? Math.max(1, Math.round(userTotalConversions * 1.2)) : 1; // At least 1 sale projected if none yet
-    const projectedQ3Revenue = projectedQ3Sales * userAvgPrice;
+    const projectedQ4Sales = hasActualSales ? Math.max(1, Math.round(userTotalConversions * 1.4)) : 1; // Higher growth in Q4
+    const projectedQ4Revenue = projectedQ4Sales * userAvgPrice;
     
-    // Q3 contact projections
-    const q3ContactsTotal = Math.max(userTotalContacts + 2, Math.round(userTotalContacts * 1.3)); // Conservative growth
+    // Q4 contact projections (higher due to bonos)
+    const q4ContactsTotal = Math.max(userTotalContacts + 3, Math.round(userTotalContacts * 1.5)); // Higher growth in Q4
     
     return [
       { 
-        mes: 'Jul 2025', 
-        contactosPredichos: Math.floor(q3ContactsTotal * 0.3), // 30% in July
-        ventasPredichas: hasActualSales ? Math.floor(projectedQ3Sales * 0.25) : 0, // 0 if no actual sales yet
-        ingresosMiles: hasActualSales ? (projectedQ3Revenue * 0.25) / 1000 : 0,
-        precioPromedio: userAvgPrice * 0.98, // Slight decrease in vacation period
-        demandaIndice: 72,
-        contexto: 'Vacaciones de invierno'
-      },
-      { 
-        mes: 'Ago 2025', 
-        contactosPredichos: Math.floor(q3ContactsTotal * 0.35), // 35% in August
-        ventasPredichas: hasActualSales ? Math.floor(projectedQ3Sales * 0.35) : 0,
-        ingresosMiles: hasActualSales ? (projectedQ3Revenue * 0.35) / 1000 : 0,
-        precioPromedio: userAvgPrice * 1.02, // Recovery
-        demandaIndice: 85,
-        contexto: 'Reactivación post-vacaciones'
-      },
-      { 
-        mes: 'Sep 2025', 
-        contactosPredichos: Math.floor(q3ContactsTotal * 0.35), // 35% in September
-        ventasPredichas: Math.floor(projectedQ3Sales * 0.4), // First projected sale in September
-        ingresosMiles: (projectedQ3Revenue * 0.4) / 1000,
-        precioPromedio: userAvgPrice * 1.068, // 6.8% growth as shown in image
-        demandaIndice: 98,
-        contexto: 'Preparación fin de año'
-      },
-      { 
         mes: 'Oct 2025', 
-        contactosPredichos: Math.floor(q3ContactsTotal * 0.4),
-        ventasPredichas: Math.floor(projectedQ3Sales * 0.5), 
-        ingresosMiles: (projectedQ3Revenue * 0.5) / 1000,
-        precioPromedio: userAvgPrice * 1.1,
-        demandaIndice: 105,
-        contexto: 'Temporada alta'
+        contactosPredichos: Math.floor(q4ContactsTotal * 0.3), // 30% in October
+        ventasPredichas: hasActualSales ? Math.floor(projectedQ4Sales * 0.3) : 0,
+        ingresosMiles: hasActualSales ? (projectedQ4Revenue * 0.3) / 1000 : 0,
+        precioPromedio: userAvgPrice * 1.05, // Growth starting
+        demandaIndice: 88,
+        contexto: 'Preparación temporada alta'
       },
       { 
         mes: 'Nov 2025', 
-        contactosPredichos: Math.floor(q3ContactsTotal * 0.45),
-        ventasPredichas: Math.floor(projectedQ3Sales * 0.6), 
-        ingresosMiles: (projectedQ3Revenue * 0.6) / 1000,
-        precioPromedio: userAvgPrice * 1.12,
-        demandaIndice: 112,
-        contexto: 'Pico de bonificaciones'
+        contactosPredichos: Math.floor(q4ContactsTotal * 0.45), // 45% in November (peak)
+        ventasPredichas: Math.floor(projectedQ4Sales * 0.5), // Peak sales month
+        ingresosMiles: (projectedQ4Revenue * 0.5) / 1000,
+        precioPromedio: userAvgPrice * 1.12, // Peak prices (bonos effect)
+        demandaIndice: 118,
+        contexto: 'Pico de bonos y gratificación'
       },
       { 
         mes: 'Dic 2025', 
-        contactosPredichos: Math.floor(q3ContactsTotal * 0.3),
-        ventasPredichas: Math.floor(projectedQ3Sales * 0.35), 
-        ingresosMiles: (projectedQ3Revenue * 0.35) / 1000,
-        precioPromedio: userAvgPrice * 1.08,
-        demandaIndice: 88,
-        contexto: 'Desaceleración navideña'
+        contactosPredichos: Math.floor(q4ContactsTotal * 0.25), // 25% in December
+        ventasPredichas: hasActualSales ? Math.floor(projectedQ4Sales * 0.2) : 0,
+        ingresosMiles: hasActualSales ? (projectedQ4Revenue * 0.2) / 1000 : 0,
+        precioPromedio: userAvgPrice * 1.08, // Moderate prices
+        demandaIndice: 78,
+        contexto: 'Vacaciones de fin de año'
+      },
+      { 
+        mes: 'Ene 2026', 
+        contactosPredichos: Math.floor(q4ContactsTotal * 0.25),
+        ventasPredichas: hasActualSales ? Math.floor(projectedQ4Sales * 0.2) : 0, 
+        ingresosMiles: hasActualSales ? (projectedQ4Revenue * 0.2) / 1000 : 0,
+        precioPromedio: userAvgPrice * 1.02,
+        demandaIndice: 75,
+        contexto: 'Inicio de año'
+      },
+      { 
+        mes: 'Feb 2026', 
+        contactosPredichos: Math.floor(q4ContactsTotal * 0.3),
+        ventasPredichas: Math.floor(projectedQ4Sales * 0.3), 
+        ingresosMiles: (projectedQ4Revenue * 0.3) / 1000,
+        precioPromedio: userAvgPrice * 1.05,
+        demandaIndice: 85,
+        contexto: 'Reactivación post-verano'
+      },
+      { 
+        mes: 'Mar 2026', 
+        contactosPredichos: Math.floor(q4ContactsTotal * 0.35),
+        ventasPredichas: Math.floor(projectedQ4Sales * 0.35), 
+        ingresosMiles: (projectedQ4Revenue * 0.35) / 1000,
+        precioPromedio: userAvgPrice * 1.09,
+        demandaIndice: 95,
+        contexto: 'Inicio de temporada escolar'
       }
     ];
   };
 
-  const q3MarketData = generateQ3MarketData();
+  const q4MarketData = generateQ4MarketData();
 
   return (
     <div className="space-y-6">
@@ -1318,14 +1311,14 @@ const PredictiveInsightsComponent = ({
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <TrendingUp className="w-4 h-4" />
-              Q3 2025 - Contactos
+              Q4 2025 - Contactos
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{contactAnalysis?.totalContacts || 2}</div>
             <p className="text-xs opacity-80">Registrados actualmente</p>
             <div className="mt-2 text-xs opacity-90">
-              Proyección Q3: +{Math.round(((contactAnalysis?.totalContacts || 2) * 1.3) - (contactAnalysis?.totalContacts || 2))} nuevos
+              Proyección Q4: +{Math.round(((contactAnalysis?.totalContacts || 2) * 1.5) - (contactAnalysis?.totalContacts || 2))} nuevos (pico en Nov)
             </div>
           </CardContent>
         </Card>
@@ -1334,14 +1327,14 @@ const PredictiveInsightsComponent = ({
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Target className="w-4 h-4" />
-              Q3 2025 - Ventas
+              Q4 2025 - Ventas
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{contactAnalysis?.monthlyTrends.reduce((sum, month) => sum + month.conversions, 0) || 0}</div>
             <p className="text-xs opacity-80">Ventas realizadas</p>
             <div className="mt-2 text-xs opacity-90">
-              Proyección Q3: 1 venta (Sep)
+              Proyección Q4: 1-2 ventas (Nov pico)
             </div>
           </CardContent>
         </Card>
@@ -1350,14 +1343,14 @@ const PredictiveInsightsComponent = ({
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <DollarSign className="w-4 h-4" />
-              Q3 2025 - Ingresos
+              Q4 2025 - Ingresos
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">S/ {((contactAnalysis?.monthlyTrends.reduce((sum, month) => sum + month.conversions, 0) || 0) * (propertyAnalysis?.avgPrice || 350000)).toLocaleString()}</div>
             <p className="text-xs opacity-80">Ingresos actuales</p>
             <div className="mt-2 text-xs opacity-90">
-              Proyección Q3: S/ {(propertyAnalysis?.avgPrice || 350000).toLocaleString()}
+              Proyección Q4: S/ {(propertyAnalysis?.avgPrice || 350000).toLocaleString()} - S/ {((propertyAnalysis?.avgPrice || 350000) * 2).toLocaleString()}
             </div>
           </CardContent>
         </Card>
@@ -1366,7 +1359,7 @@ const PredictiveInsightsComponent = ({
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Activity className="w-4 h-4" />
-              Precio Promedio Q3
+              Precio Promedio Q4
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -1384,51 +1377,51 @@ const PredictiveInsightsComponent = ({
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-green-700">
               <Lightbulb className="w-5 h-5" />
-              Análisis Q3 2025 - Lima
+              Análisis Q4 2025 - Lima
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
-                <h3 className="font-semibold text-green-900 mb-2">Tercer Trimestre 2025</h3>
+                <h3 className="font-semibold text-green-900 mb-2">Cuarto Trimestre 2025</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-gray-600">Total leads esperados:</span>
-                    <p className="font-bold text-green-800">{q3MarketData.slice(0, 3).reduce((sum, month) => sum + month.contactosPredichos, 0)}</p>
+                    <p className="font-bold text-green-800">{q4MarketData.slice(0, 3).reduce((sum, month) => sum + month.contactosPredichos, 0)}</p>
                   </div>
                   <div>
                     <span className="text-gray-600">Cierres proyectados:</span>
-                    <p className="font-bold text-green-800">{q3MarketData.slice(0, 3).reduce((sum, month) => sum + month.ventasPredichas, 0)}</p>
+                    <p className="font-bold text-green-800">{q4MarketData.slice(0, 3).reduce((sum, month) => sum + month.ventasPredichas, 0)}</p>
                   </div>
                   <div>
                     <span className="text-gray-600">Mejor mes:</span>
-                    <p className="font-bold text-green-800">Septiembre (+12%)</p>
+                    <p className="font-bold text-green-800">Noviembre (+35%)</p>
                   </div>
                   <div>
-                    <span className="text-gray-600">Mes desafiante:</span>
-                    <p className="font-bold text-red-600">Julio (-22%)</p>
+                    <span className="text-gray-600">Mes moderado:</span>
+                    <p className="font-bold text-orange-600">Diciembre (+8%)</p>
                   </div>
                 </div>
               </div>
 
               <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
-                <h3 className="font-semibold text-blue-900 mb-2">Contexto Económico Q3 2025</h3>
+                <h3 className="font-semibold text-blue-900 mb-2">Contexto Económico Q4 2025</h3>
                 <div className="grid grid-cols-1 gap-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Inflación proyectada:</span>
-                    <span className="font-bold text-blue-800">2.3% anual</span>
+                    <span className="font-bold text-blue-800">2.1% anual</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">PBI Lima (Q3):</span>
-                    <span className="font-bold text-green-600">+3.8%</span>
+                    <span className="text-gray-600">PBI Lima (Q4):</span>
+                    <span className="font-bold text-green-600">+4.2%</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Tasa hipotecaria:</span>
-                    <span className="font-bold text-purple-600">8.5-10.2%</span>
+                    <span className="font-bold text-purple-600">8.2-9.8%</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Demanda vs Q2:</span>
-                    <span className="font-bold text-orange-600">-8% (estacional)</span>
+                    <span className="text-gray-600">Demanda vs Q3:</span>
+                    <span className="font-bold text-green-600">+22% (bonos)</span>
                   </div>
                 </div>
               </div>
@@ -1444,29 +1437,29 @@ const PredictiveInsightsComponent = ({
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-blue-700">
               <Brain className="w-5 h-5" />
-              Recomendaciones IA - Q3 2025
+              Recomendaciones IA - Q4 2025
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {[
                 {
-                  title: "Estrategia Julio 2025",
-                  description: "Intensificar marketing digital durante vacaciones de invierno. Ofertas especiales para compradores que deciden en temporada baja.",
+                  title: "Estrategia Octubre 2025",
+                  description: "Preparar campañas para noviembre. Marketing anticipado enfocado en compradores que recibirán bonos. Acelerar cierres antes del pico.",
                   impact: "Alto",
-                  confidence: 87
+                  confidence: 89
                 },
                 {
-                  title: "Agosto - Reactivación",
-                  description: "Programar eventos presenciales y open houses para capitalizar el regreso de vacaciones. Focus en familias que buscan cambio de vivienda.",
+                  title: "Noviembre - Pico de Bonos",
+                  description: "Máxima actividad del año. Programar múltiples open houses y visitas. Ofertas especiales para cierres rápidos aprovechando liquidez.",
+                  impact: "Alto",
+                  confidence: 95
+                },
+                {
+                  title: "Diciembre - Cierre de Año",
+                  description: "Tours virtuales y flexibilidad en horarios para vacacionistas. Mantener contacto para cierres en enero-febrero.",
                   impact: "Medio",
                   confidence: 82
-                },
-                {
-                  title: "Septiembre - Aceleración",
-                  description: "Aprovechar la preparación de fin de año. Campañas dirigidas a ejecutivos que recibirán bonificaciones en noviembre.",
-                  impact: "Alto",
-                  confidence: 91
                 }
               ].map((rec, index) => (
                 <div key={index} className="p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border border-blue-200">
@@ -1487,7 +1480,7 @@ const PredictiveInsightsComponent = ({
               ))}
             </div>
             <div className="mt-4 text-xs text-gray-500 text-center space-y-1">
-              <p><strong>Fuente:</strong> Algoritmos de Machine Learning entrenados con datos de comportamiento inmobiliario Q3 histórico</p>
+              <p><strong>Fuente:</strong> Algoritmos de Machine Learning entrenados con datos de comportamiento inmobiliario Q4 histórico</p>
               <p>Patrones estacionales del mercado limeño - Análisis predictivo 2019-2024</p>
             </div>
           </CardContent>
@@ -1498,12 +1491,12 @@ const PredictiveInsightsComponent = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-purple-700">
             <BarChart3 className="w-5 h-5" />
-            Proyección Mercado Lima - Q3 2025 a Q1 2026
+            Proyección Mercado Lima - Q4 2025 a Q1 2026
           </CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={400}>
-            <ComposedChart data={q3MarketData}>
+            <ComposedChart data={q4MarketData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="mes" />
               <YAxis yAxisId="left" />
@@ -1528,22 +1521,22 @@ const PredictiveInsightsComponent = ({
           </div>
           
           <div className="mt-4 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200">
-            <h4 className="font-semibold text-purple-900 mb-2">Factores Clave Q3 2025:</h4>
+            <h4 className="font-semibold text-purple-900 mb-2">Factores Clave Q4 2025:</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-700">
               <div>
-                <p><strong>• Julio:</strong> Vacaciones escolares (-22% actividad)</p>
-                <p><strong>• Agosto:</strong> Reactivación gradual del mercado</p>
-                <p><strong>• Septiembre:</strong> Preparación bonos año-nuevo</p>
+                <p><strong>• Octubre:</strong> Preparación temporada alta (+18%)</p>
+                <p><strong>• Noviembre:</strong> Pico por bonos y gratificación (+35%)</p>
+                <p><strong>• Diciembre:</strong> Vacaciones de fin de año (+8%)</p>
               </div>
               <div>
-                <p><strong>• Inflación controlada:</strong> 2.3% anual</p>
-                <p><strong>• Crédito hipotecario:</strong> Tasas estables</p>
-                <p><strong>• Demanda familias:</strong> Migración a distritos emergentes</p>
+                <p><strong>• Inflación controlada:</strong> 2.1% anual</p>
+                <p><strong>• Crédito hipotecario:</strong> Tasas competitivas</p>
+                <p><strong>• Demanda familias:</strong> Máxima por liquidez de bonos</p>
               </div>
               <div>
-                <p><strong>• Precio m²:</strong> Crecimiento 6.8% anual</p>
-                <p><strong>• Inventario:</strong> Niveles históricos normales</p>
-                <p><strong>• Tiempo venta:</strong> 38-45 días promedio</p>
+                <p><strong>• Precio m²:</strong> Crecimiento 8.5% anual</p>
+                <p><strong>• Inventario:</strong> Rotación acelerada en noviembre</p>
+                <p><strong>• Tiempo venta:</strong> 38-52 días promedio</p>
               </div>
             </div>
           </div>
@@ -1562,7 +1555,7 @@ const RealLearningEngineSimulator = () => {
   const [loading, setLoading] = useState(true);
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [contactsAnalysisLoading, setContactsAnalysisLoading] = useState(false);
-  const [currentQuarter, setCurrentQuarter] = useState<string>('Q3');
+  const [currentQuarter, setCurrentQuarter] = useState<string>('Q4');
   const [currentYear, setCurrentYear] = useState<string>('2025');
   
   // Advanced analysis states

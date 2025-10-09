@@ -73,7 +73,7 @@ export const features: Feature[] = [
 export const benefits: Benefit[] = [
   {
     title: "Aumenta la tasa de cierre hasta 55%",
-    description: "IA avanzada de septiembre 2025 con análisis predictivo de nueva generación y automatización completa."
+    description: "IA avanzada de Q4 2025 con análisis predictivo de nueva generación y automatización completa."
   },
   {
     title: "Ahorra 12 horas semanales",
