@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { RealMarketPriceService } from './realMarketPrices';
-
+import { limaMarketTrends } from './limaMarketData';
 // Tipos para el análisis
 export interface ContactAnalysis {
   totalContacts: number;
@@ -888,6 +888,22 @@ export const analyzeIndividualProperties = async (userId: string): Promise<Indiv
       propertyInteractions.length,
       property.title  // Agregar título para detectar La Paz
     );
+
+    // Ajuste adicional basado en tendencia por distrito usada en el UI
+    let recommendedPrice = priceRecommendation.suggestedPrice;
+    let recReason = priceRecommendation.reason;
+    let recAdjustment = priceRecommendation.adjustment;
+
+    const districtAvg = limaMarketTrends.districtTrends[location as keyof typeof limaMarketTrends.districtTrends]?.avgPrice;
+    if (typeof districtAvg === 'number') {
+      const districtDeviation = ((currentPrice - districtAvg) / districtAvg) * 100;
+      if (districtDeviation < -10 && recommendedPrice <= currentPrice) {
+        // Si está económica por análisis distrital del UI, el sugerido DEBE ser mayor al actual
+        recommendedPrice = Math.max(currentPrice * 1.10, currentPrice + 1);
+        recAdjustment = ((recommendedPrice - currentPrice) / currentPrice) * 100;
+        recReason = `Propiedad económica en ${location} - ajuste mínimo +10% aplicado`;
+      }
+    }
     
     // Mapear posición de mercado al formato existente
     let pricePosition: 'Por encima del mercado' | 'En el mercado' | 'Por debajo del mercado';
@@ -905,8 +921,8 @@ export const analyzeIndividualProperties = async (userId: string): Promise<Indiv
       marketComparison: marketAnalysis.deviation,
       daysOnMarket,
       interestLevel: propertyInteractions.length,
-      recommendedPrice: priceRecommendation.suggestedPrice,
-      priceAdjustmentSuggestion: `${priceRecommendation.reason} (${priceRecommendation.adjustment > 0 ? '+' : ''}${priceRecommendation.adjustment.toFixed(1)}%)`,
+      recommendedPrice,
+      priceAdjustmentSuggestion: `${recReason} (${recAdjustment > 0 ? '+' : ''}${recAdjustment.toFixed(1)}%)`,
       marketDataSource: priceRecommendation.source,
       confidence: marketAnalysis.confidence
     };

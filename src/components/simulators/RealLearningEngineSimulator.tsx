@@ -520,6 +520,9 @@ const PropertyAnalysisComponent = ({
             {filteredProperties.map((property) => {
             const marketPos = getPropertyMarketPosition(property);
             const recommendations = getPropertyRecommendations(property);
+            const displayRecommendedPrice = marketPos.deviation < -10
+              ? Math.max(property.recommendedPrice, Math.ceil(property.price * 1.10), property.price + 1)
+              : property.recommendedPrice;
             
             return (
               <div key={property.id} className="p-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-200 shadow-lg">
@@ -571,7 +574,7 @@ const PropertyAnalysisComponent = ({
                       <DollarSign className="w-4 h-4 text-green-600" />
                       <span className="text-sm font-medium text-gray-700">Precio Sugerido</span>
                     </div>
-                    <p className="text-lg font-bold text-green-900">S/ {property.recommendedPrice.toLocaleString()}</p>
+                    <p className="text-lg font-bold text-green-900">S/ {displayRecommendedPrice.toLocaleString()}</p>
                   </div>
                 </div>
 
