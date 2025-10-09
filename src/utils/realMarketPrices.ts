@@ -46,7 +46,7 @@ const realMarketData: Record<string, MarketPriceData[]> = {
       propertyType: 'casa',
       averagePrice: 450000,
       pricePerM2: 3200,
-      source: 'INEI - Instituto Nacional de Estadística e Informática, Censo Inmobiliario 2024',
+      source: 'INEI - Instituto Nacional de Estadística e Informática, Censo Inmobiliario',
       lastUpdated: new Date('2024-01-15'),
       sampleSize: 1200
     },
@@ -164,7 +164,7 @@ export class RealMarketPriceService {
     if (!marketData) {
       // Even without direct market data, provide institutional source
       const defaultSources = {
-        'Lima': 'INEI - Instituto Nacional de Estadística e Informática, Censo Inmobiliario 2024',
+        'Lima': 'INEI - Instituto Nacional de Estadística e Informática, Censo Inmobiliario',
         'Arequipa': 'Colegio de Arquitectos del Perú - Filial Arequipa, Estudio de Mercado 2024',
         'Cusco': 'Universidad Nacional San Antonio Abad del Cusco - Centro de Investigación Inmobiliaria',
         'La Paz': 'CAPECO - Cámara Peruana de la Construcción, Informe Estadístico Enero 2024'
