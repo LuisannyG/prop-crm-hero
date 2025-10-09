@@ -184,8 +184,9 @@ export class RealMarketPriceService {
     const deviation = ((currentPrice - marketData.averagePrice) / marketData.averagePrice) * 100;
     let position: 'económica' | 'mercado' | 'costosa';
     
-    if (deviation > 15) position = 'costosa';
-    else if (deviation < -15) position = 'económica';
+    // Umbrales ajustados para mejor detección (10% en lugar de 15%)
+    if (deviation > 10) position = 'costosa';
+    else if (deviation < -10) position = 'económica';
     else position = 'mercado';
 
     const confidence = marketData.sampleSize > 100 ? 'alta' : 
@@ -241,19 +242,26 @@ export class RealMarketPriceService {
     } else {
       // Lógica normal para otras ubicaciones
       if (analysis.position === 'costosa') {
-        suggestedPrice = currentPrice * 0.88; // -12%
-        reason = 'Precio por encima del mercado, reducir para mejorar competitividad';
+        // Propiedad MUY COSTOSA: el precio sugerido debe ser MENOR
+        const reductionPercentage = Math.min(0.85, 1 - (Math.abs(analysis.deviation) / 100));
+        suggestedPrice = currentPrice * reductionPercentage;
+        reason = `Precio ${analysis.deviation.toFixed(1)}% por encima del mercado - reducir para mejorar competitividad`;
       } else if (analysis.position === 'económica') {
-        suggestedPrice = currentPrice * 1.12; // +12%
-        reason = 'Precio por debajo del mercado, oportunidad de incremento';
+        // Propiedad MUY ECONÓMICA: el precio sugerido debe ser MAYOR
+        const increasePercentage = Math.max(1.15, 1 + (Math.abs(analysis.deviation) / 100));
+        suggestedPrice = currentPrice * increasePercentage;
+        reason = `Precio ${Math.abs(analysis.deviation).toFixed(1)}% por debajo del mercado - oportunidad de incremento`;
       } else {
-        // En el mercado
+        // En el mercado - ajuste leve basado en interés
         if (interactionLevel > 3) {
           suggestedPrice = currentPrice * 1.05; // +5%
-          reason = 'Alto interés permite ajuste al alza';
+          reason = 'Precio en mercado con alto interés - ajuste moderado al alza';
+        } else if (interactionLevel > 0) {
+          suggestedPrice = currentPrice; // Mantener precio
+          reason = 'Precio competitivo en mercado - mantener precio actual';
         } else {
-          suggestedPrice = currentPrice * 0.95; // -5%
-          reason = 'Poco interés sugiere reducción estratégica';
+          suggestedPrice = currentPrice * 0.97; // -3%
+          reason = 'Precio en mercado sin interés - ligera reducción estratégica';
         }
       }
     }
