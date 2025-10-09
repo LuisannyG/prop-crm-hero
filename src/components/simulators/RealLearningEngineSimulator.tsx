@@ -359,236 +359,354 @@ const PropertyAnalysisComponent = ({
     const marketPos = getPropertyMarketPosition(property);
     const avgMarketPrice = limaMarketTrends.districtTrends[property.district || 'Miraflores']?.avgPrice || 350000;
     const districtTrend = limaMarketTrends.districtTrends[property.district || 'Miraflores'];
-    const pricePerM2 = property.area_m2 ? property.price / property.area_m2 : 0;
-    const avgPricePerM2 = districtTrend?.avgPricePerM2 || 3500;
     
-    // 1. Recomendación de Precio personalizada según tamaño, distrito y posicionamiento
+    // Generar un identificador único basado en múltiples características
+    const uniqueId = `${property.id}-${property.price}-${property.daysOnMarket}-${property.interestLevel}-${property.area_m2 || 0}`;
+    const hash = uniqueId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const variation = hash % 10; // Genera variación 0-9 para cada propiedad
+    
+    
+    // 1. Recomendación de Precio - Lenguaje simple y variado
     if (marketPos.deviation > 15) {
-      const targetPrice = property.price * 0.88;
-      const reduction = property.price - targetPrice;
-      if (property.area_m2) {
-        recommendations.push({
-          category: 'Precio',
-          text: `${property.title}: Reducir S/ ${reduction.toLocaleString()} (${marketPos.deviation.toFixed(1)}% sobre mercado). Con ${property.area_m2}m² en ${property.district}, precio sugerido S/ ${targetPrice.toLocaleString()} = S/ ${(targetPrice/property.area_m2).toFixed(0)}/m²`,
-          priority: 'Alta'
-        });
-      } else {
-        recommendations.push({
-          category: 'Precio',
-          text: `${property.title}: Propiedad ${marketPos.deviation.toFixed(1)}% sobre mercado en ${property.district}. Ajustar a S/ ${targetPrice.toLocaleString()} para mejorar competitividad`,
-          priority: 'Alta'
-        });
-      }
+      const newPrice = property.price * 0.88;
+      const ahorro = property.price - newPrice;
+      const priceAdvice = [
+        `Baja el precio a S/ ${newPrice.toLocaleString()}. Está S/ ${ahorro.toLocaleString()} más caro que propiedades similares`,
+        `El precio está alto. Te recomiendo S/ ${newPrice.toLocaleString()} para vender más rápido`,
+        `Ajusta a S/ ${newPrice.toLocaleString()}. Así estarás al nivel del mercado en ${property.district}`,
+        `Precio muy elevado. Con S/ ${newPrice.toLocaleString()} tendrás más consultas`,
+        `Reduce a S/ ${newPrice.toLocaleString()}. Las propiedades parecidas cuestan menos`
+      ];
+      recommendations.push({
+        category: 'Precio',
+        text: priceAdvice[variation % priceAdvice.length],
+        priority: 'Alta'
+      });
     } else if (marketPos.deviation < -15) {
-      const targetPrice = Math.min(avgMarketPrice * 0.98, property.price * 1.15);
-      const increase = targetPrice - property.price;
-      if (property.area_m2) {
-        recommendations.push({
-          category: 'Precio',
-          text: `${property.title}: Subvalorada en ${property.district}. Incrementar S/ ${increase.toLocaleString()} aprovechando ${property.area_m2}m² bien ubicados. Nuevo precio: S/ ${targetPrice.toLocaleString()}`,
-          priority: 'Alta'
-        });
-      } else {
-        recommendations.push({
-          category: 'Precio',
-          text: `${property.title}: Oportunidad en ${property.district}. Incrementar a S/ ${targetPrice.toLocaleString()} (${Math.abs(marketPos.deviation).toFixed(1)}% bajo mercado actual)`,
-          priority: 'Media'
-        });
-      }
+      const newPrice = Math.min(avgMarketPrice * 0.98, property.price * 1.15);
+      const ganancia = newPrice - property.price;
+      const priceAdvice = [
+        `Puedes subir a S/ ${newPrice.toLocaleString()}. Estás vendiendo muy barato, ganarías S/ ${ganancia.toLocaleString()} más`,
+        `Tu precio está bajo. Sube a S/ ${newPrice.toLocaleString()} sin perder interés`,
+        `Vale más de lo que pides. Aumenta a S/ ${newPrice.toLocaleString()}`,
+        `Precio muy económico. Con S/ ${newPrice.toLocaleString()} sigues siendo atractivo`,
+        `Estás regalando tu propiedad. Mejor pide S/ ${newPrice.toLocaleString()}`
+      ];
+      recommendations.push({
+        category: 'Precio',
+        text: priceAdvice[variation % priceAdvice.length],
+        priority: 'Alta'
+      });
     } else {
       if (property.interestLevel > 5) {
         const newPrice = property.price * 1.03;
+        const keepPriceAdvice = [
+          `Hay mucho interés. Puedes subir 3% a S/ ${newPrice.toLocaleString()}`,
+          `${property.interestLevel} personas preguntaron. Sube un poco a S/ ${newPrice.toLocaleString()}`,
+          `La gente está interesada. Aprovecha y pide S/ ${newPrice.toLocaleString()}`
+        ];
         recommendations.push({
           category: 'Precio',
-          text: `${property.title}: Alto interés (${property.interestLevel} consultas) con precio competitivo. Considerar incremento de 3% a S/ ${newPrice.toLocaleString()} para maximizar valor`,
+          text: keepPriceAdvice[variation % keepPriceAdvice.length],
           priority: 'Baja'
         });
       } else {
+        const keepAdvice = [
+          `El precio está bien para ${property.district}. Déjalo así`,
+          `Precio correcto. No lo cambies`,
+          `Buen precio. Mantén S/ ${property.price.toLocaleString()}`
+        ];
         recommendations.push({
           category: 'Precio',
-          text: `${property.title}: Precio óptimo para ${property.district}. Mantener S/ ${property.price.toLocaleString()} y diferenciarse por características del inmueble`,
+          text: keepAdvice[variation % keepAdvice.length],
           priority: 'Baja'
         });
       }
     }
 
-    // 2. Recomendación de Marketing según días en mercado, interés y características específicas
+
+    // 2. Recomendación de Marketing - Simple y variada
     if (property.daysOnMarket > 90) {
-      const specificFeatures = property.area_m2 && property.area_m2 > 100 ? `Destacar los ${property.area_m2}m² de amplitud` : 'Resaltar distribución funcional';
+      const urgentMarketing = [
+        `Lleva ${property.daysOnMarket} días. Urge: nuevas fotos profesionales y video`,
+        `Mucho tiempo sin venderse. Haz fotos mejores y súbelas a más portales`,
+        `${property.daysOnMarket} días es mucho. Cambia las fotos y haz un video tour`,
+        `Necesitas fotos nuevas YA. También un video recorriendo toda la propiedad`
+      ];
       recommendations.push({
         category: 'Marketing',
-        text: `${property.title}: ${property.daysOnMarket} días sin vender. Urgente: nuevo set fotográfico profesional, video-tour 4K y campaña segmentada en ${property.district}. ${specificFeatures}`,
+        text: urgentMarketing[variation % urgentMarketing.length],
         priority: 'Alta'
       });
     } else if (property.daysOnMarket > 45) {
-      const priceRange = property.price > 400000 ? 'premium' : property.price < 200000 ? 'accesible' : 'medio';
+      const mediumMarketing = [
+        `Acelera la venta: publica en Facebook e Instagram`,
+        `Ya pasaron ${property.daysOnMarket} días. Promociona más en redes sociales`,
+        `Haz publicidad en Instagram y Facebook para vender más rápido`,
+        `Comparte en tus redes. También pídele a amigos que compartan`
+      ];
       recommendations.push({
         category: 'Marketing',
-        text: `${property.title}: Acelerar venta. Para segmento ${priceRange} en ${property.district}: agregar testimonios de vecinos, destacar servicios cercanos y promoción en Instagram Stories`,
+        text: mediumMarketing[variation % mediumMarketing.length],
         priority: 'Alta'
       });
     } else if (property.interestLevel < 2) {
-      const typeSpecific = property.propertyType === 'Casa' ? 'jardín y espacios exteriores' : property.propertyType === 'Departamento' ? 'amenities del edificio' : 'potencial del terreno';
+      const lowInterest = [
+        `Poca gente pregunta. Sube más fotos y mejora la descripción`,
+        `Muy pocas consultas. Agrega fotos de todos los ambientes`,
+        `Necesitas más visibilidad: mejores fotos y descripción detallada`,
+        `Añade fotos del barrio, la calle y lugares cercanos`
+      ];
       recommendations.push({
         category: 'Marketing',
-        text: `${property.title}: Bajo interés en ${property.district}. Reforzar presencia online: fotos del ${typeSpecific}, comparativa de precios y anuncios en LinkedIn para profesionales`,
+        text: lowInterest[variation % lowInterest.length],
         priority: 'Media'
       });
     } else {
+      const goodMarketing = [
+        `Va bien. Responde rápido a las consultas`,
+        `Buen nivel de interés. Contesta en menos de 30 minutos`,
+        `Hay interés. Facilita las visitas y responde pronto`,
+        `Está funcionando. Agenda visitas lo antes posible`
+      ];
       recommendations.push({
         category: 'Marketing',
-        text: `${property.title}: Buen nivel de visibilidad. Optimizar tasa de conversión: responder consultas en <30min y preparar dossier digital con planos y documentación`,
+        text: goodMarketing[variation % goodMarketing.length],
         priority: 'Baja'
       });
     }
 
-    // 3. Recomendación de Ubicación personalizada por distrito y tamaño
-    if (districtTrend) {
-      const sizeContext = property.area_m2 && property.area_m2 > 120 ? `espacioso ${property.area_m2}m²` : 
-                          property.area_m2 && property.area_m2 < 60 ? `compacto pero funcional ${property.area_m2}m²` : 
-                          `${property.area_m2 || 'suficiente'}m²`;
-      
-      if (districtTrend.priceGrowth > 0.05) {
-        const futureValue = property.price * (1 + districtTrend.priceGrowth);
-        recommendations.push({
-          category: 'Ubicación',
-          text: `${property.title}: ${property.district} crece ${(districtTrend.priceGrowth * 100).toFixed(1)}% anual. Proyección: S/ ${futureValue.toLocaleString()} en 12 meses. Comunicar ${sizeContext} como inversión inteligente`,
-          priority: 'Alta'
-        });
-      } else if (districtTrend.avgDaysOnMarket < 60) {
-        recommendations.push({
-          category: 'Ubicación',
-          text: `${property.title}: ${property.district} es mercado dinámico (venta promedio ${districtTrend.avgDaysOnMarket} días). Enfatizar conectividad, ${sizeContext} y zonas comerciales cercanas`,
-          priority: 'Media'
-        });
-      } else {
-        const nearbyDistricts = property.district === 'Miraflores' ? 'San Isidro y Barranco' :
-                               property.district === 'San Isidro' ? 'Miraflores y Lince' :
-                               property.district === 'Surco' ? 'La Molina y San Borja' : 'distritos vecinos';
-        recommendations.push({
-          category: 'Ubicación',
-          text: `${property.title}: Mercado estable en ${property.district}. Comparar ventajas vs ${nearbyDistricts} y destacar que ${sizeContext} ofrece mejor precio/ubicación`,
-          priority: 'Media'
-        });
-      }
-    } else {
+
+    // 3. Recomendación de Ubicación - Simple y específica
+    if (districtTrend && districtTrend.priceGrowth > 0.05) {
+      const futureValue = property.price * (1 + districtTrend.priceGrowth);
+      const locationAdvice = [
+        `${property.district} sube de precio. En 1 año valdrá S/ ${futureValue.toLocaleString()}`,
+        `La zona crece. Menciona que valdrá más el próximo año`,
+        `${property.district} está en auge. Destaca el potencial de ganancia`,
+        `Buena inversión: la zona se está valorizando cada año`
+      ];
       recommendations.push({
         category: 'Ubicación',
-        text: `${property.title}: Mapear competencia directa en ${property.district}. Con ${property.area_m2 || 'estas'}m², identificar 3 ventajas únicas de ubicación micro (parques, transporte, comercios)`,
+        text: locationAdvice[variation % locationAdvice.length],
+        priority: 'Alta'
+      });
+    } else if (districtTrend && districtTrend.avgDaysOnMarket < 60) {
+      const fastSelling = [
+        `En ${property.district} se vende rápido. Aprovecha`,
+        `Zona con mucha demanda. Las propiedades no duran`,
+        `${property.district} es un buen mercado, vende pronto`,
+        `Se vende rápido aquí. No bajes mucho el precio`
+      ];
+      recommendations.push({
+        category: 'Ubicación',
+        text: fastSelling[variation % fastSelling.length],
+        priority: 'Media'
+      });
+    } else {
+      const stableLocation = [
+        `Habla de lo cerca que está de centros comerciales y transporte`,
+        `Menciona los colegios, parques y tiendas cercanas`,
+        `Destaca la seguridad y servicios de ${property.district}`,
+        `Resalta cercanía a oficinas, bancos y restaurantes`
+      ];
+      recommendations.push({
+        category: 'Ubicación',
+        text: stableLocation[variation % stableLocation.length],
         priority: 'Media'
       });
     }
 
-    // 4. Recomendación de Presentación según precio, tipo y tamaño
+
+    // 4. Recomendación de Presentación - Simple y práctica
     if (property.propertyType === 'Casa' && property.area_m2 && property.area_m2 > 150) {
+      const bigHouse = [
+        `Casa grande. Arregla el jardín: corta el pasto y pon flores`,
+        `Con ${property.area_m2}m², muestra bien los espacios. Limpia y ordena todo`,
+        `Casa amplia. Pinta si hace falta y pon plantas en el jardín`,
+        `Aprovecha el tamaño: ambienta la sala y el comedor`
+      ];
       recommendations.push({
         category: 'Presentación',
-        text: `${property.title}: Casa amplia ${property.area_m2}m². Homestaging: amueblar sala, comedor y 1 dormitorio. Jardín: césped cortado, macetas coloridas. Resaltar espacios exteriores`,
+        text: bigHouse[variation % bigHouse.length],
         priority: 'Alta'
       });
     } else if (property.propertyType === 'Departamento' && property.price > 500000) {
-      const floor = Math.floor(Math.random() * 10) + 5; // Simular piso alto
+      const luxury = [
+        `Depto premium. Contrata un decorador para que se vea elegante`,
+        `Precio alto. Debe verse impecable: limpio, ordenado y decorado`,
+        `Inversión grande. Vale la pena decorarlo bien antes de mostrar`,
+        `Departamento de lujo. Muebles modernos y buena decoración`
+      ];
       recommendations.push({
         category: 'Presentación',
-        text: `${property.title}: Departamento premium S/ ${property.price.toLocaleString()}. Contratar decorador: sofá gris claro, arte minimalista, velas aromáticas. Video desde balcón mostrando vista`,
+        text: luxury[variation % luxury.length],
         priority: 'Alta'
       });
     } else if (property.area_m2 && property.area_m2 < 50) {
+      const small = [
+        `Espacio chico. Usa espejos para que se vea más grande`,
+        `${property.area_m2}m² compactos. Menos muebles, más espacio libre`,
+        `Departamento pequeño. Luces blancas y muebles claros`,
+        `Maximiza el espacio: ordena todo y deja áreas despejadas`
+      ];
       recommendations.push({
         category: 'Presentación',
-        text: `${property.title}: Maximizar ${property.area_m2}m² compactos. Estrategia: espejos de pared, muebles plegables, iluminación LED blanca. Fotos desde esquinas para amplitud visual`,
+        text: small[variation % small.length],
         priority: 'Alta'
       });
     } else if (property.price < 180000) {
+      const affordable = [
+        `Bajo costo. Limpia bien, pinta si es necesario y pon plantas`,
+        `Precio accesible. Invierte poco: pintura blanca y limpieza profunda`,
+        `Mejora básica: limpieza, olor agradable y buena luz`,
+        `Pinta las paredes de blanco y limpia a fondo`
+      ];
       recommendations.push({
         category: 'Presentación',
-        text: `${property.title}: Rango accesible. Inversión mínima, alto impacto: repintar paredes (blanco hueso), aromatizante cítrico, plantas naturales y cortinas translúcidas`,
+        text: affordable[variation % affordable.length],
         priority: 'Media'
       });
     } else {
+      const standard = [
+        `Antes de cada visita: limpia, ventila y pon música suave`,
+        `Prepara bien: temperatura agradable y todo ordenado`,
+        `Quita fotos personales y objetos muy íntimos`,
+        `Limpieza profunda, buen olor y documentos listos`
+      ];
       recommendations.push({
         category: 'Presentación',
-        text: `${property.title}: Profesionalizar presentación. Checklist pre-visita: despersonalizar espacios, temperatura 20-22°C, música ambiental suave y documentación ordenada`,
+        text: standard[variation % standard.length],
         priority: 'Media'
       });
     }
 
-    // 5. Recomendación de Timing según estacionalidad y características del inmueble
+
+    // 5. Recomendación de Timing - Simple y al grano
     const currentMonth = new Date().getMonth() + 1;
-    const seasonalContext = property.propertyType === 'Casa' && (currentMonth >= 3 && currentMonth <= 5) ? 
-                           'temporada ideal para mostrar jardines y áreas exteriores' :
-                           property.propertyType === 'Departamento' && (currentMonth >= 9 && currentMonth <= 11) ?
-                           'fin de año con ejecutivos buscando mudanza' : 'temporada actual';
     
     if (currentMonth >= 7 && currentMonth <= 8) {
-      const incentive = property.price > 400000 ? 'gastos notariales + primer mes de mantenimiento' :
-                       property.price > 250000 ? 'gastos de escritura pública' :
-                       '1 mes de mantenimiento o seguro de incendio';
+      const winterTips = [
+        `Es invierno. Ofrece pagar gastos notariales para cerrar más rápido`,
+        `Temporada baja. Incluye un beneficio: 1 mes de mantenimiento gratis`,
+        `En julio-agosto vende menos gente. Da un incentivo pequeño`,
+        `Invierno. Compensa con algo: gastos de escritura o mantenimiento`
+      ];
       recommendations.push({
         category: 'Timing',
-        text: `${property.title}: Invierno en ${property.district}. Compensar baja demanda: incluir ${incentive} (valor S/ 3,000-5,000). Cerrar venta antes de octubre`,
+        text: winterTips[variation % winterTips.length],
         priority: 'Alta'
       });
     } else if (currentMonth >= 3 && currentMonth <= 5 || currentMonth >= 9 && currentMonth <= 11) {
+      const highSeason = [
+        `Mejor época para vender. Agenda más visitas`,
+        `Temporada alta. La gente está buscando, aprovecha`,
+        `Buen momento. Haz 4-5 visitas por semana`,
+        `Época ideal. No bajes mucho el precio`
+      ];
       recommendations.push({
         category: 'Timing',
-        text: `${property.title}: Momento óptimo - ${seasonalContext}. Aumentar agenda de visitas a 4-5 semanales. Precio firme, negociar solo en detalles finales`,
+        text: highSeason[variation % highSeason.length],
         priority: 'Media'
       });
     } else if (currentMonth === 12 || currentMonth === 1) {
+      const holidays = [
+        `Época de vacaciones. Haz videos y tours virtuales`,
+        `Diciembre-Enero: flexibilidad en horarios y videos 360°`,
+        `Fin de año. Ofrece visitas virtuales para los que viajaron`,
+        `Fiestas. Mantén contacto, en febrero vuelve la demanda`
+      ];
       recommendations.push({
         category: 'Timing',
-        text: `${property.title}: Periodo vacacional. Mantener disponibilidad flexible, tours virtuales para compradores fuera de Lima. Posicionar para boom de febrero-marzo`,
+        text: holidays[variation % holidays.length],
         priority: 'Media'
       });
     } else {
-      const daysToHighSeason = currentMonth < 3 ? (3 - currentMonth) * 30 : (15 - currentMonth) * 30;
+      const prepare = [
+        `Prepárate para la temporada alta: fotos nuevas y arreglos`,
+        `Viene buena época. Actualiza fotos y haz reparaciones`,
+        `En unos meses sube la demanda. Prepara todo ahora`,
+        `Aprovecha para mejorar la propiedad antes del boom`
+      ];
       recommendations.push({
         category: 'Timing',
-        text: `${property.title}: Preparar temporada alta (${Math.floor(daysToHighSeason/30)} meses). Actualizar: fotos profesionales, reparaciones menores y estrategia de promoción`,
+        text: prepare[variation % prepare.length],
         priority: 'Media'
       });
     }
 
-    // 6. Recomendación de Target según tipo, precio, tamaño y distrito
+
+    // 6. Recomendación de Target - Audiencia específica y simple
     if (property.propertyType === 'Departamento' && property.area_m2 && property.area_m2 < 60 && property.price < 250000) {
+      const youngBuyers = [
+        `Perfecto para jóvenes solteros. Promociona en Instagram`,
+        `Ideal para parejas sin hijos que trabajan en oficinas cercanas`,
+        `Target: gente joven 25-35 años. Habla de la vida social cerca`,
+        `Depto para profesionales jóvenes. Destaca transporte y zonas de ocio`
+      ];
       recommendations.push({
         category: 'Target',
-        text: `${property.title}: Perfil ideal - jóvenes 25-35 años, solteros o parejas sin hijos. Mensaje: "${property.area_m2}m² óptimos en ${property.district}, cerca de oficinas y vida social"`,
+        text: youngBuyers[variation % youngBuyers.length],
         priority: 'Alta'
       });
     } else if (property.propertyType === 'Casa' && property.area_m2 && property.area_m2 > 120) {
-      const schoolsNearby = property.district === 'Surco' || property.district === 'La Molina' || property.district === 'San Borja';
-      const schoolText = schoolsNearby ? 'Destacar colegios top cercanos (Newton, San Silvestre)' : 'Enfatizar seguridad y espacios familiares';
+      const families = [
+        `Casa para familias con hijos. Habla de colegios y parques`,
+        `Target: familias de 4-5 personas. Menciona seguridad y espacios`,
+        `Perfil: padres con hijos escolares. Publica en grupos de Facebook`,
+        `Ideal para familias. Resalta áreas de juego y colegios cerca`
+      ];
       recommendations.push({
         category: 'Target',
-        text: `${property.title}: Casa familiar ${property.area_m2}m². Target: familias 3-5 personas, con hijos escolares. ${schoolText}. Canal: grupos de Facebook de padres`,
+        text: families[variation % families.length],
         priority: 'Alta'
       });
     } else if (property.price > 600000) {
+      const wealthy = [
+        `Segmento alto. Busca ejecutivos en LinkedIn`,
+        `Precio premium. Target: empresarios y gerentes senior`,
+        `Para gente con alto poder adquisitivo. Marketing exclusivo`,
+        `Comprador con recursos. Enfócate en calidad y ubicación`
+      ];
       recommendations.push({
         category: 'Target',
-        text: `${property.title}: Segmento alto. Perfil: ejecutivos 40-55 años, empresarios. Estrategia: LinkedIn Ads, revista Asia Sur, golf clubs. Enfoque: exclusividad y status`,
+        text: wealthy[variation % wealthy.length],
         priority: 'Alta'
       });
     } else if (property.district === 'Miraflores' || property.district === 'San Isidro' || property.district === 'Barranco') {
+      const trendy = [
+        `${property.district} atrae profesionales. Mensaje en inglés y español`,
+        `Zona moderna. Habla de restaurantes, cafés y vida cultural`,
+        `Distrito cosmopolita. Target: profesionales peruanos y extranjeros`,
+        `Área trendy. Destaca la oferta gastronómica y cultural`
+      ];
       recommendations.push({
         category: 'Target',
-        text: `${property.title}: ${property.district} atrae profesionales extranjeros y retornantes. Mensaje bilingüe, destacar walkability score y escena cultural/gastronómica`,
+        text: trendy[variation % trendy.length],
         priority: 'Media'
       });
     } else if (property.propertyType === 'Terreno') {
+      const investors = [
+        `Terreno para inversionistas. Ten listos planos y papeles`,
+        `Target: constructores. Prepara análisis de rentabilidad`,
+        `Para inversión. Consigue certificados y parámetros urbanísticos`,
+        `Perfil inversionista. Documenta bien zonificación y usos`
+      ];
       recommendations.push({
         category: 'Target',
-        text: `${property.title}: Terreno en ${property.district}. Target: inversionistas y constructores. Preparar: certificado de parámetros, planos de zonificación, análisis de rentabilidad`,
+        text: investors[variation % investors.length],
         priority: 'Alta'
       });
     } else {
-      const budgetSegment = property.price > 350000 ? 'clase media-alta establecida' : 
-                           property.price > 200000 ? 'clase media emergente' : 'compradores de primera vivienda';
+      const general = [
+        `Promociona facilidades de pago y bancos que financian`,
+        `Habla de cómo puede subir de precio en el futuro`,
+        `Menciona testimonios de vecinos y vida en la zona`,
+        `Enfatiza seguridad, servicios y calidad de vida`
+      ];
       recommendations.push({
         category: 'Target',
-        text: `${property.title}: Segmento ${budgetSegment} en ${property.district}. Adaptar comunicación: financiamiento disponible, proyección de plusvalía, testimonios de vecinos`,
+        text: general[variation % general.length],
         priority: 'Media'
       });
     }
