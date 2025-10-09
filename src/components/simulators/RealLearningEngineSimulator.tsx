@@ -582,55 +582,55 @@ const PropertyAnalysisComponent = ({
     }
 
 
-    // 5. Recomendación de Timing - Simple y al grano
+    // 5. Recomendación de Timing - Simple y al grano (Q4 2025)
     const currentMonth = new Date().getMonth() + 1;
     
-    if (currentMonth >= 7 && currentMonth <= 8) {
-      const winterTips = [
-        `Es invierno. Ofrece pagar gastos notariales para cerrar más rápido`,
-        `Temporada baja. Incluye un beneficio: 1 mes de mantenimiento gratis`,
-        `En julio-agosto vende menos gente. Da un incentivo pequeño`,
-        `Invierno. Compensa con algo: gastos de escritura o mantenimiento`
+    if (currentMonth === 10) {
+      const octoberTips = [
+        `Octubre es buen mes. Aprovecha antes de que lleguen los bonos de noviembre`,
+        `Mes activo. Agenda visitas para cerrar antes de fin de año`,
+        `Octubre: muchos buscan para mudarse en diciembre. Acelera las visitas`,
+        `Buen momento. Ofrece facilidades de pago para cerrar en noviembre`
       ];
       recommendations.push({
         category: 'Timing',
-        text: winterTips[variation % winterTips.length],
+        text: octoberTips[variation % octoberTips.length],
         priority: 'Alta'
       });
-    } else if (currentMonth >= 3 && currentMonth <= 5 || currentMonth >= 9 && currentMonth <= 11) {
-      const highSeason = [
-        `Mejor época para vender. Agenda más visitas`,
-        `Temporada alta. La gente está buscando, aprovecha`,
-        `Buen momento. Haz 4-5 visitas por semana`,
-        `Época ideal. No bajes mucho el precio`
+    } else if (currentMonth === 11) {
+      const novemberTips = [
+        `Noviembre: mes de bonos y gratificación. Mejor momento para vender`,
+        `Pico de compras por bonos. Aprovecha, agenda más visitas`,
+        `Gratificación llegando. La gente tiene liquidez, cierra rápido`,
+        `Mejor mes del año. No bajes el precio, hay mucha demanda`
       ];
       recommendations.push({
         category: 'Timing',
-        text: highSeason[variation % highSeason.length],
-        priority: 'Media'
+        text: novemberTips[variation % novemberTips.length],
+        priority: 'Alta'
       });
-    } else if (currentMonth === 12 || currentMonth === 1) {
-      const holidays = [
-        `Época de vacaciones. Haz videos y tours virtuales`,
-        `Diciembre-Enero: flexibilidad en horarios y videos 360°`,
-        `Fin de año. Ofrece visitas virtuales para los que viajaron`,
-        `Fiestas. Mantén contacto, en febrero vuelve la demanda`
+    } else if (currentMonth === 12) {
+      const decemberTips = [
+        `Diciembre: ofrece tours virtuales para los que viajaron`,
+        `Fin de año. Flexibilidad en horarios y videos 360° ayudan`,
+        `Fiestas navideñas. Mantén contacto, en enero hay más demanda`,
+        `Vacaciones. Prepara videos, muchos buscan pero viajan`
       ];
       recommendations.push({
         category: 'Timing',
-        text: holidays[variation % holidays.length],
+        text: decemberTips[variation % decemberTips.length],
         priority: 'Media'
       });
     } else {
-      const prepare = [
-        `Prepárate para la temporada alta: fotos nuevas y arreglos`,
-        `Viene buena época. Actualiza fotos y haz reparaciones`,
-        `En unos meses sube la demanda. Prepara todo ahora`,
-        `Aprovecha para mejorar la propiedad antes del boom`
+      const offSeasonQ4 = [
+        `Estamos en Q4. Prepara todo para el pico de noviembre`,
+        `Se acerca la gratificación. Ten fotos listas para noviembre`,
+        `Viene temporada alta. Actualiza fotos antes del boom`,
+        `Q4 trae bonos. Prepara marketing para captar compradores`
       ];
       recommendations.push({
         category: 'Timing',
-        text: prepare[variation % prepare.length],
+        text: offSeasonQ4[variation % offSeasonQ4.length],
         priority: 'Media'
       });
     }

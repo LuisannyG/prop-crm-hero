@@ -1100,43 +1100,43 @@ const generateAdvancedRecommendations = (
 ) => {
   const recommendations = [];
 
-  // Recomendación basada en fuentes de contacto más exitosas
+  // Recomendación basada en fuentes de contacto más exitosas (Q4 2025)
   const bestSource = Object.entries(contactAnalysis.contactsBySource)
     .sort(([,a], [,b]) => b - a)[0];
   
   if (bestSource) {
     recommendations.push({
       type: 'marketing' as const,
-      title: 'Optimizar Canales de Adquisición',
-      description: `Tu mejor fuente de contactos es "${bestSource[0]}" con ${bestSource[1]} contactos. Invierte más en este canal.`,
+      title: 'Optimizar Canales de Adquisición para Q4',
+      description: `Tu mejor fuente es "${bestSource[0]}" con ${bestSource[1]} contactos. En Q4 (octubre-diciembre) invierte más aquí para captar compradores con bonos.`,
       impact: 'Alto' as const,
       confidence: 88
     });
   }
 
-  // Recomendación basada en tipos de propiedad más vendibles
+  // Recomendación basada en tipos de propiedad más vendibles (Q4 2025)
   const bestPropertyType = Object.entries(propertyAnalysis.priceByType)
     .sort(([,a], [,b]) => b - a)[0];
   
   if (bestPropertyType) {
     recommendations.push({
       type: 'opportunity' as const,
-      title: 'Enfoque en Segmento Premium',
-      description: `Las propiedades tipo "${bestPropertyType[0]}" tienen el mayor valor promedio (S/${bestPropertyType[1].toLocaleString()}). Considera expandir este inventario.`,
+      title: 'Aprovechar Q4 con Segmento Premium',
+      description: `En Q4 las propiedades "${bestPropertyType[0]}" valen S/${bestPropertyType[1].toLocaleString()} en promedio. Noviembre es el mejor mes por bonos y gratificación.`,
       impact: 'Alto' as const,
       confidence: 82
     });
   }
 
-  // Recomendación de precios por rango
+  // Recomendación de precios por rango (Q4 2025)
   const lowPriceRange = propertyAnalysis.priceRangeDistribution['Menos de S/200,000'] || 0;
   const totalProperties = Object.values(propertyAnalysis.priceRangeDistribution).reduce((sum, count) => sum + count, 0);
   
   if (lowPriceRange / totalProperties > 0.6) {
     recommendations.push({
       type: 'pricing' as const,
-      title: 'Diversificar Rango de Precios',
-      description: `${((lowPriceRange / totalProperties) * 100).toFixed(1)}% de tus propiedades están por debajo de S/200,000. Considera incluir opciones premium.`,
+      title: 'Estrategia de Precios Q4',
+      description: `${((lowPriceRange / totalProperties) * 100).toFixed(1)}% están bajo S/200,000. En noviembre-diciembre hay más liquidez por bonos: incluye propiedades premium.`,
       impact: 'Medio' as const,
       confidence: 75
     });
