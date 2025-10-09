@@ -29,11 +29,21 @@ interface Contact {
   notes: string;
 }
 
+interface Property {
+  id: string;
+  title: string;
+  address: string;
+  district?: string;
+  price?: number;
+  property_type?: string;
+}
+
 interface Reminder {
   id: string;
   created_at: string;
   user_id: string;
-  contact_id: string;
+  contact_id?: string | null;
+  property_id?: string | null;
   title: string;
   description: string;
   reminder_date: string;
@@ -43,7 +53,9 @@ interface Reminder {
 }
 
 interface NewReminder {
+  reminderType: 'contact' | 'property';
   contactId: string | undefined;
+  propertyId: string | undefined;
   title: string;
   description: string;
   reminderDate: Date | null;
@@ -55,12 +67,15 @@ const Reminders = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const [properties, setProperties] = useState<Property[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [filteredReminders, setFilteredReminders] = useState<Reminder[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [editingReminder, setEditingReminder] = useState<Reminder | null>(null);
   const [newReminder, setNewReminder] = useState<NewReminder>({
+    reminderType: 'contact',
     contactId: undefined,
+    propertyId: undefined,
     title: '',
     description: '',
     reminderDate: null,
@@ -142,7 +157,37 @@ const Reminders = () => {
       }
     };
 
+    const fetchProperties = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('properties')
+          .select('id, title, address, district, price, property_type')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error("Error fetching properties:", error);
+          toast({
+            title: "Error",
+            description: "Failed to load properties.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        setProperties(data || []);
+      } catch (error) {
+        console.error("Unexpected error fetching properties:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load properties due to an unexpected error.",
+          variant: "destructive",
+        });
+      }
+    };
+
     fetchContacts();
+    fetchProperties();
     fetchReminders();
   }, [user, toast]);
 
@@ -152,13 +197,15 @@ const Reminders = () => {
     } else {
       const filtered = reminders.filter(reminder => {
         const contact = contacts.find(c => c.id === reminder.contact_id);
+        const property = properties.find(p => p.id === reminder.property_id);
         return reminder.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                reminder.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-               contact?.full_name.toLowerCase().includes(searchTerm.toLowerCase());
+               contact?.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+               property?.title.toLowerCase().includes(searchTerm.toLowerCase());
       });
       setFilteredReminders(filtered);
     }
-  }, [searchTerm, reminders, contacts]);
+  }, [searchTerm, reminders, contacts, properties]);
 
   // Función para actualizar la fecha con la hora seleccionada
   const updateReminderDateTime = () => {
@@ -213,10 +260,28 @@ const Reminders = () => {
   }, [selectedHour, selectedMinute, selectedPeriod]);
 
   const handleCreateReminder = async () => {
-    if (!user || !newReminder.contactId || !newReminder.title || !newReminder.reminderDate) {
+    if (!user || !newReminder.title || !newReminder.reminderDate) {
       toast({
         title: "Error",
-        description: "Please fill in all fields.",
+        description: "Por favor completa todos los campos requeridos.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newReminder.reminderType === 'contact' && !newReminder.contactId) {
+      toast({
+        title: "Error",
+        description: "Por favor selecciona un cliente.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newReminder.reminderType === 'property' && !newReminder.propertyId) {
+      toast({
+        title: "Error",
+        description: "Por favor selecciona una propiedad.",
         variant: "destructive",
       });
       return;
@@ -227,7 +292,8 @@ const Reminders = () => {
         .from('reminders')
         .insert({
           user_id: user.id,
-          contact_id: newReminder.contactId,
+          contact_id: newReminder.reminderType === 'contact' ? newReminder.contactId : null,
+          property_id: newReminder.reminderType === 'property' ? newReminder.propertyId : null,
           title: newReminder.title,
           description: newReminder.description,
           reminder_date: newReminder.reminderDate.toISOString(),
@@ -247,7 +313,9 @@ const Reminders = () => {
       }
 
       setNewReminder({
+        reminderType: 'contact',
         contactId: undefined,
+        propertyId: undefined,
         title: '',
         description: '',
         reminderDate: null,
@@ -255,8 +323,8 @@ const Reminders = () => {
       });
 
       toast({
-        title: "Success",
-        description: "Reminder created successfully.",
+        title: "Éxito",
+        description: "Recordatorio creado exitosamente.",
       });
 
       fetchReminders();
@@ -273,7 +341,9 @@ const Reminders = () => {
   const handleEditReminder = (reminder: Reminder) => {
     setEditingReminder(reminder);
     setNewReminder({
-      contactId: reminder.contact_id,
+      reminderType: reminder.contact_id ? 'contact' : 'property',
+      contactId: reminder.contact_id || undefined,
+      propertyId: reminder.property_id || undefined,
       title: reminder.title,
       description: reminder.description,
       reminderDate: new Date(reminder.reminder_date),
@@ -282,10 +352,28 @@ const Reminders = () => {
   };
 
   const handleUpdateReminder = async () => {
-    if (!editingReminder || !user || !newReminder.contactId || !newReminder.title || !newReminder.reminderDate) {
+    if (!editingReminder || !user || !newReminder.title || !newReminder.reminderDate) {
       toast({
         title: "Error",
-        description: "Please fill in all fields.",
+        description: "Por favor completa todos los campos requeridos.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newReminder.reminderType === 'contact' && !newReminder.contactId) {
+      toast({
+        title: "Error",
+        description: "Por favor selecciona un cliente.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newReminder.reminderType === 'property' && !newReminder.propertyId) {
+      toast({
+        title: "Error",
+        description: "Por favor selecciona una propiedad.",
         variant: "destructive",
       });
       return;
@@ -295,7 +383,8 @@ const Reminders = () => {
       const { error } = await supabase
         .from('reminders')
         .update({
-          contact_id: newReminder.contactId,
+          contact_id: newReminder.reminderType === 'contact' ? newReminder.contactId : null,
+          property_id: newReminder.reminderType === 'property' ? newReminder.propertyId : null,
           title: newReminder.title,
           description: newReminder.description,
           reminder_date: newReminder.reminderDate.toISOString(),
@@ -315,7 +404,9 @@ const Reminders = () => {
 
       setEditingReminder(null);
       setNewReminder({
+        reminderType: 'contact',
         contactId: undefined,
+        propertyId: undefined,
         title: '',
         description: '',
         reminderDate: null,
@@ -323,8 +414,8 @@ const Reminders = () => {
       });
 
       toast({
-        title: "Success",
-        description: "Reminder updated successfully.",
+        title: "Éxito",
+        description: "Recordatorio actualizado exitosamente.",
       });
 
       fetchReminders();
@@ -341,7 +432,9 @@ const Reminders = () => {
   const handleCancelEdit = () => {
     setEditingReminder(null);
     setNewReminder({
+      reminderType: 'contact',
       contactId: undefined,
+      propertyId: undefined,
       title: '',
       description: '',
       reminderDate: null,
@@ -453,20 +546,63 @@ const Reminders = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="contact">Cliente</Label>
-                  <Select value={newReminder.contactId} onValueChange={(value) => setNewReminder({...newReminder, contactId: value})}>
+                  <Label htmlFor="reminderType">Tipo de Recordatorio</Label>
+                  <Select 
+                    value={newReminder.reminderType} 
+                    onValueChange={(value: 'contact' | 'property') => 
+                      setNewReminder({
+                        ...newReminder, 
+                        reminderType: value,
+                        contactId: undefined,
+                        propertyId: undefined
+                      })
+                    }
+                  >
                     <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar cliente" />
+                      <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      {contacts.map((contact) => (
-                        <SelectItem key={contact.id} value={contact.id}>
-                          {contact.full_name}
-                        </SelectItem>
-                      ))}
+                    <SelectContent className="bg-white z-50">
+                      <SelectItem value="contact">Para Cliente</SelectItem>
+                      <SelectItem value="property">Para Propiedad</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
+
+                {newReminder.reminderType === 'contact' && (
+                  <div>
+                    <Label htmlFor="contact">Cliente</Label>
+                    <Select value={newReminder.contactId} onValueChange={(value) => setNewReminder({...newReminder, contactId: value})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar cliente" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white z-50">
+                        {contacts.map((contact) => (
+                          <SelectItem key={contact.id} value={contact.id}>
+                            {contact.full_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {newReminder.reminderType === 'property' && (
+                  <div>
+                    <Label htmlFor="property">Propiedad</Label>
+                    <Select value={newReminder.propertyId} onValueChange={(value) => setNewReminder({...newReminder, propertyId: value})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar propiedad" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white z-50">
+                        {properties.map((property) => (
+                          <SelectItem key={property.id} value={property.id}>
+                            {property.title} - {property.district}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
                 <div>
                   <Label htmlFor="title">Título</Label>
@@ -647,6 +783,7 @@ const Reminders = () => {
                 <div className="space-y-3">
                   {filteredReminders.map((reminder) => {
                     const contact = contacts.find(c => c.id === reminder.contact_id);
+                    const property = properties.find(p => p.id === reminder.property_id);
                     const isOverdue = new Date(reminder.reminder_date) < new Date() && reminder.status === 'pendiente';
                     const priorityColors = {
                       alta: 'border-l-red-500 bg-red-50',
@@ -666,9 +803,17 @@ const Reminders = () => {
                                 {reminder.status === 'completado' && <CheckCircle2 className="w-4 h-4 text-green-500" />}
                               </div>
                               
-                              <p className="text-sm text-gray-600 mb-2">
-                                Cliente: <span className="font-medium">{contact?.full_name || 'Cliente no encontrado'}</span>
-                              </p>
+                              {reminder.contact_id && contact && (
+                                <p className="text-sm text-gray-600 mb-2">
+                                  Cliente: <span className="font-medium">{contact.full_name}</span>
+                                </p>
+                              )}
+                              
+                              {reminder.property_id && property && (
+                                <p className="text-sm text-gray-600 mb-2">
+                                  Propiedad: <span className="font-medium">{property.title} - {property.district}</span>
+                                </p>
+                              )}
                               
                               {reminder.description && (
                                 <p className="text-sm text-gray-600 mb-2">{reminder.description}</p>
