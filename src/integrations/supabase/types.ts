@@ -376,6 +376,33 @@ export type Database = {
         }
         Relationships: []
       }
+      purchase_log: {
+        Row: {
+          amount: number
+          created_at: string
+          email: string
+          id: string
+          trial_group: string | null
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          email: string
+          id?: string
+          trial_group?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          email?: string
+          id?: string
+          trial_group?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       recovery_actions: {
         Row: {
           action_description: string

@@ -1556,6 +1556,8 @@ const PredictiveInsightsComponent = ({
 const RealLearningEngineSimulator = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [hasPurchased, setHasPurchased] = useState(false);
+  const [isProcessingPurchase, setIsProcessingPurchase] = useState(false);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
@@ -1589,7 +1591,26 @@ const RealLearningEngineSimulator = () => {
 
   useEffect(() => {
     fetchData();
+    checkPurchaseStatus();
   }, [user]);
+
+  const checkPurchaseStatus = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('purchase_log')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (!error && data) {
+        setHasPurchased(true);
+      }
+    } catch (error) {
+      console.error('Error checking purchase status:', error);
+    }
+  };
 
   const fetchData = async () => {
     if (!user) return;
@@ -1745,45 +1766,87 @@ const RealLearningEngineSimulator = () => {
 
     try {
       setContactsAnalysisLoading(true);
-
-      // Fetch updated contacts data first
-      const { data: contactsData, error: contactsError } = await supabase
-        .from('contacts')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (contactsError) {
-        console.error('Error fetching contacts:', contactsError);
-        toast({
-          title: "Error",
-          description: "Error al cargar los contactos actualizados.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setContacts(contactsData || []);
-
-      // Run individual contacts analysis
+      
       const individualContactsResult = await analyzeIndividualContacts(user.id);
       setIndividualContactAnalysis(individualContactsResult);
 
       toast({
         title: "Análisis Actualizado",
-        description: "Los datos de contactos han sido actualizados correctamente.",
+        description: "Los contactos se han recargado exitosamente.",
         variant: "default",
       });
-
     } catch (error) {
       console.error('Error reloading contacts analysis:', error);
       toast({
         title: "Error",
-        description: "Error al actualizar el análisis de contactos.",
+        description: "Error al recargar el análisis de contactos.",
         variant: "destructive",
       });
     } finally {
       setContactsAnalysisLoading(false);
+    }
+  };
+
+  const handlePurchase = async () => {
+    if (!user || !user.email || hasPurchased || isProcessingPurchase) return;
+
+    setIsProcessingPurchase(true);
+
+    try {
+      // 🔍 Obtener trial_group del usuario si existe
+      const { data: trialData } = await supabase
+        .from('trial_experiment')
+        .select('trial_group')
+        .eq('email', user.email)
+        .maybeSingle();
+
+      const trialGroup = trialData?.trial_group || 'pago';
+
+      // 📦 Enviar evento 'purchase' al dataLayer de GTM
+      (window as any).dataLayer = (window as any).dataLayer || [];
+      (window as any).dataLayer.push({
+        event: "purchase",
+        user_email: user.email,
+        trial_group: trialGroup
+      });
+
+      console.log('✅ Evento GTM purchase enviado:', {
+        event: "purchase",
+        user_email: user.email,
+        trial_group: trialGroup
+      });
+
+      // 💾 Registrar en Supabase
+      const { error: insertError } = await supabase
+        .from('purchase_log')
+        .insert({
+          user_id: user.id,
+          email: user.email,
+          trial_group: trialGroup,
+          amount: 60
+        });
+
+      if (insertError) throw insertError;
+
+      // ✅ Actualizar estado
+      setHasPurchased(true);
+
+      // 🎉 Mostrar mensaje de confirmación
+      toast({
+        title: "¡Gracias!",
+        description: "Se ha registrado tu intención de suscripción.",
+        variant: "default",
+      });
+
+    } catch (error) {
+      console.error('Error processing purchase:', error);
+      toast({
+        title: "Error",
+        description: "Hubo un error al procesar tu solicitud. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessingPurchase(false);
     }
   };
 
@@ -2026,6 +2089,45 @@ const RealLearningEngineSimulator = () => {
           )}
         </Button>
       </div>
+
+      {/* 🚀 BOTÓN DE SUSCRIPCIÓN */}
+      {!hasPurchased && (
+        <Card className="bg-gradient-to-r from-orange-500 to-orange-600 border-0 shadow-2xl">
+          <CardContent className="p-8 text-center">
+            <div className="flex flex-col items-center gap-4">
+              <div className="flex items-center gap-3">
+                <Star className="w-10 h-10 text-white animate-pulse" />
+                <h3 className="text-3xl font-bold text-white">
+                  ¡Desbloquea Todo el Poder del Motor IA!
+                </h3>
+                <Star className="w-10 h-10 text-white animate-pulse" />
+              </div>
+              <p className="text-white/90 text-lg max-w-2xl">
+                Accede a análisis predictivos ilimitados, recomendaciones personalizadas y todas las funcionalidades premium
+              </p>
+              <Button
+                onClick={handlePurchase}
+                disabled={isProcessingPurchase}
+                className="bg-white text-orange-600 hover:bg-orange-50 font-bold text-xl px-12 py-6 rounded-2xl shadow-xl transform hover:scale-105 transition-all duration-200 mt-4"
+                size="lg"
+              >
+                {isProcessingPurchase ? (
+                  <>
+                    <Activity className="w-6 h-6 mr-3 animate-spin" />
+                    Procesando...
+                  </>
+                ) : (
+                  <>
+                    <DollarSign className="w-6 h-6 mr-3" />
+                    Suscribirse por 60 soles mensuales
+                    <Zap className="w-6 h-6 ml-3" />
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs defaultValue="market" className="space-y-6">
         <TabsList className="grid w-full grid-cols-4 bg-white/80 backdrop-blur-sm rounded-xl p-1">
