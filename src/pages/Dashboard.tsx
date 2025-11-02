@@ -59,17 +59,25 @@ const Dashboard = () => {
           }
 
           if (data && data.plan_trial) {
+            // 📦 Mapear plan_trial a trial_group
+            const trialGroupMap: Record<string, string> = {
+              '1d': '1-dia',
+              '3d': '3-dias'
+            };
+            
+            const trialGroup = trialGroupMap[data.plan_trial] || data.plan_trial;
+            
             // 📦 Enviar el evento personalizado al dataLayer de Google Tag Manager
             (window as any).dataLayer = (window as any).dataLayer || [];
             (window as any).dataLayer.push({
               event: "prueba_suscripcion",
-              trial_group: data.plan_trial === '3d' ? '3-dias' : '7-dias',
+              trial_group: trialGroup,
               user_email: user.email
             });
 
             console.log('✅ Evento GTM enviado:', {
               event: "prueba_suscripcion",
-              trial_group: data.plan_trial === '3d' ? '3-dias' : '7-dias'
+              trial_group: trialGroup
             });
           }
         } catch (err) {

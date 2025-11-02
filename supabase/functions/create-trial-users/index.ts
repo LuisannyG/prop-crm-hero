@@ -27,12 +27,12 @@ serve(async (req) => {
 
     // Lista de usuarios de prueba a crear
     const trialUsers = [
-      { email: "usuario1@gmail.com", password: "123456", plan_trial: "3d", name: "Usuario1" },
-      { email: "usuario2@gmail.com", password: "123456", plan_trial: "3d", name: "Usuario2" },
-      { email: "usuario3@gmail.com", password: "123456", plan_trial: "3d", name: "Usuario3" },
-      { email: "usuario4@gmail.com", password: "123456", plan_trial: "7d", name: "Usuario4" },
-      { email: "usuario5@gmail.com", password: "123456", plan_trial: "7d", name: "Usuario5" },
-      { email: "usuario6@gmail.com", password: "123456", plan_trial: "7d", name: "Usuario6" },
+      { email: "usuario1@gmail.com", password: "123456", plan_trial: "1d", name: "Usuario1" },
+      { email: "usuario2@gmail.com", password: "123456", plan_trial: "1d", name: "Usuario2" },
+      { email: "usuario3@gmail.com", password: "123456", plan_trial: "1d", name: "Usuario3" },
+      { email: "usuario4@gmail.com", password: "123456", plan_trial: "3d", name: "Usuario4" },
+      { email: "usuario5@gmail.com", password: "123456", plan_trial: "3d", name: "Usuario5" },
+      { email: "usuario6@gmail.com", password: "123456", plan_trial: "3d", name: "Usuario6" },
     ];
 
     const results = [];
