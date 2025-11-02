@@ -92,10 +92,7 @@ const Dashboard = () => {
             <h1 className="text-3xl font-bold text-primary mb-2">Dashboard Inmobiliario</h1>
             <p className="text-secondary">Gestiona tu negocio inmobiliario de forma inteligente</p>
           </div>
-          <div className="flex gap-2">
-            <CreateTrialUsersButton />
-            <ExcelExportButton />
-          </div>
+          <ExcelExportButton />
         </div>
 
         {/* Vista general mejorada */}
