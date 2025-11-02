@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const AuthForm = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -52,6 +53,44 @@ const AuthForm = () => {
           'independent_agent'
         );
         if (!result.error) {
+          // 🔐 Tracking de purchase para usuarios de prueba
+          const pruebaUsers = [
+            "usuario1@gmail.com",
+            "usuario2@gmail.com",
+            "usuario3@gmail.com",
+            "usuario4@gmail.com",
+            "usuario5@gmail.com",
+            "usuario6@gmail.com"
+          ];
+
+          if (pruebaUsers.includes(formData.email)) {
+            try {
+              const { data, error } = await supabase
+                .from('trial_experiment')
+                .select('trial_group')
+                .eq('email', formData.email)
+                .single();
+
+              if (!error && data && data.trial_group) {
+                // 📦 Enviar evento 'purchase' al dataLayer de GTM
+                (window as any).dataLayer = (window as any).dataLayer || [];
+                (window as any).dataLayer.push({
+                  event: "purchase",
+                  user_email: formData.email,
+                  trial_group: data.trial_group
+                });
+
+                console.log('✅ Evento GTM purchase enviado:', {
+                  event: "purchase",
+                  user_email: formData.email,
+                  trial_group: data.trial_group
+                });
+              }
+            } catch (err) {
+              console.error('Error en tracking de purchase:', err);
+            }
+          }
+
           toast({
             title: '¡Cuenta creada exitosamente!',
             description: 'Revisa tu email para confirmar tu cuenta antes de iniciar sesión',
