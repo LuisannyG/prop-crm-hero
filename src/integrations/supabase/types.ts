@@ -565,25 +565,22 @@ export type Database = {
           created_at: string | null
           email: string
           id: string
-          name: string
-          password: string
-          plan_trial: string
+          trial_group: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string | null
           email: string
           id?: string
-          name: string
-          password: string
-          plan_trial: string
+          trial_group: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string | null
           email?: string
           id?: string
-          name?: string
-          password?: string
-          plan_trial?: string
+          trial_group?: string
+          user_id?: string | null
         }
         Relationships: []
       }

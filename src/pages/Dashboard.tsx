@@ -49,7 +49,7 @@ const Dashboard = () => {
           // 🧪 Obtener el grupo de prueba desde Supabase
           const { data, error } = await supabase
             .from('trial_experiment')
-            .select('plan_trial')
+            .select('trial_group')
             .eq('email', user.email)
             .single();
 
@@ -58,26 +58,18 @@ const Dashboard = () => {
             return;
           }
 
-          if (data && data.plan_trial) {
-            // 📦 Mapear plan_trial a trial_group
-            const trialGroupMap: Record<string, string> = {
-              '1d': '1-dia',
-              '3d': '3-dias'
-            };
-            
-            const trialGroup = trialGroupMap[data.plan_trial] || data.plan_trial;
-            
+          if (data && data.trial_group) {
             // 📦 Enviar el evento personalizado al dataLayer de Google Tag Manager
             (window as any).dataLayer = (window as any).dataLayer || [];
             (window as any).dataLayer.push({
               event: "prueba_suscripcion",
-              trial_group: trialGroup,
+              trial_group: data.trial_group,
               user_email: user.email
             });
 
             console.log('✅ Evento GTM enviado:', {
               event: "prueba_suscripcion",
-              trial_group: trialGroup
+              trial_group: data.trial_group
             });
           }
         } catch (err) {

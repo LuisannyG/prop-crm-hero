@@ -27,12 +27,12 @@ serve(async (req) => {
 
     // Lista de usuarios de prueba a crear
     const trialUsers = [
-      { email: "usuario1@gmail.com", password: "123456", plan_trial: "1d", name: "Usuario1" },
-      { email: "usuario2@gmail.com", password: "123456", plan_trial: "1d", name: "Usuario2" },
-      { email: "usuario3@gmail.com", password: "123456", plan_trial: "1d", name: "Usuario3" },
-      { email: "usuario4@gmail.com", password: "123456", plan_trial: "3d", name: "Usuario4" },
-      { email: "usuario5@gmail.com", password: "123456", plan_trial: "3d", name: "Usuario5" },
-      { email: "usuario6@gmail.com", password: "123456", plan_trial: "3d", name: "Usuario6" },
+      { email: "usuario1@gmail.com", password: "123456", trial_group: "1-dia", name: "Usuario1" },
+      { email: "usuario2@gmail.com", password: "123456", trial_group: "1-dia", name: "Usuario2" },
+      { email: "usuario3@gmail.com", password: "123456", trial_group: "1-dia", name: "Usuario3" },
+      { email: "usuario4@gmail.com", password: "123456", trial_group: "3-dias", name: "Usuario4" },
+      { email: "usuario5@gmail.com", password: "123456", trial_group: "3-dias", name: "Usuario5" },
+      { email: "usuario6@gmail.com", password: "123456", trial_group: "3-dias", name: "Usuario6" },
     ];
 
     const results = [];
@@ -60,8 +60,8 @@ serve(async (req) => {
           password: user.password,
           email_confirm: true, // Auto-confirmar email para usuarios de prueba
           user_metadata: {
-            name: user.name,
-            plan_trial: user.plan_trial,
+            full_name: user.name,
+            trial_group: user.trial_group,
             is_trial_user: true
           }
         });
@@ -74,11 +74,24 @@ serve(async (req) => {
           continue;
         }
 
+        // Insertar en trial_experiment
+        const { error: trialError } = await supabaseAdmin
+          .from('trial_experiment')
+          .insert({
+            user_id: authData.user?.id,
+            email: user.email,
+            trial_group: user.trial_group
+          });
+
+        if (trialError) {
+          console.error('Error insertando en trial_experiment:', trialError);
+        }
+
         results.push({
           email: user.email,
           status: 'created',
           user_id: authData.user?.id,
-          plan_trial: user.plan_trial
+          trial_group: user.trial_group
         });
 
       } catch (err) {
