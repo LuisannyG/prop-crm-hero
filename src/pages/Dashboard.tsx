@@ -19,6 +19,7 @@ import { useState, useEffect } from "react";
 import DashboardNav from "@/components/DashboardNav";
 import EnhancedDashboardSimulator from "@/components/simulators/EnhancedDashboardSimulator";
 import ExcelExportButton from "@/components/ExcelExportButton";
+import CreateTrialUsersButton from "@/components/CreateTrialUsersButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -92,6 +93,7 @@ const Dashboard = () => {
             <p className="text-secondary">Gestiona tu negocio inmobiliario de forma inteligente</p>
           </div>
           <div className="flex gap-2">
+            <CreateTrialUsersButton />
             <ExcelExportButton />
           </div>
         </div>
