@@ -9,7 +9,7 @@ interface PricingSectionProps {
     buttonText: string;
     highlighted: boolean;
   }>;
-  onCtaClick: () => void;
+  onCtaClick: (planName: string) => void;
 }
 
 const PricingSection = ({ plans, onCtaClick }: PricingSectionProps) => {
@@ -29,7 +29,7 @@ const PricingSection = ({ plans, onCtaClick }: PricingSectionProps) => {
               features={plan.features}
               buttonText={plan.buttonText}
               highlighted={plan.highlighted}
-              onCtaClick={onCtaClick}
+              onCtaClick={() => onCtaClick(plan.name)}
             />
           ))}
         </div>

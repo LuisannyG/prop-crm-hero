@@ -10,7 +10,11 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
-const AuthForm = () => {
+interface AuthFormProps {
+  selectedPlan?: string | null;
+}
+
+const AuthForm = ({ selectedPlan }: AuthFormProps) => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     email: '',
@@ -69,7 +73,7 @@ const AuthForm = () => {
                 .from('trial_experiment')
                 .select('trial_group')
                 .eq('email', formData.email)
-                .single();
+                .maybeSingle();
 
               if (!error && data && data.trial_group) {
                 // 📦 Enviar evento 'purchase' al dataLayer de GTM
@@ -83,7 +87,8 @@ const AuthForm = () => {
                 console.log('✅ Evento GTM purchase enviado:', {
                   event: "purchase",
                   user_email: formData.email,
-                  trial_group: data.trial_group
+                  trial_group: data.trial_group,
+                  plan: selectedPlan || 'No plan selected'
                 });
               }
             } catch (err) {

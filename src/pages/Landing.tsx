@@ -13,6 +13,7 @@ import { benefits, plans, faqs } from "@/data/proptorData";
 
 const Landing = () => {
   const [showAuthForm, setShowAuthForm] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { user, loading } = useAuth();
@@ -37,10 +38,13 @@ const Landing = () => {
     }
   }, [location.state]);
 
-  const handleCtaClick = () => {
+  const handleCtaClick = (planName?: string) => {
     if (user) {
       navigate('/dashboard');
     } else {
+      if (planName) {
+        setSelectedPlan(planName);
+      }
       setShowAuthForm(true);
     }
   };
@@ -58,7 +62,7 @@ const Landing = () => {
   }
 
   if (showAuthForm) {
-    return <AuthForm />;
+    return <AuthForm selectedPlan={selectedPlan} />;
   }
 
   return (
@@ -70,7 +74,7 @@ const Landing = () => {
       <BenefitsSection benefits={benefits} />
 
       {/* Pricing Section */}
-      <PricingSection plans={plans} onCtaClick={handleCtaClick} />
+      <PricingSection plans={plans} onCtaClick={(planName) => handleCtaClick(planName)} />
 
       {/* FAQ Section */}
       <FAQsSection faqs={faqs} />
