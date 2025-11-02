@@ -560,6 +560,33 @@ export type Database = {
         }
         Relationships: []
       }
+      trial_experiment: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          name: string
+          password: string
+          plan_trial: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          name: string
+          password: string
+          plan_trial: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          name?: string
+          password?: string
+          plan_trial?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
