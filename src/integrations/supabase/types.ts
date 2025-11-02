@@ -193,6 +193,33 @@ export type Database = {
           },
         ]
       }
+      motor_ia_usage: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          opened_at: string
+          trial_group: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          opened_at?: string
+          trial_group?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          opened_at?: string
+          trial_group?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       no_purchase_reasons: {
         Row: {
           contact_id: string

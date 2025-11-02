@@ -4,15 +4,64 @@ import RealLearningEngineSimulator from '@/components/simulators/RealLearningEng
 import { Button } from '@/components/ui/button';
 import { Brain, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 const LearningEngine = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [showPreview, setShowPreview] = useState(false);
 
   // Por ahora, simulamos que es una función premium pero que funciona
   // En una implementación real, verificarías el plan del usuario aquí
   const isPremiumUser = true; // Cambiar por la lógica real de verificación
+
+  // Registrar apertura del Motor IA
+  useEffect(() => {
+    const trackMotorIAOpening = async () => {
+      if (!showPreview || !user) return;
+
+      try {
+        // Obtener trial_group del usuario
+        const { data: trialData } = await supabase
+          .from('trial_experiment')
+          .select('trial_group')
+          .eq('email', user.email)
+          .maybeSingle();
+
+        const trialGroup = trialData?.trial_group || 'no_trial';
+
+        // Disparar evento a GTM
+        if (window.dataLayer) {
+          window.dataLayer.push({
+            event: 'motor_ia_opened',
+            user_email: user.email,
+            trial_group: trialGroup
+          });
+        }
+
+        // Registrar en Supabase
+        const { error } = await supabase
+          .from('motor_ia_usage')
+          .insert({
+            user_id: user.id,
+            email: user.email || '',
+            trial_group: trialGroup
+          });
+
+        if (error) {
+          console.error('Error registrando apertura del Motor IA:', error);
+        }
+      } catch (error) {
+        console.error('Error en tracking del Motor IA:', error);
+      }
+    };
+
+    trackMotorIAOpening();
+  }, [showPreview, user]);
 
   if (isPremiumUser && showPreview) {
     return (
