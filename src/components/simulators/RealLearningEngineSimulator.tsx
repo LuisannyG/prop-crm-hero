@@ -2117,11 +2117,7 @@ const RealLearningEngineSimulator = () => {
                     Procesando...
                   </>
                 ) : (
-                  <>
-                    <DollarSign className="w-6 h-6 mr-3" />
-                    Suscribirse por 60 soles mensuales
-                    <Zap className="w-6 h-6 ml-3" />
-                  </>
+                  "Suscribirse por 60 soles mensuales"
                 )}
               </Button>
             </div>
