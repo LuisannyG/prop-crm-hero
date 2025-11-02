@@ -27,6 +27,59 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  // 🔐 Tracking de usuarios de prueba para Google Tag Manager
+  useEffect(() => {
+    const trackTrialUser = async () => {
+      if (!user || !user.email) return;
+
+      // ✅ Lista de usuarios de prueba
+      const pruebaUsers = [
+        "usuario1@gmail.com",
+        "usuario2@gmail.com",
+        "usuario3@gmail.com",
+        "usuario4@gmail.com",
+        "usuario5@gmail.com",
+        "usuario6@gmail.com"
+      ];
+
+      // Verificar si el usuario actual está en la lista de prueba
+      if (pruebaUsers.includes(user.email)) {
+        try {
+          // 🧪 Obtener el grupo de prueba desde Supabase
+          const { data, error } = await supabase
+            .from('trial_experiment')
+            .select('plan_trial')
+            .eq('email', user.email)
+            .single();
+
+          if (error) {
+            console.error('Error obteniendo trial_group:', error);
+            return;
+          }
+
+          if (data && data.plan_trial) {
+            // 📦 Enviar el evento personalizado al dataLayer de Google Tag Manager
+            (window as any).dataLayer = (window as any).dataLayer || [];
+            (window as any).dataLayer.push({
+              event: "prueba_suscripcion",
+              trial_group: data.plan_trial === '3d' ? '3-dias' : '7-dias',
+              user_email: user.email
+            });
+
+            console.log('✅ Evento GTM enviado:', {
+              event: "prueba_suscripcion",
+              trial_group: data.plan_trial === '3d' ? '3-dias' : '7-dias'
+            });
+          }
+        } catch (err) {
+          console.error('Error en tracking de usuario de prueba:', err);
+        }
+      }
+    };
+
+    trackTrialUser();
+  }, [user]);
+
 
   return (
     <div className="min-h-screen">
