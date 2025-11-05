@@ -20,6 +20,7 @@ import DashboardNav from "@/components/DashboardNav";
 import EnhancedDashboardSimulator from "@/components/simulators/EnhancedDashboardSimulator";
 import ExcelExportButton from "@/components/ExcelExportButton";
 import CreateTrialUsersButton from "@/components/CreateTrialUsersButton";
+import SeedTrialDataButton from "@/components/SeedTrialDataButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -92,12 +93,16 @@ const Dashboard = () => {
             <h1 className="text-3xl font-bold text-primary mb-2">Dashboard Inmobiliario</h1>
             <p className="text-secondary">Gestiona tu negocio inmobiliario de forma inteligente</p>
           </div>
-          <ExcelExportButton />
         </div>
 
         {/* Vista general mejorada */}
         <div className="mb-8">
           <EnhancedDashboardSimulator />
+        </div>
+        <div className="flex gap-3">
+          <CreateTrialUsersButton />
+          <SeedTrialDataButton />
+          <ExcelExportButton />
         </div>
       </main>
 
