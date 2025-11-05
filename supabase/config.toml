@@ -3,5 +3,8 @@ project_id = "zgbxpjhpgrvcgyagofqw"
 [functions.create-trial-users]
 verify_jwt = false
 
+[functions.seed-trial-data]
+verify_jwt = false
+
 [functions.send-reminder-email]
 verify_jwt = false
