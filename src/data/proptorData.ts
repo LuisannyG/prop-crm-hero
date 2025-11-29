@@ -72,11 +72,11 @@ export const features: Feature[] = [
 
 export const benefits: Benefit[] = [
   {
-    title: "Aumenta la tasa de cierre hasta 55%",
+    title: "Aumenta la tasa de cierre",
     description: "IA avanzada de Q4 2025 con análisis predictivo de nueva generación y automatización completa."
   },
   {
-    title: "Ahorra 12 horas semanales",
+    title: "Ahorra horas semanales",
     description: "Asistente IA integrado maneja seguimientos automáticos, predicciones de mercado y gestión inteligente de leads."
   },
   {
@@ -122,7 +122,7 @@ export const plans: Plan[] = [
 export const faqs: FAQ[] = [
   {
     question: "¿Qué es Proptor?",
-    answer: "Proptor es un CRM diseñado específicamente para agentes inmobiliarios y pequeñas inmobiliarias peruanas que facilita la gestión de clientes, seguimiento y cierre de ventas."
+    answer: "Proptor es un gestor diseñado específicamente para agentes inmobiliarios y pequeñas inmobiliarias peruanas que facilita la gestión de clientes, seguimiento y cierre de ventas."
   },
   {
     question: "¿Necesito conocimientos técnicos para usar Proptor?",
@@ -137,7 +137,7 @@ export const faqs: FAQ[] = [
     answer: "Puedes solicitar una demo personalizada a través de nuestro formulario de contacto o haciendo clic en 'Solicita una demo'."
   },
   {
-    question: "¿Puedo migrar mis datos desde otro CRM?",
+    question: "¿Puedo migrar mis datos desde otro gestor?",
     answer: "Sí, ofrecemos asistencia para migrar tus datos desde otros sistemas al contratar el plan premium."
   }
 ];

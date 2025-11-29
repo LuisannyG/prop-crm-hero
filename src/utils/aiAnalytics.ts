@@ -598,7 +598,7 @@ const generateStageSpecificRecommendations = (
 
   switch (stage) {
     case 'contacto_inicial_recibido':
-      recommendations.push('Registrar los datos completos en el CRM');
+      recommendations.push('Registrar los datos completos en el gestor');
       recommendations.push('Revisar el canal de adquisición (formulario, WhatsApp, referido, portal)');
       if (daysInStage === 0) {
         recommendations.push('Preparar respuesta rápida y personalizada');
