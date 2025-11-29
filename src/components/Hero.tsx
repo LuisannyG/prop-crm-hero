@@ -23,7 +23,7 @@ const Hero = ({ onCtaClick }: HeroProps) => {
         </p>
         <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto">
           La plataforma de IA inmobiliaria más avanzada de Latinoamérica, ahora en su versión 2025.
-          <span className="block text-blue-200 mt-4 font-semibold">Aumenta tu tasa de cierre hasta 55% y automatiza completamente tu gestión.</span>
+          <span className="block text-blue-200 mt-4 font-semibold">Aumenta tu tasa de cierre y automatiza completamente tu gestión.</span>
         </p>
         
         <div className="flex justify-center mb-12">
@@ -43,7 +43,7 @@ const Hero = ({ onCtaClick }: HeroProps) => {
             <br /><br />
             Claude Sonnet 4 (claude-sonnet-4-20250514): Altamente eficiente en tareas generales con razonamiento intermedio, usado como modelo de respaldo de alta calidad para automatizar el 90% de las tareas de seguimiento.
             <br /><br />
-            Claude Haiku 3.5 (claude-3-5-haiku-20241022): Diseñado para generar respuestas rápidas con menor latencia, ideal para interacciones inmediatas con clientes. La nueva era de los CRM inmobiliarios ya está aquí.
+            Claude Haiku 3.5 (claude-3-5-haiku-20241022): Diseñado para generar respuestas rápidas con menor latencia, ideal para interacciones inmediatas con clientes. La nueva era de los gestores inmobiliarios ya está aquí.
           </p>
         </div>
       </div>

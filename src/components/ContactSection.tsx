@@ -13,7 +13,7 @@ const ContactSection = ({ showBetaMessage }: ContactSectionProps) => {
           <CardContent className="p-8 text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-6 text-blue-700">Esta página está en prueba</h2>
             <p className="text-lg text-gray-600 mb-6">
-              Estamos trabajando duro para lanzar pronto Proptor, tu CRM inmobiliario inteligente.
+              Estamos trabajando duro para lanzar pronto Proptor, tu gestor inmobiliario inteligente.
             </p>
           </CardContent>
         </Card>
